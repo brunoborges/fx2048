@@ -43,8 +43,6 @@ public class GameManager extends Group {
         this.gameGrid = new HashMap<>();
         this.gridSize = gridSize;
 
-        getStyleClass().add("tile-container");
-
         createGrid();
         initializeGrid();
     }
@@ -234,8 +232,9 @@ public class GameManager extends Group {
         final KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
         final KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
 
-        final KeyFrame kfX = new KeyFrame(Duration.millis(500), kvX);
-        final KeyFrame kfY = new KeyFrame(Duration.millis(500), kvY);
+        Duration animationDuration = Duration.millis(250);
+        final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
+        final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
