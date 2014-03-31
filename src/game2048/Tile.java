@@ -27,9 +27,9 @@ public class Tile extends Label {
 
     private Tile(Integer value) {
         // TODO adjust size to be more... err... responsive? :)
-        setMinSize(128 - 4, 128 - 4);
-        setMaxSize(128 - 4, 128 - 4);
-        setPrefSize(128 - 4, 128 - 4);
+        setMinSize(128 - 13, 128 - 13);
+        setMaxSize(128 - 13, 128 - 13);
+        setPrefSize(128 - 13, 128 - 13);
         setAlignment(Pos.CENTER);
 
         this.value = value;

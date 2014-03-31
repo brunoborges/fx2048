@@ -89,6 +89,7 @@ public class GameManager extends Group {
                     gameGrid.replace(tile.getLocation(), null);
 
                     parallelTransition.getChildren().add(animateTile(tile, tileToBeMerged.getLocation()));
+                    parallelTransition.getChildren().add(hideTileToBeMerged(tile));
                     mergedToBeRemoved.add(tile);
 
                     moved[0] = true;
@@ -222,9 +223,13 @@ public class GameManager extends Group {
 
         tile.setLayoutX(layoutX);
         tile.setLayoutY(layoutY);
+        tile.setScaleX(0);
+        tile.setScaleY(0);
         gameGrid.put(tile.getLocation(), tile);
 
         getChildren().add(tile);
+        
+        animateNewTile(tile).play();
     }
 
     private Timeline animateTile(Tile tile, Location newLocation) {
@@ -232,7 +237,7 @@ public class GameManager extends Group {
         final KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
         final KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
 
-        Duration animationDuration = Duration.millis(250);
+        Duration animationDuration = Duration.millis(200);
         final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
         final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
 
@@ -242,4 +247,30 @@ public class GameManager extends Group {
         return timeline;
     }
 
+    private Timeline animateNewTile(Tile tile) {
+        final Timeline timeline = new Timeline();
+        final KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
+        final KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
+
+        Duration animationDuration = Duration.millis(150);
+        final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
+        final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
+
+        timeline.getKeyFrames().add(kfX);
+        timeline.getKeyFrames().add(kfY);
+
+        return timeline;
+    }
+
+    private Timeline hideTileToBeMerged(Tile tile) {
+        final Timeline timeline = new Timeline();
+        final KeyValue kv = new KeyValue(tile.opacityProperty(), 0);
+
+        Duration animationDuration = Duration.millis(150);
+        final KeyFrame kf = new KeyFrame(animationDuration, kv);
+
+        timeline.getKeyFrames().add(kf);
+
+        return timeline;
+    }
 }

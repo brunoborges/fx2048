@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
@@ -17,7 +18,12 @@ public class Game2048 extends Application {
     public void start(Stage primaryStage) {
         gameManager = new GameManager();
 
-        Scene scene = new Scene(gameManager, 512, 512);
+        AnchorPane root=new AnchorPane();
+        
+        root.getChildren().add(gameManager);
+        root.setTranslateX(4.5d);
+        root.setTranslateY(4.5d);
+        Scene scene = new Scene(root, 512, 512);
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
 
