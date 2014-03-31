@@ -24,12 +24,3 @@
 .tile-512  { -fx-background-color: #edc850; }
 .tile-1024 { -fx-background-color: #edc599; }
 .tile-2048 { -fx-background-color: #4e71f4; }
-
-.gridPane {
-    -fx-background-color: white;
-    -fx-background-radius: 5.0;
-    -fx-background-insets: 0.0 5.0 0.0 5.0;
-    -fx-padding: 10;
-    -fx-hgap: 10;
-    -fx-vgap: 10;
-}
