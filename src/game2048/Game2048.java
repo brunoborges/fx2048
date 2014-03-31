@@ -30,20 +30,10 @@ public class Game2048 extends Application {
     private void addKeyHandler(Scene scene) {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, ke -> {
             KeyCode keyCode = ke.getCode();
-            switch (keyCode) {
-                case UP:
-                    gameManager.move(Direction.UP);
-                    break;
-                case LEFT:
-                    gameManager.move(Direction.LEFT);
-                    break;
-                case DOWN:
-                    gameManager.move(Direction.DOWN);
-                    break;
-                case RIGHT:
-                    gameManager.move(Direction.RIGHT);
-                    break;
-            }
+            try {
+                Direction direction = Direction.valueOf(keyCode.name());
+                gameManager.move(direction);
+            } catch (RuntimeException e) {/* keynotfound */ }
         });
     }
 
