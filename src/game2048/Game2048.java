@@ -30,10 +30,11 @@ public class Game2048 extends Application {
     private void addKeyHandler(Scene scene) {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, ke -> {
             KeyCode keyCode = ke.getCode();
-            try {
-                Direction direction = Direction.valueOf(keyCode.name());
-                gameManager.move(direction);
-            } catch (RuntimeException e) {/* keynotfound */ }
+            if (keyCode.isArrowKey() == false) {
+                return;
+            }
+            Direction direction = Direction.valueOf(keyCode.name());
+            gameManager.move(direction);
         });
     }
 
