@@ -18,14 +18,15 @@ public class Game2048 extends Application {
     public void start(Stage primaryStage) {
         gameManager = new GameManager();
 
-        AnchorPane root=new AnchorPane();
-        
+        AnchorPane root = new AnchorPane();
+
         root.getChildren().add(gameManager);
         root.setTranslateX(4.5d);
         root.setTranslateY(4.5d);
         Scene scene = new Scene(root, 512, 512);
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
+        addSwipeHandlers(scene);
 
         primaryStage.setTitle("Fx2048");
         primaryStage.setScene(scene);
@@ -49,6 +50,13 @@ public class Game2048 extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private void addSwipeHandlers(Scene scene) {
+        scene.setOnSwipeUp(e -> gameManager.move(Direction.UP));
+        scene.setOnSwipeRight(e -> gameManager.move(Direction.RIGHT));
+        scene.setOnSwipeLeft(e -> gameManager.move(Direction.LEFT));
+        scene.setOnSwipeDown(e -> gameManager.move(Direction.DOWN));
     }
 
 }
