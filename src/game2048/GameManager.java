@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
@@ -26,6 +28,7 @@ import javafx.util.Duration;
  */
 public class GameManager extends Group {
 
+    private static final int FINAL_VALUE_TO_WIN = 64;
     public static final int CELL_SIZE = 125;
     private static final int DEFAULT_GRID_SIZE = 4;
 
@@ -94,7 +97,7 @@ public class GameManager extends Group {
 
                     moved[0] = true;
 
-                    if (tileToBeMerged.getValue() == 2048) {
+                    if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
                         won = true;
                     }
                 } else if (farthestLocation.equals(tile.getLocation()) == false) {
@@ -118,6 +121,10 @@ public class GameManager extends Group {
             mergedToBeRemoved.forEach(getChildren()::remove);
             if (moved[0]) {
                 animateRandomTileAdded();
+            }
+
+            if (won) {
+                animateWinner();
             }
         });
         playing = true;
@@ -159,6 +166,21 @@ public class GameManager extends Group {
             t.setLayoutY(layoutY);
             getChildren().add(t);
         });
+    }
+
+    private void animateWinner() {
+        Logger.getLogger(this.getClass().getName()).info("WINNER!");
+        ParallelTransition pt = new ParallelTransition();
+        gameGrid.values().stream().filter(t -> t != null).forEach(t -> {
+            FadeTransition ft = new FadeTransition();
+            ft.setDuration(Duration.millis(200));
+            ft.setNode(t);
+            ft.setFromValue(1.0);
+            ft.setToValue(0.1);
+            ft.setCycleCount(4);
+            pt.getChildren().add(ft);
+        });
+        pt.play();
     }
 
     interface AddTile {
