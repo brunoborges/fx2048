@@ -23,7 +23,7 @@ public class Tile extends Label {
         return new Tile(value);
     }
 
-    private final Set<Tile> merged = new HashSet<>();
+    private final Set<Long> mergedAtMoves = new HashSet<>();
 
     private Tile(Integer value) {
         // TODO adjust size to be more... err... responsive? :)
@@ -42,7 +42,6 @@ public class Tile extends Label {
         getStyleClass().remove("tile-" + value);
         this.value += another.getValue();
         setText(value.toString());
-        merged.add(another);
         getStyleClass().add("tile-" + value);
     }
 
@@ -63,8 +62,12 @@ public class Tile extends Label {
         return "Tile{" + "value=" + value + ", location=" + location + '}';
     }
 
-    boolean mergedWith(Tile tile) {
-        return merged.contains(tile);
+    boolean mergedAt(long moveTimestamp) {
+        return mergedAtMoves.contains(moveTimestamp);
+    }
+
+    void addMergeMove(long moveTimestamp) {
+        mergedAtMoves.add(moveTimestamp);
     }
 
 }

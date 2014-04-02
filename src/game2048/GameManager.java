@@ -28,7 +28,7 @@ import javafx.util.Duration;
  */
 public class GameManager extends Group {
 
-    private static final int FINAL_VALUE_TO_WIN = 64;
+    private static final int FINAL_VALUE_TO_WIN = 2048;
     public static final int CELL_SIZE = 125;
     private static final int DEFAULT_GRID_SIZE = 4;
 
@@ -72,6 +72,8 @@ public class GameManager extends Group {
         final Set<Tile> mergedToBeRemoved = new HashSet<>();
 
         final boolean[] moved = new boolean[]{false};
+        
+        final long moveTimestamp = System.currentTimeMillis();
 
         traversalX.stream().forEachOrdered(x -> {
             traversalY.stream().forEachOrdered(y -> {
@@ -85,7 +87,8 @@ public class GameManager extends Group {
                 Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
                 Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
 
-                if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.mergedWith(tile)) {
+                if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.mergedAt(moveTimestamp)) {
+                    tileToBeMerged.addMergeMove(moveTimestamp);
                     tileToBeMerged.merge(tile);
 
                     gameGrid.put(nextLocation, tileToBeMerged);
