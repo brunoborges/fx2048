@@ -26,7 +26,7 @@ import javafx.util.Duration;
  */
 public class GameManager extends Group {
 
-    private static final int CELL_SIZE = 128;
+    public static final int CELL_SIZE = 125;
     private static final int DEFAULT_GRID_SIZE = 4;
 
     private final int gridSize;
@@ -228,7 +228,7 @@ public class GameManager extends Group {
         gameGrid.put(tile.getLocation(), tile);
 
         getChildren().add(tile);
-        
+
         animateNewTile(tile).play();
     }
 
