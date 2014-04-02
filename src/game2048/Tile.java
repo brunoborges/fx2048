@@ -27,9 +27,10 @@ public class Tile extends Label {
 
     private Tile(Integer value) {
         // TODO adjust size to be more... err... responsive? :)
-        setMinSize(128 - 13, 128 - 13);
-        setMaxSize(128 - 13, 128 - 13);
-        setPrefSize(128 - 13, 128 - 13);
+        final int squareSize = GameManager.CELL_SIZE - 13;
+        setMinSize(squareSize, squareSize);
+        setMaxSize(squareSize, squareSize);
+        setPrefSize(squareSize, squareSize);
         setAlignment(Pos.CENTER);
 
         this.value = value;
