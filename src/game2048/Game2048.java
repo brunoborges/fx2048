@@ -1,10 +1,13 @@
 package game2048;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
@@ -13,24 +16,31 @@ import javafx.stage.Stage;
 public class Game2048 extends Application {
 
     private GameManager gameManager;
-
+    private Bounds gameBounds;
+    
     @Override
     public void start(Stage primaryStage) {
         gameManager = new GameManager();
-
-        AnchorPane root = new AnchorPane();
-
-        root.getChildren().add(gameManager);
-        root.setTranslateX(4.5d);
-        root.setTranslateY(4.5d);
-        Scene scene = new Scene(root, 512, 512);
+        gameBounds = gameManager.getLayoutBounds();
+        
+        StackPane root=new StackPane(gameManager);
+        root.setPrefSize(gameBounds.getWidth(),gameBounds.getHeight());
+        ChangeListener<Number> resize=(ov,v,v1)->{
+            gameManager.setLayoutX((root.getWidth()-gameBounds.getWidth())/2d);
+            gameManager.setLayoutY((root.getHeight()-gameBounds.getHeight())/2d);
+        };
+        root.widthProperty().addListener(resize);
+        root.heightProperty().addListener(resize);
+        
+        Scene scene = new Scene(root, 600, 700);
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
 
-        primaryStage.setTitle("Fx2048");
+        primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
+        primaryStage.setMinWidth(gameBounds.getWidth());
+        primaryStage.setMinHeight(gameBounds.getHeight());
         primaryStage.show();
     }
 
