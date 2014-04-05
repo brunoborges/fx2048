@@ -1,8 +1,6 @@
 package game2048;
 
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 
@@ -13,6 +11,7 @@ public class Tile extends Label {
 
     private Integer value;
     private Location location;
+    private Boolean merged;
 
     public static Tile newRandomTile() {
         int value = new Random().nextBoolean() ? 2 : 4;
@@ -23,8 +22,6 @@ public class Tile extends Label {
         return new Tile(value);
     }
 
-    private final Set<Long> mergedAtMoves = new HashSet<>();
-
     private Tile(Integer value) {
         // TODO adjust size to be more... err... responsive? :)
         final int squareSize = GameManager.CELL_SIZE - 13;
@@ -34,6 +31,7 @@ public class Tile extends Label {
         setAlignment(Pos.CENTER);
 
         this.value = value;
+        this.merged=false;
         setText(value.toString());
         getStyleClass().add("tile-" + value);
     }
@@ -42,6 +40,7 @@ public class Tile extends Label {
         getStyleClass().remove("tile-" + value);
         this.value += another.getValue();
         setText(value.toString());
+        merged=true;
         getStyleClass().add("tile-" + value);
     }
 
@@ -62,12 +61,11 @@ public class Tile extends Label {
         return "Tile{" + "value=" + value + ", location=" + location + '}';
     }
 
-    boolean mergedAt(long moveTimestamp) {
-        return mergedAtMoves.contains(moveTimestamp);
+    public boolean isMerged() {
+        return merged;
     }
 
-    void addMergeMove(long moveTimestamp) {
-        mergedAtMoves.add(moveTimestamp);
+    public void clearMerge(){
+        merged=false;
     }
-
 }

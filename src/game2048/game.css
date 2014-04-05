@@ -1,3 +1,36 @@
+.root {
+    -fx-background-color: #faf8ef; 
+}
+.vbox {
+    -fx-background-color: #bbada0;
+    -fx-padding: 10 25 10 25;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.titScore {
+    -fx-font-size: 13px;
+    -fx-text-fill: #eee4da;
+}
+.score {
+    -fx-font-size: 25px;
+    -fx-text-fill: white;
+}
+.points {
+    -fx-font-size: 25px;
+    -fx-text-fill: rgba(119, 110, 101, 0.9);
+}
+.backGrid {
+    -fx-background-color: #bbada0;
+    -fx-border-color: #bbada0; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+.grid {
+    -fx-background-color: #bbada0; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
 .grid-cell {
     -fx-fill: #cdc1b4;
     -fx-stroke-width: 14px;
@@ -12,6 +45,15 @@
     -fx-font-family: 'sans-serif';
 }
 
+.title {
+    -fx-font-size: 80px;
+    -fx-text-fill: #776e65;
+}
+.subtitle {
+    -fx-font-size: 40px;
+    -fx-text-fill: #f9f6f2;
+    -fx-effect: dropshadow( three-pass-box, rgba(243, 215, 116, 1), 10, 0.5, 0, 0 );
+}
 .tile-2    { 
     -fx-font-size: 55px;
     -fx-text-fill: #776e65;
