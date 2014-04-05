@@ -54,6 +54,54 @@
     -fx-text-fill: #f9f6f2;
     -fx-effect: dropshadow( three-pass-box, rgba(243, 215, 116, 1), 10, 0.5, 0, 0 );
 }
+.over {
+    -fx-opacity: 0.6;
+    -fx-background-color: #f9f6f2;
+    -fx-border-color: #f9f6f2; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+.lblOver {
+    -fx-font-size: 60px;
+    -fx-text-fill: #776e65;
+}
+.won {
+    -fx-font-size: 60px;
+    -fx-text-fill: #f9f6f2;
+    -fx-background-color: rgba(237, 194, 46, 0.5);
+    -fx-border-color: #f9f6f2; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+.lblWon {
+    -fx-font-size: 60px;
+    -fx-text-fill: #f9f6f2;
+}
+.over {
+    -fx-font-size: 60px;
+    -fx-text-fill: #776e65;
+    -fx-opacity: 0.6;
+    -fx-background-color: #f9f6f2;
+    -fx-border-color: #f9f6f2; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+.try { 
+    -fx-font-size: 30px;
+    -fx-text-fill: white;
+    -fx-background-color: #8f7a66;
+    -fx-border-color: #8f7a66; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 6 20 12 20;
+}
+.try:pressed {
+    -fx-padding: 4 22 12 22;
+}
 .tile-2    { 
     -fx-font-size: 55px;
     -fx-text-fill: #776e65;

@@ -10,18 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -46,7 +48,8 @@ public class GameManager extends Group {
     private final int gridSize;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
-    private boolean won;
+    private final BooleanProperty won = new SimpleBooleanProperty(false);
+    private final BooleanProperty over = new SimpleBooleanProperty(false);
     private volatile boolean playing = false;
     private final IntegerProperty score=new SimpleIntegerProperty(0);
     private final IntegerProperty points=new SimpleIntegerProperty(0);
@@ -57,7 +60,9 @@ public class GameManager extends Group {
     private final Label lblPoints=new Label();
     private final HBox hBottom=new HBox();
     private final Group grid=new Group();
-    
+    private final HBox hOvrLabel=new HBox();
+    private final HBox hOvrButton=new HBox();
+                           
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
     }
@@ -126,7 +131,7 @@ public class GameManager extends Group {
                     score.set(score.get()+tileToBeMerged.getValue());
                     
                     if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                        won = true;
+                        won.set(true);
                     }
                 } else if (farthestLocation.equals(tile.getLocation()) == false) {
                     parallelTransition.getChildren().add(animateTile(tile, farthestLocation));
@@ -157,9 +162,9 @@ public class GameManager extends Group {
             // reset merged after each movement
             gameGrid.values().stream().filter(t -> t != null).forEach(Tile::clearMerge);
             
-            if (won) {
-                animateWinner();
-            }
+//            if (won.get()) {
+//                animateWinner();
+//            }
         });
         playing = true;
         parallelTransition.play();
@@ -176,6 +181,49 @@ public class GameManager extends Group {
         return farthest;
     }
 
+    private boolean found=false;
+    private boolean findMoreMovements(){
+        
+        if(gameGrid.values().stream().filter(t -> t!=null).collect(Collectors.toList()).size()<DEFAULT_GRID_SIZE*DEFAULT_GRID_SIZE){
+            // there are empty cells
+            return true;
+        }
+        
+        for(Direction d:Direction.values()){
+            found=false;
+            List<Integer> traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+            List<Integer> traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+
+            if (d.getX() == 1) {
+                Collections.sort(traversalX, Collections.reverseOrder());
+            }
+            if (d.getY() == 1) {
+                Collections.sort(traversalY, Collections.reverseOrder());
+            }
+            traversalX.stream().forEachOrdered(x -> {
+                traversalY.stream().forEachOrdered(y -> {
+                    Location thisloc = new Location(x, y);
+                    Tile tile = gameGrid.get(thisloc);
+                    if (tile != null) {
+                    
+                        Location nextLocation = thisloc.offset(d); // calculates to a possible merge
+                        if(nextLocation.isValidFor(gridSize)){
+                            Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
+                            if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue())){
+                                 // Found two tiles that can be merged
+                                // this could be a HINT: System.out.println("tiles: "+tileToBeMerged+" "+tile);
+                                found=true;
+                            }
+                        }
+                    }
+                });
+            });
+            if(found){
+                return true;
+            }
+        }
+        return false;
+    }
     private void createScore() {
         Label lblTitle=new Label("2048");
         lblTitle.getStyleClass().add("title");
@@ -233,10 +281,70 @@ public class GameManager extends Group {
         hBottom.getChildren().add(grid);
         vGame.getChildren().add(hBottom);
         
+        over.addListener((ov,b,b1)->{
+            if(b1){
+                hOvrLabel.getStyleClass().setAll("over");
+                hOvrLabel.setMinSize(GRID_WIDTH,GRID_WIDTH);
+                Label lblOver=new Label("Game over!");
+                lblOver.getStyleClass().add("lblOver");
+                hOvrLabel.setAlignment(Pos.CENTER);
+                hOvrLabel.getChildren().setAll(lblOver);
+                hOvrLabel.setTranslateY(TOP_HEIGHT+vGame.getSpacing());
+                this.getChildren().add(hOvrLabel);
+                
+                hOvrButton.setMinSize(GRID_WIDTH,GRID_WIDTH/2);
+                Button bTry=new Button("Try again");
+                bTry.getStyleClass().setAll("try");
+                bTry.setOnAction(e-> resetGame() );
+                hOvrButton.setAlignment(Pos.CENTER);
+                hOvrButton.getChildren().setAll(bTry);
+                hOvrButton.setTranslateY(TOP_HEIGHT+vGame.getSpacing()+GRID_WIDTH/2);
+                this.getChildren().add(hOvrButton);
+            }
+        });
+        
+        won.addListener((ov,b,b1)->{
+            if(b1){
+                hOvrLabel.getStyleClass().setAll("won");
+                hOvrLabel.setMinSize(GRID_WIDTH,GRID_WIDTH);
+                Label lblWin=new Label("You win!");
+                lblWin.getStyleClass().add("lblWon");
+                hOvrLabel.setAlignment(Pos.CENTER);
+                hOvrLabel.getChildren().setAll(lblWin);
+                hOvrLabel.setTranslateY(TOP_HEIGHT+vGame.getSpacing());
+                this.getChildren().add(hOvrLabel);
+                
+                hOvrButton.setMinSize(GRID_WIDTH,GRID_WIDTH/2);
+                hOvrButton.setSpacing(10);
+                Button bContinue=new Button("Keep going");
+                bContinue.getStyleClass().add("try");
+                bContinue.setOnAction(e-> getChildren().removeAll(hOvrLabel,hOvrButton) );
+                Button bTry=new Button("Try again");
+                bTry.getStyleClass().add("try");
+                bTry.setOnAction(e-> resetGame() );
+                hOvrButton.setAlignment(Pos.CENTER);
+                hOvrButton.getChildren().setAll(bContinue,bTry);
+                hOvrButton.setTranslateY(TOP_HEIGHT+vGame.getSpacing()+GRID_WIDTH/2);
+                this.getChildren().add(hOvrButton);
+            }
+        });
     }
 
+    private void resetGame(){
+        gameGrid.clear();
+        // THIS DOESN'T WORK!!! It only removes half of the list!
+        // grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
+        List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
+        grid.getChildren().removeAll(collect);
+        
+        this.getChildren().removeAll(hOvrLabel,hOvrButton);
+        score.set(0);
+        won.set(false);
+        over.set(false);
+        initializeGrid();
+    }
     private void redrawTiles() {
-        grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
+//        grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
         gameGrid.values().forEach(t -> {
             double layoutX = t.getLocation().getLayoutX(CELL_SIZE) - (t.getMinWidth() / 2);
             double layoutY = t.getLocation().getLayoutY(CELL_SIZE) - (t.getMinHeight() / 2);
@@ -266,20 +374,20 @@ public class GameManager extends Group {
         return timeline;
     }
 
-    private void animateWinner() {
-        Logger.getLogger(this.getClass().getName()).info("WINNER!");
-        ParallelTransition pt = new ParallelTransition();
-        gameGrid.values().stream().filter(t -> t != null).forEach(t -> {
-            FadeTransition ft = new FadeTransition();
-            ft.setDuration(Duration.millis(200));
-            ft.setNode(t);
-            ft.setFromValue(1.0);
-            ft.setToValue(0.1);
-            ft.setCycleCount(4);
-            pt.getChildren().add(ft);
-        });
-        pt.play();
-    }
+//    private void animateWinner() {
+//        Logger.getLogger(this.getClass().getName()).info("WINNER!");
+//        ParallelTransition pt = new ParallelTransition();
+//        gameGrid.values().stream().filter(t -> t != null).forEach(t -> {
+//            FadeTransition ft = new FadeTransition();
+//            ft.setDuration(Duration.millis(200));
+//            ft.setNode(t);
+//            ft.setFromValue(1.0);
+//            ft.setToValue(0.1);
+//            ft.setCycleCount(4);
+//            pt.getChildren().add(ft);
+//        });
+//        pt.play();
+//    }
 
     interface AddTile {
 
@@ -300,7 +408,7 @@ public class GameManager extends Group {
         addTile.add(512, 0, 1);
         addTile.add(1024, 1, 0);
         addTile.add(2048, 1, 1);
-
+        
         redrawTiles();
     }
 
@@ -337,7 +445,6 @@ public class GameManager extends Group {
 
         Tile tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
-
         double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
         double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
 
@@ -378,7 +485,11 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-
+        timeline.setOnFinished(e->{
+            if(!findMoreMovements()){
+                over.set(true);
+            }
+        });
         return timeline;
     }
 
