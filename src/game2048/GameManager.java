@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
@@ -180,8 +181,7 @@ public class GameManager extends Group {
         return farthest;
     }
 
-    private boolean found = false;
-
+    private int funcResult=0;
     private void sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
         if (d.getX() == 1) {
             Collections.sort(traversalX, Collections.reverseOrder());
@@ -195,48 +195,45 @@ public class GameManager extends Group {
             Collections.sort(traversalY);
         }
 
+        funcResult=0;
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
-                func.applyAsInt(t_x, t_y);
+                funcResult+=func.applyAsInt(t_x, t_y);
             });
         });
     }
 
     // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
+    private int pairsOfMergeableTiles=0;
     private boolean findMoreMovements() {
 
         if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
             // there are empty cells
             return true;
         }
-
-        for (Direction direction : Direction.values()) {
-            found = false;
-
+        
+        pairsOfMergeableTiles=0;
+        Stream.of(Direction.values()).forEach(direction->{
             sortAndTraverseGrid(direction, (x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
                 if (tile != null) {
-
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
                     if (nextLocation.isValidFor(gridSize)) {
-                        Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
+                        Tile tileToBeMerged = gameGrid.get(nextLocation);
                         if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue())) {
                             // Found two tiles that can be merged
                             // this could be a HINT: System.out.println("tiles: "+tileToBeMerged+" "+tile);
-                            found = true;
+                            return 1;
                         }
                     }
                 }
-
                 return 0;
             });
-
-            if (found) {
-                return true;
-            }
-        }
-        return false;
+            pairsOfMergeableTiles+=funcResult/2; //up||down, left||rigth as one
+        });
+//        System.out.println("Pairs: "+pairsOfMergeableTiles);
+        return pairsOfMergeableTiles>0;
     }
 
     private void createScore() {
