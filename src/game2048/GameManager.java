@@ -67,6 +67,7 @@ public class GameManager extends Group {
     private final List<Integer> traversalY;
     private final boolean[] movedProperty = new boolean[]{false};
     final Set<Tile> mergedToBeRemoved = new HashSet<>();
+    ParallelTransition parallelTransition = new ParallelTransition();
 
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
@@ -94,8 +95,7 @@ public class GameManager extends Group {
         }
 
         movedProperty[0] = false;
-
-        ParallelTransition parallelTransition = new ParallelTransition();
+        points.set(0);
 
         sortAndTraverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
@@ -141,31 +141,32 @@ public class GameManager extends Group {
             return 0;
         });
 
-        points.set(0);
-
         if (points.get() > 0) {
             animateScore(points.getValue().toString()).play();
         }
+
         // parallelTransition.getChildren().add(animateRandomTileAdded());
         parallelTransition.setOnFinished(e -> {
             synchronized (gameGrid) {
                 moving = false;
             }
 
-            mergedToBeRemoved.forEach(grid.getChildren()::remove);
+            grid.getChildren().removeAll(mergedToBeRemoved); // better code
+            // below a code to demonstrate use of lambda and stream API
+            // mergedToBeRemoved.forEach(grid.getChildren()::remove); 
             if (movedProperty[0]) {
                 animateRandomTileAdded();
             }
+            mergedToBeRemoved.clear();
 
             // reset merged after each movement
             gameGrid.values().stream().filter(t -> t != null).forEach(Tile::clearMerge);
-
-//            if (won.get()) {
-//                animateWinner();
-//            }
         });
+
         moving = true;
+
         parallelTransition.play();
+        parallelTransition.getChildren().clear();
     }
 
     private Location findFarthestLocation(Location location, Direction direction) {
@@ -201,6 +202,7 @@ public class GameManager extends Group {
         });
     }
 
+    // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
     private boolean findMoreMovements() {
 
         if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
