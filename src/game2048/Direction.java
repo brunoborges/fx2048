@@ -1,5 +1,7 @@
 package game2048;
 
+import javafx.scene.input.KeyCode;
+
 /**
  * @author bruno.borges@oracle.com
  */
@@ -42,4 +44,7 @@ public enum Direction {
         return null;
     }
 
+    public static Direction valueFor(KeyCode keyCode) {
+        return valueOf(keyCode.name());
+    }
 }

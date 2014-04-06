@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.animation.KeyFrame;
@@ -40,29 +41,33 @@ public class GameManager extends Group {
     private static final int FINAL_VALUE_TO_WIN = 2048;
     public static final int CELL_SIZE = 128;
     private static final int DEFAULT_GRID_SIZE = 4;
-    private static final int BORDER_WIDTH=(14+2)/2;
+    private static final int BORDER_WIDTH = (14 + 2) / 2;
     // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
-    private static final int GRID_WIDTH = CELL_SIZE*DEFAULT_GRID_SIZE+BORDER_WIDTH*2;
+    private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
-    
+
     private final int gridSize;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty won = new SimpleBooleanProperty(false);
     private final BooleanProperty over = new SimpleBooleanProperty(false);
-    private volatile boolean playing = false;
-    private final IntegerProperty score=new SimpleIntegerProperty(0);
-    private final IntegerProperty points=new SimpleIntegerProperty(0);
-    
-    private final VBox vGame=new VBox(50);
-    private final HBox hTop=new HBox(0);
-    private final Label lblScore=new Label("0");
-    private final Label lblPoints=new Label();
-    private final HBox hBottom=new HBox();
-    private final Group grid=new Group();
-    private final HBox hOvrLabel=new HBox();
-    private final HBox hOvrButton=new HBox();
-                           
+    private volatile boolean moving = false;
+    private final IntegerProperty score = new SimpleIntegerProperty(0);
+    private final IntegerProperty points = new SimpleIntegerProperty(0);
+
+    private final VBox vGame = new VBox(50);
+    private final HBox hTop = new HBox(0);
+    private final Label lblScore = new Label("0");
+    private final Label lblPoints = new Label();
+    private final HBox hBottom = new HBox();
+    private final Group grid = new Group();
+    private final HBox hOvrLabel = new HBox();
+    private final HBox hOvrButton = new HBox();
+    private final List<Integer> traversalX;
+    private final List<Integer> traversalY;
+    private final boolean[] movedProperty = new boolean[]{false};
+    final Set<Tile> mergedToBeRemoved = new HashSet<>();
+
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
     }
@@ -71,102 +76,95 @@ public class GameManager extends Group {
         this.gameGrid = new HashMap<>();
         this.gridSize = gridSize;
 
+        traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+        traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+
         createScore();
-        
         createGrid();
         initializeGrid();
-        
+
         this.setManaged(false);
     }
-        
+
     public void move(Direction direction) {
         synchronized (gameGrid) {
-            if (playing) {
+            if (moving) {
                 return;
             }
         }
 
+        movedProperty[0] = false;
+
         ParallelTransition parallelTransition = new ParallelTransition();
 
-        List<Integer> traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-        List<Integer> traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+        sortAndTraverseGrid(direction, (int x, int y) -> {
+            Location thisloc = new Location(x, y);
+            Tile tile = gameGrid.get(thisloc);
+            if (tile == null) {
+                return 0;
+            }
 
-        if (direction.getX() == 1) {
-            Collections.sort(traversalX, Collections.reverseOrder());
-        }
-        if (direction.getY() == 1) {
-            Collections.sort(traversalY, Collections.reverseOrder());
-        }
+            Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
+            Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
+            Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
 
-        final Set<Tile> mergedToBeRemoved = new HashSet<>();
+            if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
+                tileToBeMerged.merge(tile);
 
-        final boolean[] moved = new boolean[]{false};
+                gameGrid.put(nextLocation, tileToBeMerged);
+                gameGrid.replace(tile.getLocation(), null);
 
-        points.set(0);
-        
-        traversalX.stream().forEachOrdered(x -> {
-            traversalY.stream().forEachOrdered(y -> {
-                Location thisloc = new Location(x, y);
-                Tile tile = gameGrid.get(thisloc);
-                if (tile == null) {
-                    return;
+                parallelTransition.getChildren().add(animateTile(tile, tileToBeMerged.getLocation()));
+                parallelTransition.getChildren().add(hideTileToBeMerged(tile));
+                mergedToBeRemoved.add(tile);
+
+                movedProperty[0] = true;
+                points.set(points.get() + tileToBeMerged.getValue());
+                score.set(score.get() + tileToBeMerged.getValue());
+
+                if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
+                    won.set(true);
                 }
+            } else if (farthestLocation.equals(tile.getLocation()) == false) {
+                parallelTransition.getChildren().add(animateTile(tile, farthestLocation));
 
-                Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
-                Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-                Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
+                gameGrid.put(farthestLocation, tile);
+                gameGrid.replace(tile.getLocation(), null);
+                tile.setLocation(farthestLocation);
 
-                if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
-                    tileToBeMerged.merge(tile);
+                movedProperty[0] = true;
+            }
 
-                    gameGrid.put(nextLocation, tileToBeMerged);
-                    gameGrid.replace(tile.getLocation(), null);
-
-                    parallelTransition.getChildren().add(animateTile(tile, tileToBeMerged.getLocation()));
-                    parallelTransition.getChildren().add(hideTileToBeMerged(tile));
-                    mergedToBeRemoved.add(tile);
-
-                    moved[0] = true;
-                    points.set(points.get()+tileToBeMerged.getValue());
-                    score.set(score.get()+tileToBeMerged.getValue());
-                    
-                    if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                        won.set(true);
-                    }
-                } else if (farthestLocation.equals(tile.getLocation()) == false) {
-                    parallelTransition.getChildren().add(animateTile(tile, farthestLocation));
-
-                    gameGrid.put(farthestLocation, tile);
-                    gameGrid.replace(tile.getLocation(), null);
-                    tile.setLocation(farthestLocation);
-
-                    moved[0] = true;
-                }
-            });
+            if (movedProperty[0]) {
+                return 1;
+            }
+            return 0;
         });
 
-        if(points.get()>0){
+        points.set(0);
+
+        if (points.get() > 0) {
             animateScore(points.getValue().toString()).play();
         }
         // parallelTransition.getChildren().add(animateRandomTileAdded());
         parallelTransition.setOnFinished(e -> {
             synchronized (gameGrid) {
-                playing = false;
+                moving = false;
             }
 
             mergedToBeRemoved.forEach(grid.getChildren()::remove);
-            if (moved[0]) {
+            if (movedProperty[0]) {
                 animateRandomTileAdded();
             }
 
             // reset merged after each movement
             gameGrid.values().stream().filter(t -> t != null).forEach(Tile::clearMerge);
-            
+
 //            if (won.get()) {
 //                animateWinner();
 //            }
         });
-        playing = true;
+        moving = true;
         parallelTransition.play();
     }
 
@@ -181,79 +179,94 @@ public class GameManager extends Group {
         return farthest;
     }
 
-    private boolean found=false;
-    private boolean findMoreMovements(){
-        
-        if(gameGrid.values().stream().filter(t -> t!=null).collect(Collectors.toList()).size()<DEFAULT_GRID_SIZE*DEFAULT_GRID_SIZE){
+    private boolean found = false;
+
+    private void sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
+        if (d.getX() == 1) {
+            Collections.sort(traversalX, Collections.reverseOrder());
+        } else {
+            Collections.sort(traversalX);
+        }
+
+        if (d.getY() == 1) {
+            Collections.sort(traversalY, Collections.reverseOrder());
+        } else {
+            Collections.sort(traversalY);
+        }
+
+        traversalX.forEach(t_x -> {
+            traversalY.forEach(t_y -> {
+                func.applyAsInt(t_x, t_y);
+            });
+        });
+    }
+
+    private boolean findMoreMovements() {
+
+        if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
             // there are empty cells
             return true;
         }
-        
-        for(Direction d:Direction.values()){
-            found=false;
-            List<Integer> traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-            List<Integer> traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
 
-            if (d.getX() == 1) {
-                Collections.sort(traversalX, Collections.reverseOrder());
-            }
-            if (d.getY() == 1) {
-                Collections.sort(traversalY, Collections.reverseOrder());
-            }
-            traversalX.stream().forEachOrdered(x -> {
-                traversalY.stream().forEachOrdered(y -> {
-                    Location thisloc = new Location(x, y);
-                    Tile tile = gameGrid.get(thisloc);
-                    if (tile != null) {
-                    
-                        Location nextLocation = thisloc.offset(d); // calculates to a possible merge
-                        if(nextLocation.isValidFor(gridSize)){
-                            Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
-                            if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue())){
-                                 // Found two tiles that can be merged
-                                // this could be a HINT: System.out.println("tiles: "+tileToBeMerged+" "+tile);
-                                found=true;
-                            }
+        for (Direction direction : Direction.values()) {
+            found = false;
+
+            sortAndTraverseGrid(direction, (x, y) -> {
+                Location thisloc = new Location(x, y);
+                Tile tile = gameGrid.get(thisloc);
+                if (tile != null) {
+
+                    Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
+                    if (nextLocation.isValidFor(gridSize)) {
+                        Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
+                        if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue())) {
+                            // Found two tiles that can be merged
+                            // this could be a HINT: System.out.println("tiles: "+tileToBeMerged+" "+tile);
+                            found = true;
                         }
                     }
-                });
+                }
+
+                return 0;
             });
-            if(found){
+
+            if (found) {
                 return true;
             }
         }
         return false;
     }
+
     private void createScore() {
-        Label lblTitle=new Label("2048");
+        Label lblTitle = new Label("2048");
         lblTitle.getStyleClass().add("title");
-        Label lblSubtitle=new Label("FX");
+        Label lblSubtitle = new Label("FX");
         lblSubtitle.getStyleClass().add("subtitle");
-        HBox hFill=new HBox();
+        HBox hFill = new HBox();
         HBox.setHgrow(hFill, Priority.ALWAYS);
         hFill.setAlignment(Pos.CENTER);
-        VBox vScore=new VBox();
+        VBox vScore = new VBox();
         vScore.setAlignment(Pos.CENTER);
         vScore.getStyleClass().add("vbox");
-        Label lblTit=new Label("SCORE");
+        Label lblTit = new Label("SCORE");
         lblTit.getStyleClass().add("titScore");
         lblScore.getStyleClass().add("score");
         lblScore.textProperty().bind(score.asString());
-        vScore.getChildren().addAll(lblTit,lblScore);
-        
-        hTop.getChildren().addAll(lblTitle,lblSubtitle,hFill,vScore);
-        hTop.setMinSize(GRID_WIDTH,TOP_HEIGHT);
-        hTop.setPrefSize(GRID_WIDTH,TOP_HEIGHT);
-        hTop.setMaxSize(GRID_WIDTH,TOP_HEIGHT);
-        
+        vScore.getChildren().addAll(lblTit, lblScore);
+
+        hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScore);
+        hTop.setMinSize(GRID_WIDTH, TOP_HEIGHT);
+        hTop.setPrefSize(GRID_WIDTH, TOP_HEIGHT);
+        hTop.setMaxSize(GRID_WIDTH, TOP_HEIGHT);
+
         vGame.getChildren().add(hTop);
         getChildren().add(vGame);
-        
+
         lblPoints.getStyleClass().add("points");
         getChildren().add(lblPoints);
-        
+
     }
-    
+
     private void createGrid() {
         IntStream.range(0, gridSize)
                 .mapToObj(i -> IntStream.range(0, gridSize).mapToObj(j -> {
@@ -261,88 +274,89 @@ public class GameManager extends Group {
                     locations.add(loc);
 
                     Rectangle rect2 = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                    rect2.setArcHeight(CELL_SIZE/6d);
-                    rect2.setArcWidth(CELL_SIZE/6d);
+                    rect2.setArcHeight(CELL_SIZE / 6d);
+                    rect2.setArcWidth(CELL_SIZE / 6d);
                     rect2.getStyleClass().add("grid-cell");
                     return rect2;
                 }))
                 .flatMap(s -> s)
                 .forEach(grid.getChildren()::add);
-        
+
         grid.getStyleClass().add("grid");
         grid.setManaged(false);
         grid.setLayoutX(BORDER_WIDTH);
         grid.setLayoutY(BORDER_WIDTH);
         hBottom.getStyleClass().add("backGrid");
-        hBottom.setMinSize(GRID_WIDTH,GRID_WIDTH);
-        hBottom.setPrefSize(GRID_WIDTH,GRID_WIDTH);
-        hBottom.setMaxSize(GRID_WIDTH,GRID_WIDTH);
-        
+        hBottom.setMinSize(GRID_WIDTH, GRID_WIDTH);
+        hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
+        hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
+
         hBottom.getChildren().add(grid);
         vGame.getChildren().add(hBottom);
-        
-        over.addListener((ov,b,b1)->{
-            if(b1){
+
+        over.addListener((ov, b, b1) -> {
+            if (b1) {
                 hOvrLabel.getStyleClass().setAll("over");
-                hOvrLabel.setMinSize(GRID_WIDTH,GRID_WIDTH);
-                Label lblOver=new Label("Game over!");
+                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                Label lblOver = new Label("Game over!");
                 lblOver.getStyleClass().add("lblOver");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblOver);
-                hOvrLabel.setTranslateY(TOP_HEIGHT+vGame.getSpacing());
+                hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
                 this.getChildren().add(hOvrLabel);
-                
-                hOvrButton.setMinSize(GRID_WIDTH,GRID_WIDTH/2);
-                Button bTry=new Button("Try again");
+
+                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+                Button bTry = new Button("Try again");
                 bTry.getStyleClass().setAll("try");
-                bTry.setOnAction(e-> resetGame() );
+                bTry.setOnAction(e -> resetGame());
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT+vGame.getSpacing()+GRID_WIDTH/2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
-        
-        won.addListener((ov,b,b1)->{
-            if(b1){
+
+        won.addListener((ov, b, b1) -> {
+            if (b1) {
                 hOvrLabel.getStyleClass().setAll("won");
-                hOvrLabel.setMinSize(GRID_WIDTH,GRID_WIDTH);
-                Label lblWin=new Label("You win!");
+                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                Label lblWin = new Label("You win!");
                 lblWin.getStyleClass().add("lblWon");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblWin);
-                hOvrLabel.setTranslateY(TOP_HEIGHT+vGame.getSpacing());
+                hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
                 this.getChildren().add(hOvrLabel);
-                
-                hOvrButton.setMinSize(GRID_WIDTH,GRID_WIDTH/2);
+
+                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
                 hOvrButton.setSpacing(10);
-                Button bContinue=new Button("Keep going");
+                Button bContinue = new Button("Keep going");
                 bContinue.getStyleClass().add("try");
-                bContinue.setOnAction(e-> getChildren().removeAll(hOvrLabel,hOvrButton) );
-                Button bTry=new Button("Try again");
+                bContinue.setOnAction(e -> getChildren().removeAll(hOvrLabel, hOvrButton));
+                Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
-                bTry.setOnAction(e-> resetGame() );
+                bTry.setOnAction(e -> resetGame());
                 hOvrButton.setAlignment(Pos.CENTER);
-                hOvrButton.getChildren().setAll(bContinue,bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT+vGame.getSpacing()+GRID_WIDTH/2);
+                hOvrButton.getChildren().setAll(bContinue, bTry);
+                hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
     }
 
-    private void resetGame(){
+    private void resetGame() {
         gameGrid.clear();
         // THIS DOESN'T WORK!!! It only removes half of the list!
         // grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
         List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
         grid.getChildren().removeAll(collect);
-        
-        this.getChildren().removeAll(hOvrLabel,hOvrButton);
+
+        this.getChildren().removeAll(hOvrLabel, hOvrButton);
         score.set(0);
         won.set(false);
         over.set(false);
         initializeGrid();
     }
+
     private void redrawTiles() {
 //        grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
         gameGrid.values().forEach(t -> {
@@ -354,10 +368,10 @@ public class GameManager extends Group {
             grid.getChildren().add(t);
         });
     }
-    
+
     private Timeline animateScore(String v1) {
         final Timeline timeline = new Timeline();
-        lblPoints.setText("+"+v1);
+        lblPoints.setText("+" + v1);
         lblPoints.setOpacity(1);
         lblPoints.setLayoutX(400);
         lblPoints.setLayoutY(20);
@@ -374,42 +388,9 @@ public class GameManager extends Group {
         return timeline;
     }
 
-//    private void animateWinner() {
-//        Logger.getLogger(this.getClass().getName()).info("WINNER!");
-//        ParallelTransition pt = new ParallelTransition();
-//        gameGrid.values().stream().filter(t -> t != null).forEach(t -> {
-//            FadeTransition ft = new FadeTransition();
-//            ft.setDuration(Duration.millis(200));
-//            ft.setNode(t);
-//            ft.setFromValue(1.0);
-//            ft.setToValue(0.1);
-//            ft.setCycleCount(4);
-//            pt.getChildren().add(ft);
-//        });
-//        pt.play();
-//    }
-
     interface AddTile {
 
         void add(int value, int x, int y);
-    }
-
-    /**
-     * method to use for debugging
-     */
-    private void __initializeGrid() {
-        AddTile addTile = (int value, int x, int y) -> {
-            Tile tile = Tile.newTile(value);
-            tile.setLocation(new Location(x, y));
-            gameGrid.put(tile.getLocation(), tile);
-        };
-
-        addTile.add(128, 0, 0);
-        addTile.add(512, 0, 1);
-        addTile.add(1024, 1, 0);
-        addTile.add(2048, 1, 1);
-        
-        redrawTiles();
     }
 
     private void initializeGrid() {
@@ -485,8 +466,8 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-        timeline.setOnFinished(e->{
-            if(!findMoreMovements()){
+        timeline.setOnFinished(e -> {
+            if (!findMoreMovements()) {
                 over.set(true);
             }
         });

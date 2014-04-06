@@ -14,7 +14,7 @@ public class Tile extends Label {
     private Boolean merged;
 
     public static Tile newRandomTile() {
-        int value = new Random().nextDouble()<0.9 ? 2 : 4;
+        int value = new Random().nextDouble() < 0.9 ? 2 : 4;
         return new Tile(value);
     }
 
@@ -31,7 +31,7 @@ public class Tile extends Label {
         setAlignment(Pos.CENTER);
 
         this.value = value;
-        this.merged=false;
+        this.merged = false;
         setText(value.toString());
         getStyleClass().add("tile-" + value);
     }
@@ -40,7 +40,7 @@ public class Tile extends Label {
         getStyleClass().remove("tile-" + value);
         this.value += another.getValue();
         setText(value.toString());
-        merged=true;
+        merged = true;
         getStyleClass().add("tile-" + value);
     }
 
@@ -65,7 +65,7 @@ public class Tile extends Label {
         return merged;
     }
 
-    public void clearMerge(){
-        merged=false;
+    public void clearMerge() {
+        merged = false;
     }
 }
