@@ -14,7 +14,7 @@ public class Tile extends Label {
     private Boolean merged;
 
     public static Tile newRandomTile() {
-        int value = new Random().nextBoolean() ? 2 : 4;
+        int value = new Random().nextDouble()<0.9 ? 2 : 4;
         return new Tile(value);
     }
 
