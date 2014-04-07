@@ -66,7 +66,6 @@ public class GameManager extends Group {
     private final HBox hOvrButton = new HBox();
     private final List<Integer> traversalX;
     private final List<Integer> traversalY;
-    private final boolean[] movedProperty = new boolean[]{false};
     final Set<Tile> mergedToBeRemoved = new HashSet<>();
     ParallelTransition parallelTransition = new ParallelTransition();
 
@@ -95,10 +94,9 @@ public class GameManager extends Group {
             }
         }
 
-        movedProperty[0] = false;
         points.set(0);
 
-        sortAndTraverseGrid(direction, (int x, int y) -> {
+        int tilesMoved=sortAndTraverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -119,13 +117,13 @@ public class GameManager extends Group {
                 parallelTransition.getChildren().add(hideTileToBeMerged(tile));
                 mergedToBeRemoved.add(tile);
 
-                movedProperty[0] = true;
                 points.set(points.get() + tileToBeMerged.getValue());
                 score.set(score.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
                     won.set(true);
                 }
+                return 1;
             } else if (farthestLocation.equals(tile.getLocation()) == false) {
                 parallelTransition.getChildren().add(animateTile(tile, farthestLocation));
 
@@ -133,12 +131,9 @@ public class GameManager extends Group {
                 gameGrid.replace(tile.getLocation(), null);
                 tile.setLocation(farthestLocation);
 
-                movedProperty[0] = true;
-            }
-
-            if (movedProperty[0]) {
                 return 1;
             }
+
             return 0;
         });
 
@@ -155,7 +150,7 @@ public class GameManager extends Group {
             grid.getChildren().removeAll(mergedToBeRemoved); // better code
             // below a code to demonstrate use of lambda and stream API
             // mergedToBeRemoved.forEach(grid.getChildren()::remove); 
-            if (movedProperty[0]) {
+            if (tilesMoved>0) {
                 animateRandomTileAdded();
             }
             mergedToBeRemoved.clear();
@@ -182,7 +177,8 @@ public class GameManager extends Group {
     }
 
     private int funcResult=0;
-    private void sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
+    private int sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
+        
         if (d.getX() == 1) {
             Collections.sort(traversalX, Collections.reverseOrder());
         } else {
@@ -201,10 +197,11 @@ public class GameManager extends Group {
                 funcResult+=func.applyAsInt(t_x, t_y);
             });
         });
+        return funcResult;
     }
 
     // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
-    private int pairsOfMergeableTiles=0;
+    private int numberOfMergeableTiles=0;
     private boolean findMoreMovements() {
 
         if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
@@ -212,9 +209,9 @@ public class GameManager extends Group {
             return true;
         }
         
-        pairsOfMergeableTiles=0;
-        Stream.of(Direction.values()).forEach(direction->{
-            sortAndTraverseGrid(direction, (x, y) -> {
+        numberOfMergeableTiles=0;
+        Stream.of(Direction.values()).parallel().forEach(direction->{
+            int mergeableFound=sortAndTraverseGrid(direction, (x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
                 if (tile != null) {
@@ -230,10 +227,9 @@ public class GameManager extends Group {
                 }
                 return 0;
             });
-            pairsOfMergeableTiles+=funcResult/2; //up||down, left||rigth as one
+            numberOfMergeableTiles+=mergeableFound;
         });
-//        System.out.println("Pairs: "+pairsOfMergeableTiles);
-        return pairsOfMergeableTiles>0;
+        return numberOfMergeableTiles>0;
     }
 
     private void createScore() {
