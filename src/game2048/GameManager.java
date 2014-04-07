@@ -50,11 +50,11 @@ public class GameManager extends Group {
     private final int gridSize;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
-    private final BooleanProperty won = new SimpleBooleanProperty(false);
-    private final BooleanProperty over = new SimpleBooleanProperty(false);
+    private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private volatile boolean movingTiles = false;
-    private final IntegerProperty score = new SimpleIntegerProperty(0);
-    private final IntegerProperty points = new SimpleIntegerProperty(0);
+    private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
+    private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
 
     private final VBox vGame = new VBox(50);
     private final HBox hTop = new HBox(0);
@@ -94,7 +94,7 @@ public class GameManager extends Group {
             }
         }
 
-        points.set(0);
+        gameMovePoints.set(0);
 
         int tilesMoved = sortAndTraverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
@@ -117,11 +117,11 @@ public class GameManager extends Group {
                 parallelTransition.getChildren().add(hideTileToBeMerged(tile));
                 mergedToBeRemoved.add(tile);
 
-                points.set(points.get() + tileToBeMerged.getValue());
-                score.set(score.get() + tileToBeMerged.getValue());
+                gameMovePoints.set(gameMovePoints.get() + tileToBeMerged.getValue());
+                gameScoreProperty.set(gameScoreProperty.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                    won.set(true);
+                    gameWonProperty.set(true);
                 }
                 return 1;
             } else if (farthestLocation.equals(tile.getLocation()) == false) {
@@ -137,8 +137,8 @@ public class GameManager extends Group {
             return 0;
         });
 
-        if (points.get() > 0) {
-            animateScore(points.getValue().toString()).play();
+        if (gameMovePoints.get() > 0) {
+            animateScore(gameMovePoints.getValue().toString()).play();
         }
 
         // parallelTransition.getChildren().add(animateRandomTileAdded());
@@ -232,7 +232,10 @@ public class GameManager extends Group {
                 }
                 return 0;
             });
-            numberOfMergeableTiles += mergeableFound;
+
+            synchronized (gameGrid) {
+                numberOfMergeableTiles += mergeableFound;
+            }
         });
         return numberOfMergeableTiles > 0;
     }
@@ -251,7 +254,7 @@ public class GameManager extends Group {
         Label lblTit = new Label("SCORE");
         lblTit.getStyleClass().add("titScore");
         lblScore.getStyleClass().add("score");
-        lblScore.textProperty().bind(score.asString());
+        lblScore.textProperty().bind(gameScoreProperty.asString());
         vScore.getChildren().addAll(lblTit, lblScore);
 
         hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScore);
@@ -263,6 +266,7 @@ public class GameManager extends Group {
         getChildren().add(vGame);
 
         lblPoints.getStyleClass().add("points");
+
         getChildren().add(lblPoints);
 
     }
@@ -294,7 +298,7 @@ public class GameManager extends Group {
         hBottom.getChildren().add(grid);
         vGame.getChildren().add(hBottom);
 
-        over.addListener((ov, b, b1) -> {
+        gameOverProperty.addListener((ov, b, b1) -> {
             if (b1) {
                 hOvrLabel.getStyleClass().setAll("over");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -316,7 +320,7 @@ public class GameManager extends Group {
             }
         });
 
-        won.addListener((ov, b, b1) -> {
+        gameWonProperty.addListener((ov, b, b1) -> {
             if (b1) {
                 hOvrLabel.getStyleClass().setAll("won");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -345,20 +349,20 @@ public class GameManager extends Group {
 
     private void resetGame() {
         gameGrid.clear();
-        // THIS DOESN'T WORK!!! It only removes half of the list!
-        // grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
+
         List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
         grid.getChildren().removeAll(collect);
 
         this.getChildren().removeAll(hOvrLabel, hOvrButton);
-        score.set(0);
-        won.set(false);
-        over.set(false);
+
+        gameScoreProperty.set(0);
+        gameWonProperty.set(false);
+        gameOverProperty.set(false);
+
         initializeGrid();
     }
 
-    private void redrawTiles() {
-//        grid.getChildren().filtered(c -> c instanceof Tile).forEach(grid.getChildren()::remove);
+    private void redrawTilesInGameGrid() {
         gameGrid.values().forEach(t -> {
             double layoutX = t.getLocation().getLayoutX(CELL_SIZE) - (t.getMinWidth() / 2);
             double layoutY = t.getLocation().getLayoutY(CELL_SIZE) - (t.getMinHeight() / 2);
@@ -416,7 +420,7 @@ public class GameManager extends Group {
             gameGrid.put(t.getLocation(), t);
         });
 
-        redrawTiles();
+        redrawTilesInGameGrid();
     }
 
     private void animateRandomTileAdded() {
@@ -468,7 +472,7 @@ public class GameManager extends Group {
         timeline.getKeyFrames().add(kfY);
         timeline.setOnFinished(e -> {
             if (!findMoreMovements()) {
-                over.set(true);
+                gameOverProperty.set(true);
             }
         });
         return timeline;
