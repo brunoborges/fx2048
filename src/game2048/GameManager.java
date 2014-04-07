@@ -201,15 +201,20 @@ public class GameManager extends Group {
     }
 
     // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
-    private int numberOfMergeableTiles = 0;
+    private volatile int numberOfMergeableTiles = 0;
 
     private boolean findMoreMovements() {
-        if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
+        if (gameGrid.values()
+                .parallelStream()
+                .filter(t -> t != null)
+                .collect(Collectors.toList())
+                .size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
             // there are empty cells
             return true;
         }
 
         numberOfMergeableTiles = 0;
+
         Stream.of(Direction.values()).parallel().forEach(direction -> {
             int mergeableFound = sortAndTraverseGrid(direction, (x, y) -> {
                 Location thisloc = new Location(x, y);
