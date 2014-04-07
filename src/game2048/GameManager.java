@@ -52,7 +52,7 @@ public class GameManager extends Group {
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty won = new SimpleBooleanProperty(false);
     private final BooleanProperty over = new SimpleBooleanProperty(false);
-    private volatile boolean moving = false;
+    private volatile boolean movingTiles = false;
     private final IntegerProperty score = new SimpleIntegerProperty(0);
     private final IntegerProperty points = new SimpleIntegerProperty(0);
 
@@ -89,14 +89,14 @@ public class GameManager extends Group {
 
     public void move(Direction direction) {
         synchronized (gameGrid) {
-            if (moving) {
+            if (movingTiles) {
                 return;
             }
         }
 
         points.set(0);
 
-        int tilesMoved=sortAndTraverseGrid(direction, (int x, int y) -> {
+        int tilesMoved = sortAndTraverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -144,13 +144,13 @@ public class GameManager extends Group {
         // parallelTransition.getChildren().add(animateRandomTileAdded());
         parallelTransition.setOnFinished(e -> {
             synchronized (gameGrid) {
-                moving = false;
+                movingTiles = false;
             }
 
             grid.getChildren().removeAll(mergedToBeRemoved); // better code
             // below a code to demonstrate use of lambda and stream API
             // mergedToBeRemoved.forEach(grid.getChildren()::remove); 
-            if (tilesMoved>0) {
+            if (tilesMoved > 0) {
                 animateRandomTileAdded();
             }
             mergedToBeRemoved.clear();
@@ -159,7 +159,9 @@ public class GameManager extends Group {
             gameGrid.values().stream().filter(t -> t != null).forEach(Tile::clearMerge);
         });
 
-        moving = true;
+        synchronized (gameGrid) {
+            movingTiles = true;
+        }
 
         parallelTransition.play();
         parallelTransition.getChildren().clear();
@@ -176,42 +178,40 @@ public class GameManager extends Group {
         return farthest;
     }
 
-    private int funcResult=0;
+    private int funcResult = 0; // lambda expressions don't accept manipulate local variables
+
     private int sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
-        
-        if (d.getX() == 1) {
-            Collections.sort(traversalX, Collections.reverseOrder());
-        } else {
-            Collections.sort(traversalX);
-        }
+        Collections.sort(traversalX, d.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+        Collections.sort(traversalY, d.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
 
-        if (d.getY() == 1) {
-            Collections.sort(traversalY, Collections.reverseOrder());
-        } else {
-            Collections.sort(traversalY);
-        }
-
-        funcResult=0;
+        // lambda expressions can't manipulate non-final local variables
+        // non-final field (instance) variables are fine
+        // we could use a final SimpleIntegerProperty instead
+        // final SimpleIntegerProperty intProperty = new SimpleIntegerProperty();
+        funcResult = 0;
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
-                funcResult+=func.applyAsInt(t_x, t_y);
+                // intProperty.add(func.applyAsInt(t_x, t_y));
+                funcResult += func.applyAsInt(t_x, t_y);
             });
         });
+
+        // return intProperty.get();
         return funcResult;
     }
 
     // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
-    private int numberOfMergeableTiles=0;
-    private boolean findMoreMovements() {
+    private int numberOfMergeableTiles = 0;
 
+    private boolean findMoreMovements() {
         if (gameGrid.values().stream().filter(t -> t != null).collect(Collectors.toList()).size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
             // there are empty cells
             return true;
         }
-        
-        numberOfMergeableTiles=0;
-        Stream.of(Direction.values()).parallel().forEach(direction->{
-            int mergeableFound=sortAndTraverseGrid(direction, (x, y) -> {
+
+        numberOfMergeableTiles = 0;
+        Stream.of(Direction.values()).parallel().forEach(direction -> {
+            int mergeableFound = sortAndTraverseGrid(direction, (x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
                 if (tile != null) {
@@ -227,9 +227,9 @@ public class GameManager extends Group {
                 }
                 return 0;
             });
-            numberOfMergeableTiles+=mergeableFound;
+            numberOfMergeableTiles += mergeableFound;
         });
-        return numberOfMergeableTiles>0;
+        return numberOfMergeableTiles > 0;
     }
 
     private void createScore() {
