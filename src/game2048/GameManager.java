@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.IntBinaryOperator;
@@ -200,16 +201,11 @@ public class GameManager extends Group {
         return funcResult;
     }
 
-    // must find a better implementation to find available moves... slows down UI animation _a lot_ :-(
     private volatile int numberOfMergeableTiles = 0;
 
     private boolean findMoreMovements() {
-        if (gameGrid.values()
-                .parallelStream()
-                .filter(t -> t != null)
-                .collect(Collectors.toList())
-                .size() < DEFAULT_GRID_SIZE * DEFAULT_GRID_SIZE) {
-            // there are empty cells
+        if (gameGrid.values().parallelStream().anyMatch(Objects::isNull)) {
+            // there are empty "null" cells
             return true;
         }
 
@@ -363,7 +359,7 @@ public class GameManager extends Group {
     }
 
     private void redrawTilesInGameGrid() {
-        gameGrid.values().forEach(t -> {
+        gameGrid.values().stream().filter(Objects::nonNull).forEach(t -> {
             double layoutX = t.getLocation().getLayoutX(CELL_SIZE) - (t.getMinWidth() / 2);
             double layoutY = t.getLocation().getLayoutY(CELL_SIZE) - (t.getMinHeight() / 2);
 
@@ -398,6 +394,13 @@ public class GameManager extends Group {
     }
 
     private void initializeGrid() {
+        // initialize all cells in gameGrid map to null
+        sortAndTraverseGrid(Direction.DOWN, (x,y)->{
+            Location thisloc = new Location(x, y);
+            gameGrid.put(thisloc,null);
+            return 0;
+        });
+        
         Tile tile0 = Tile.newRandomTile();
         List<Location> randomLocs = new ArrayList<>(locations);
         Collections.shuffle(randomLocs);
