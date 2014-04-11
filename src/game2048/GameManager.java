@@ -56,8 +56,6 @@ public class GameManager extends Group {
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
-    private final List<Integer> traversalX;
-    private final List<Integer> traversalY;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
 
@@ -79,9 +77,6 @@ public class GameManager extends Group {
         this.gameGrid = new HashMap<>();
         this.gridSize = gridSize;
 
-        traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-        traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-
         createScore();
         createGrid();
         initializeGrid();
@@ -98,10 +93,7 @@ public class GameManager extends Group {
 
         gameMovePoints.set(0);
 
-        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-
-        int tilesMoved = sortAndTraverseGrid(direction, (int x, int y) -> {
+        final int tilesWereMoved = traverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -118,7 +110,7 @@ public class GameManager extends Group {
                 gameGrid.put(nextLocation, tileToBeMerged);
                 gameGrid.replace(tile.getLocation(), null);
 
-                parallelTransition.getChildren().add(animateTile(tile, tileToBeMerged.getLocation()));
+                parallelTransition.getChildren().add(animateExistingTile(tile, tileToBeMerged.getLocation()));
                 parallelTransition.getChildren().add(hideTileToBeMerged(tile));
                 mergedToBeRemoved.add(tile);
 
@@ -130,10 +122,11 @@ public class GameManager extends Group {
                 }
                 return 1;
             } else if (farthestLocation.equals(tile.getLocation()) == false) {
-                parallelTransition.getChildren().add(animateTile(tile, farthestLocation));
+                parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
 
                 gameGrid.put(farthestLocation, tile);
                 gameGrid.replace(tile.getLocation(), null);
+
                 tile.setLocation(farthestLocation);
 
                 return 1;
@@ -153,13 +146,12 @@ public class GameManager extends Group {
 
             grid.getChildren().removeAll(mergedToBeRemoved);
 
-            // if there is a random available location, add a new tile
+            // game is over if there is no more moves
             Location randomAvailableLocation = findRandomAvailableLocation();
-            if (randomAvailableLocation != null) {
-                addAndAnimateRandomTile(randomAvailableLocation);
-            } else if (!findMoreMovements()) {
-                // else there are no more movements, game over
+            if (!mergeMovementsAvailable() && randomAvailableLocation == null) {
                 gameOverProperty.set(true);
+            } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
+                addAndAnimateRandomTile(randomAvailableLocation);
             }
 
             mergedToBeRemoved.clear();
@@ -187,58 +179,50 @@ public class GameManager extends Group {
         return farthest;
     }
 
-    private int funcResult = 0; // lambda expressions don't accept manipulate local variables
+    private int traverseGrid(Direction direction, IntBinaryOperator func) {
+        List<Integer> traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+        List<Integer> traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
 
-    private int sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
-        // lambda expressions can't manipulate non-final local variables
-        // non-final field (instance) variables are fine
-        // we could use a final SimpleIntegerProperty instead
-        // final SimpleIntegerProperty intProperty = new SimpleIntegerProperty();
-        funcResult = 0;
+        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+
+        int[] funcResult = new int[]{0};
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
-                // intProperty.add(func.applyAsInt(t_x, t_y));
-                funcResult += func.applyAsInt(t_x, t_y);
+                funcResult[0] += func.applyAsInt(t_x, t_y);
             });
         });
 
-        // return intProperty.get();
-        return funcResult;
+        return funcResult[0];
     }
 
-    private volatile int numberOfMergeableTiles = 0;
-
-    private boolean findMoreMovements() {
-        if (gameGrid.values().parallelStream().anyMatch(Objects::isNull)) {
-            // there are empty "null" cells
-            return true;
-        }
-
-        numberOfMergeableTiles = 0;
+    private boolean mergeMovementsAvailable() {
+        final SimpleBooleanProperty foundMergeableTile = new SimpleBooleanProperty(false);
 
         Stream.of(Direction.values()).parallel().forEach(direction -> {
-            int mergeableFound = sortAndTraverseGrid(direction, (x, y) -> {
+            int mergeableFound = traverseGrid(direction, (x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
+
                 if (tile != null) {
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
                     if (nextLocation.isValidFor(gridSize)) {
                         Tile tileToBeMerged = gameGrid.get(nextLocation);
-                        if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue())) {
-                            // Found two tiles that can be merged
-                            // this could be a HINT: System.out.println("tiles: "+tileToBeMerged+" "+tile);
+                        if (tile.isMergeable(tileToBeMerged)) {
                             return 1;
                         }
                     }
                 }
+
                 return 0;
             });
 
-            synchronized (gameGrid) {
-                numberOfMergeableTiles += mergeableFound;
+            if (mergeableFound > 0) {
+                foundMergeableTile.set(true);
             }
         });
-        return numberOfMergeableTiles > 0;
+
+        return foundMergeableTile.getValue();
     }
 
     private void createScore() {
@@ -400,7 +384,7 @@ public class GameManager extends Group {
 
     private void initializeGrid() {
         // initialize all cells in gameGrid map to null
-        sortAndTraverseGrid(Direction.DOWN, (x, y) -> {
+        traverseGrid(Direction.DOWN, (x, y) -> {
             Location thisloc = new Location(x, y);
             gameGrid.put(thisloc, null);
             return 0;
@@ -439,17 +423,20 @@ public class GameManager extends Group {
      */
     private Location findRandomAvailableLocation() {
         List<Location> availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
+
         if (availableLocations.isEmpty()) {
             return null;
         }
+
         Collections.shuffle(availableLocations);
         Location randomLocation = availableLocations.get(new Random().nextInt(availableLocations.size()));
         return randomLocation;
     }
 
-    private boolean addAndAnimateRandomTile(Location randomLocation) {
+    private void addAndAnimateRandomTile(Location randomLocation) {
         Tile tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
+
         double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
         double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
 
@@ -457,15 +444,14 @@ public class GameManager extends Group {
         tile.setLayoutY(layoutY);
         tile.setScaleX(0);
         tile.setScaleY(0);
-        gameGrid.put(tile.getLocation(), tile);
 
+        gameGrid.put(tile.getLocation(), tile);
         grid.getChildren().add(tile);
 
-        animateNewTile(tile).play();
-        return true;
+        animateNewlyAddedTile(tile).play();
     }
 
-    private Timeline animateTile(Tile tile, Location newLocation) {
+    private Timeline animateExistingTile(Tile tile, Location newLocation) {
         final Timeline timeline = new Timeline();
         final KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
         final KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
@@ -480,7 +466,7 @@ public class GameManager extends Group {
         return timeline;
     }
 
-    private Timeline animateNewTile(Tile tile) {
+    private Timeline animateNewlyAddedTile(Tile tile) {
         final Timeline timeline = new Timeline();
         final KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
         final KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
@@ -491,6 +477,7 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
+
         return timeline;
     }
 
