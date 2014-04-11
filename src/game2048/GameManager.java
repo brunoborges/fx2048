@@ -48,15 +48,20 @@ public class GameManager extends Group {
     private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
 
+    private volatile boolean movingTiles = false;
     private final int gridSize;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
-    private volatile boolean movingTiles = false;
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
+    private final List<Integer> traversalX;
+    private final List<Integer> traversalY;
+    private final Set<Tile> mergedToBeRemoved = new HashSet<>();
+    private final ParallelTransition parallelTransition = new ParallelTransition();
 
+    // User Interface controls
     private final VBox vGame = new VBox(50);
     private final HBox hTop = new HBox(0);
     private final Label lblScore = new Label("0");
@@ -65,10 +70,6 @@ public class GameManager extends Group {
     private final Group grid = new Group();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
-    private final List<Integer> traversalX;
-    private final List<Integer> traversalY;
-    final Set<Tile> mergedToBeRemoved = new HashSet<>();
-    ParallelTransition parallelTransition = new ParallelTransition();
 
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
@@ -395,12 +396,12 @@ public class GameManager extends Group {
 
     private void initializeGrid() {
         // initialize all cells in gameGrid map to null
-        sortAndTraverseGrid(Direction.DOWN, (x,y)->{
+        sortAndTraverseGrid(Direction.DOWN, (x, y) -> {
             Location thisloc = new Location(x, y);
-            gameGrid.put(thisloc,null);
+            gameGrid.put(thisloc, null);
             return 0;
         });
-        
+
         Tile tile0 = Tile.newRandomTile();
         List<Location> randomLocs = new ArrayList<>(locations);
         Collections.shuffle(randomLocs);
