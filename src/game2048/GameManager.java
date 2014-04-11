@@ -146,18 +146,22 @@ public class GameManager extends Group {
             animateScore(gameMovePoints.getValue().toString()).play();
         }
 
-        // parallelTransition.getChildren().add(animateRandomTileAdded());
         parallelTransition.setOnFinished(e -> {
             synchronized (gameGrid) {
                 movingTiles = false;
             }
 
-            grid.getChildren().removeAll(mergedToBeRemoved); // better code
-            // below a code to demonstrate use of lambda and stream API
-            // mergedToBeRemoved.forEach(grid.getChildren()::remove); 
-            if (tilesMoved > 0) {
-                animateRandomTileAdded();
+            grid.getChildren().removeAll(mergedToBeRemoved);
+
+            // if there is a random available location, add a new tile
+            Location randomAvailableLocation = findRandomAvailableLocation();
+            if (randomAvailableLocation != null) {
+                addAndAnimateRandomTile(randomAvailableLocation);
+            } else if (!findMoreMovements()) {
+                // else there are no more movements, game over
+                gameOverProperty.set(true);
             }
+
             mergedToBeRemoved.clear();
 
             // reset merged after each movement
@@ -427,11 +431,23 @@ public class GameManager extends Group {
         redrawTilesInGameGrid();
     }
 
-    private void animateRandomTileAdded() {
+    /**
+     * Finds a random location or returns null if none exist
+     *
+     * @return a random location or <code>null</code> if there are no more
+     * locations available
+     */
+    private Location findRandomAvailableLocation() {
         List<Location> availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
+        if (availableLocations.isEmpty()) {
+            return null;
+        }
         Collections.shuffle(availableLocations);
         Location randomLocation = availableLocations.get(new Random().nextInt(availableLocations.size()));
+        return randomLocation;
+    }
 
+    private boolean addAndAnimateRandomTile(Location randomLocation) {
         Tile tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
         double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
@@ -446,6 +462,7 @@ public class GameManager extends Group {
         grid.getChildren().add(tile);
 
         animateNewTile(tile).play();
+        return true;
     }
 
     private Timeline animateTile(Tile tile, Location newLocation) {
@@ -474,11 +491,6 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-        timeline.setOnFinished(e -> {
-            if (!findMoreMovements()) {
-                gameOverProperty.set(true);
-            }
-        });
         return timeline;
     }
 
