@@ -97,6 +97,9 @@ public class GameManager extends Group {
 
         points.set(0);
 
+        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+
         int tilesMoved = sortAndTraverseGrid(direction, (int x, int y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
@@ -182,9 +185,6 @@ public class GameManager extends Group {
     private int funcResult = 0; // lambda expressions don't accept manipulate local variables
 
     private int sortAndTraverseGrid(Direction d, IntBinaryOperator func) {
-        Collections.sort(traversalX, d.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-        Collections.sort(traversalY, d.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-
         // lambda expressions can't manipulate non-final local variables
         // non-final field (instance) variables are fine
         // we could use a final SimpleIntegerProperty instead
