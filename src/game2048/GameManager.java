@@ -161,7 +161,7 @@ public class GameManager extends Group {
             mergedToBeRemoved.clear();
 
             // reset merged after each movement
-            gameGrid.values().stream().filter(t -> t != null).forEach(Tile::clearMerge);
+            gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
         });
 
         synchronized (gameGrid) {
