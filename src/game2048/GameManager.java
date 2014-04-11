@@ -456,7 +456,7 @@ public class GameManager extends Group {
         final KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
         final KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
 
-        Duration animationDuration = Duration.millis(200);
+        Duration animationDuration = Duration.millis(125);
         final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
         final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
 
@@ -471,7 +471,7 @@ public class GameManager extends Group {
         final KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
         final KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
 
-        Duration animationDuration = Duration.millis(150);
+        Duration animationDuration = Duration.millis(125);
         final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
         final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
 
