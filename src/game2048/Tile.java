@@ -68,4 +68,8 @@ public class Tile extends Label {
     public void clearMerge() {
         merged = false;
     }
+
+    public boolean isMergeable(Tile anotherTile) {
+        return anotherTile != null && getValue().equals(anotherTile.getValue());
+    }
 }
