@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -191,14 +192,14 @@ public class GameManager extends Group {
     }
 
     private int traverseGrid(IntBinaryOperator func) {
-        int[] funcResult = new int[]{0};
+        AtomicInteger at = new AtomicInteger();
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
-                funcResult[0] += func.applyAsInt(t_x, t_y);
+                at.addAndGet(func.applyAsInt(t_x, t_y));
             });
         });
 
-        return funcResult[0];
+        return at.get();
     }
 
     private boolean mergeMovementsAvailable() {
