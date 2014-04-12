@@ -50,6 +50,8 @@ public class GameManager extends Group {
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
+    private final List<Integer> traversalX;
+    private final List<Integer> traversalY;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
@@ -77,7 +79,9 @@ public class GameManager extends Group {
     public GameManager(int gridSize) {
         this.gameGrid = new HashMap<>();
         this.gridSize = gridSize;
-
+        this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+        this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
+        
         createScore();
         createGrid();
         initializeGrid();
@@ -98,7 +102,9 @@ public class GameManager extends Group {
 
         gameMovePoints.set(0);
 
-        final int tilesWereMoved = traverseGrid(direction, (int x, int y) -> {
+        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
+        final int tilesWereMoved = traverseGrid((int x, int y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -183,14 +189,8 @@ public class GameManager extends Group {
 
         return farthest;
     }
-
-    private int traverseGrid(Direction direction, IntBinaryOperator func) {
-        List<Integer> traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-        List<Integer> traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-
-        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-
+        
+    private int traverseGrid(IntBinaryOperator func) {
         int[] funcResult = new int[]{0};
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
@@ -204,8 +204,8 @@ public class GameManager extends Group {
     private boolean mergeMovementsAvailable() {
         final SimpleBooleanProperty foundMergeableTile = new SimpleBooleanProperty(false);
 
-        Stream.of(Direction.values()).parallel().forEach(direction -> {
-            int mergeableFound = traverseGrid(direction, (x, y) -> {
+        Stream.of(Direction.UP,Direction.LEFT).parallel().forEach(direction -> {
+            int mergeableFound = traverseGrid((x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
 
@@ -226,7 +226,6 @@ public class GameManager extends Group {
                 foundMergeableTile.set(true);
             }
         });
-
         return foundMergeableTile.getValue();
     }
 
@@ -395,7 +394,7 @@ public class GameManager extends Group {
 
     private void initializeGrid() {
         // initialize all cells in gameGrid map to null
-        traverseGrid(Direction.DOWN, (x, y) -> {
+        traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             gameGrid.put(thisloc, null);
             return 0;
