@@ -58,7 +58,8 @@ public class GameManager extends Group {
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
-
+    private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
+    
     // User Interface controls
     private final VBox vGame = new VBox(50);
     private final HBox hTop = new HBox(0);
@@ -85,6 +86,10 @@ public class GameManager extends Group {
     }
 
     public void move(Direction direction) {
+        if(layerOnProperty.get()){
+            return;
+        }
+        
         synchronized (gameGrid) {
             if (movingTiles) {
                 return;
@@ -148,7 +153,7 @@ public class GameManager extends Group {
 
             // game is over if there is no more moves
             Location randomAvailableLocation = findRandomAvailableLocation();
-            if (!mergeMovementsAvailable() && randomAvailableLocation == null) {
+            if (randomAvailableLocation == null && !mergeMovementsAvailable()) {
                 gameOverProperty.set(true);
             } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
                 addAndAnimateRandomTile(randomAvailableLocation);
@@ -285,6 +290,7 @@ public class GameManager extends Group {
 
         gameOverProperty.addListener((ov, b, b1) -> {
             if (b1) {
+                layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("over");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
                 Label lblOver = new Label("Game over!");
@@ -307,6 +313,7 @@ public class GameManager extends Group {
 
         gameWonProperty.addListener((ov, b, b1) -> {
             if (b1) {
+                layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("won");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
                 Label lblWin = new Label("You win!");
@@ -320,7 +327,10 @@ public class GameManager extends Group {
                 hOvrButton.setSpacing(10);
                 Button bContinue = new Button("Keep going");
                 bContinue.getStyleClass().add("try");
-                bContinue.setOnAction(e -> getChildren().removeAll(hOvrLabel, hOvrButton));
+                bContinue.setOnAction(e -> {
+                    layerOnProperty.set(false);
+                    getChildren().removeAll(hOvrLabel, hOvrButton);
+                });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
                 bTry.setOnAction(e -> resetGame());
@@ -333,6 +343,7 @@ public class GameManager extends Group {
     }
 
     private void resetGame() {
+        layerOnProperty.set(false);                
         gameGrid.clear();
 
         List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
@@ -477,7 +488,12 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-
+        timeline.setOnFinished(e->{
+            // after last movement on full grid, check if there are movements available
+            if(gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+                gameOverProperty.set(true);
+            }
+        });
         return timeline;
     }
 
