@@ -195,7 +195,7 @@ public class GameManager extends Group {
         AtomicInteger at=new AtomicInteger(0);
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
-                at.set(at.get()+ func.applyAsInt(t_x, t_y));
+                at.addAndGet(func.applyAsInt(t_x, t_y));
             });
         });
 
