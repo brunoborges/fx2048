@@ -61,7 +61,7 @@ public class GameManager extends Group {
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
     private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
-    
+
     // User Interface controls
     private final VBox vGame = new VBox(50);
     private final HBox hTop = new HBox(0);
@@ -81,7 +81,7 @@ public class GameManager extends Group {
         this.gridSize = gridSize;
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
         this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-        
+
         createScore();
         createGrid();
         initializeGrid();
@@ -90,10 +90,10 @@ public class GameManager extends Group {
     }
 
     public void move(Direction direction) {
-        if(layerOnProperty.get()){
+        if (layerOnProperty.get()) {
             return;
         }
-        
+
         synchronized (gameGrid) {
             if (movingTiles) {
                 return;
@@ -189,7 +189,7 @@ public class GameManager extends Group {
 
         return farthest;
     }
-        
+
     private int traverseGrid(IntBinaryOperator func) {
         int[] funcResult = new int[]{0};
         traversalX.forEach(t_x -> {
@@ -204,7 +204,7 @@ public class GameManager extends Group {
     private boolean mergeMovementsAvailable() {
         final SimpleBooleanProperty foundMergeableTile = new SimpleBooleanProperty(false);
 
-        Stream.of(Direction.UP,Direction.LEFT).parallel().forEach(direction -> {
+        Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
             int mergeableFound = traverseGrid((x, y) -> {
                 Location thisloc = new Location(x, y);
                 Tile tile = gameGrid.get(thisloc);
@@ -226,6 +226,7 @@ public class GameManager extends Group {
                 foundMergeableTile.set(true);
             }
         });
+
         return foundMergeableTile.getValue();
     }
 
@@ -342,7 +343,7 @@ public class GameManager extends Group {
     }
 
     private void resetGame() {
-        layerOnProperty.set(false);                
+        layerOnProperty.set(false);
         gameGrid.clear();
 
         List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
@@ -487,9 +488,9 @@ public class GameManager extends Group {
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-        timeline.setOnFinished(e->{
+        timeline.setOnFinished(e -> {
             // after last movement on full grid, check if there are movements available
-            if(gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+            if (gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
                 gameOverProperty.set(true);
             }
         });
