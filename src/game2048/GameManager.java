@@ -65,11 +65,11 @@ public class GameManager extends Group {
 
     // User Interface controls
     private final VBox vGame = new VBox(50);
+    private final Group grid = new Group();
+
     private final HBox hTop = new HBox(0);
     private final Label lblScore = new Label("0");
     private final Label lblPoints = new Label();
-    private final HBox hBottom = new HBox();
-    private final Group grid = new Group();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
 
@@ -281,12 +281,14 @@ public class GameManager extends Group {
         grid.setManaged(false);
         grid.setLayoutX(BORDER_WIDTH);
         grid.setLayoutY(BORDER_WIDTH);
+
+        HBox hBottom = new HBox();
         hBottom.getStyleClass().add("backGrid");
         hBottom.setMinSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
-
         hBottom.getChildren().add(grid);
+
         vGame.getChildren().add(hBottom);
 
         gameOverProperty.addListener((ov, b, b1) -> {
