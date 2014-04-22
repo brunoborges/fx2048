@@ -3,6 +3,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
+            <extension file="remote-platform-impl.xml" id="remote-platform-1"/>
             <extension file="jfx-impl.xml" id="jfx3">
                 <dependency dependsOn="-jfx-copylibs" target="-post-jar"/>
                 <dependency dependsOn="-rebase-libs" target="-post-jar"/>
@@ -14,6 +15,7 @@
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>Game2048</name>
+            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.dir"/>
             </source-roots>
