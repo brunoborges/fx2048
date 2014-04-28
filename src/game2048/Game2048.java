@@ -46,6 +46,14 @@ public class Game2048 extends Application {
     private void addKeyHandler(Scene scene) {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, ke -> {
             KeyCode keyCode = ke.getCode();
+            if(keyCode.equals(KeyCode.S)){
+                gameManager.saveSession();
+                return;
+            }
+            if(keyCode.equals(KeyCode.R)){
+                gameManager.restoreSession();
+                return;
+            }
             if (keyCode.isArrowKey() == false) {
                 return;
             }

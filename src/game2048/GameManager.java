@@ -85,7 +85,7 @@ public class GameManager extends Group {
 
         createScore();
         createGrid();
-        initializeGrid();
+        initializeGrid(true);
 
         this.setManaged(false);
     }
@@ -306,7 +306,7 @@ public class GameManager extends Group {
                 hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().setAll("try");
-                bTry.setOnAction(e -> resetGame());
+                bTry.setOnAction(e -> resetGame(true));
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
                 hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
@@ -336,7 +336,7 @@ public class GameManager extends Group {
                 });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
-                bTry.setOnAction(e -> resetGame());
+                bTry.setOnAction(e -> resetGame(true));
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
                 hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
@@ -345,7 +345,7 @@ public class GameManager extends Group {
         });
     }
 
-    private void resetGame() {
+    private void resetGame(boolean begin) {
         layerOnProperty.set(false);
         gameGrid.clear();
 
@@ -358,7 +358,7 @@ public class GameManager extends Group {
         gameWonProperty.set(false);
         gameOverProperty.set(false);
 
-        initializeGrid();
+        initializeGrid(begin);
     }
 
     private void redrawTilesInGameGrid() {
@@ -396,13 +396,17 @@ public class GameManager extends Group {
         void add(int value, int x, int y);
     }
 
-    private void initializeGrid() {
+    private void initializeGrid(boolean begin) {
         // initialize all cells in gameGrid map to null
         traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             gameGrid.put(thisloc, null);
             return 0;
         });
+        
+        if(!begin){
+            return;
+        }
 
         Tile tile0 = Tile.newRandomTile();
         List<Location> randomLocs = new ArrayList<>(locations);
@@ -510,5 +514,24 @@ public class GameManager extends Group {
         timeline.getKeyFrames().add(kf);
 
         return timeline;
+    }
+    
+    public void saveSession(){
+        SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
+        sessionManager.saveSession(gameGrid, gameScoreProperty.getValue());
+    }
+    
+    public void restoreSession(){
+        SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
+        
+        resetGame(false);
+        int score=sessionManager.restoreSession(gameGrid);
+        if(score>=0){
+            gameScoreProperty.set(score);
+            redrawTilesInGameGrid();
+        } else {
+            // not session found, restart again
+            resetGame(true);
+        }
     }
 }
