@@ -3,9 +3,9 @@ package game2048;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -31,11 +31,15 @@ public class Game2048 extends Application {
         root.widthProperty().addListener(resize);
         root.heightProperty().addListener(resize);
 
-        Scene scene = new Scene(root, 600, 700);
+        Scene scene = new Scene(root, 600, 720);
+        // TODO: hide cursor if running with touchscreen
+        //scene.setCursor(Cursor.NONE); 
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
 
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitHint("");
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth());
@@ -44,13 +48,13 @@ public class Game2048 extends Application {
     }
 
     private void addKeyHandler(Scene scene) {
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, ke -> {
+        scene.setOnKeyPressed(ke -> {
             KeyCode keyCode = ke.getCode();
-            if(keyCode.equals(KeyCode.S)){
+            if (keyCode.equals(KeyCode.S)) {
                 gameManager.saveSession();
                 return;
             }
-            if(keyCode.equals(KeyCode.R)){
+            if (keyCode.equals(KeyCode.R)) {
                 gameManager.restoreSession();
                 return;
             }
