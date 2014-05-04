@@ -85,6 +85,8 @@ public class GameManager extends Group {
 
         createScore();
         createGrid();
+        initGameProperties();
+
         initializeGrid(true);
 
         this.setManaged(false);
@@ -259,18 +261,20 @@ public class GameManager extends Group {
         lblPoints.getStyleClass().add("points");
 
         getChildren().add(lblPoints);
-
     }
 
     private void createGrid() {
+        final double arcSize = CELL_SIZE / 6d;
+
         IntStream.range(0, gridSize)
                 .mapToObj(i -> IntStream.range(0, gridSize).mapToObj(j -> {
                     Location loc = new Location(i, j);
                     locations.add(loc);
 
                     Rectangle rect2 = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                    rect2.setArcHeight(CELL_SIZE / 6d);
-                    rect2.setArcWidth(CELL_SIZE / 6d);
+
+                    rect2.setArcHeight(arcSize);
+                    rect2.setArcWidth(arcSize);
                     rect2.getStyleClass().add("grid-cell");
                     return rect2;
                 }))
@@ -287,12 +291,15 @@ public class GameManager extends Group {
         hBottom.setMinSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
+
         hBottom.getChildren().add(grid);
 
         vGame.getChildren().add(hBottom);
+    }
 
-        gameOverProperty.addListener((ov, b, b1) -> {
-            if (b1) {
+    private void initGameProperties() {
+        gameOverProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
                 layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("over");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -317,8 +324,8 @@ public class GameManager extends Group {
             }
         });
 
-        gameWonProperty.addListener((ov, b, b1) -> {
-            if (b1) {
+        gameWonProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
                 layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("won");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -339,6 +346,7 @@ public class GameManager extends Group {
                 });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
+                bTry.setOnTouchPressed(e -> resetGame(true));
                 bTry.setOnAction(e -> resetGame(true));
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
