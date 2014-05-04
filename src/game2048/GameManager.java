@@ -306,7 +306,10 @@ public class GameManager extends Group {
                 hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().setAll("try");
+
+                bTry.setOnTouchPressed(e -> resetGame(true));
                 bTry.setOnAction(e -> resetGame(true));
+
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
                 hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
@@ -403,8 +406,8 @@ public class GameManager extends Group {
             gameGrid.put(thisloc, null);
             return 0;
         });
-        
-        if(!begin){
+
+        if (!begin) {
             return;
         }
 
@@ -515,18 +518,18 @@ public class GameManager extends Group {
 
         return timeline;
     }
-    
-    public void saveSession(){
+
+    public void saveSession() {
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue());
     }
-    
-    public void restoreSession(){
+
+    public void restoreSession() {
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
-        
+
         resetGame(false);
-        int score=sessionManager.restoreSession(gameGrid);
-        if(score>=0){
+        int score = sessionManager.restoreSession(gameGrid);
+        if (score >= 0) {
             gameScoreProperty.set(score);
             redrawTilesInGameGrid();
         } else {
