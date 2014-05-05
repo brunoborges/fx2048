@@ -1,6 +1,9 @@
 package game2048;
 
+import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.ConditionalFeature;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
@@ -32,19 +35,28 @@ public class Game2048 extends Application {
         root.heightProperty().addListener(resize);
 
         Scene scene = new Scene(root, 600, 720);
-        // TODO: hide cursor if running with touchscreen
-        //scene.setCursor(Cursor.NONE); 
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
 
-        primaryStage.setFullScreen(true);
-        primaryStage.setFullScreenExitHint("");
+        if (isARMDevice()) {
+            primaryStage.setFullScreen(true);
+            primaryStage.setFullScreenExitHint("");
+        }
+
+        if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
+            scene.setCursor(Cursor.NONE);
+        }
+
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth());
         primaryStage.setMinHeight(gameBounds.getHeight());
         primaryStage.show();
+    }
+
+    private boolean isARMDevice() {
+        return System.getProperty("os.arch").toUpperCase().contains("ARM");
     }
 
     private void addKeyHandler(Scene scene) {
