@@ -24,6 +24,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -65,7 +67,7 @@ public class GameManager extends Group {
 
     // User Interface controls
     private final VBox vGame = new VBox(50);
-    private final Group grid = new Group();
+    private final Group gridGroup = new Group();
 
     private final HBox hTop = new HBox(0);
     private final Label lblScore = new Label("0");
@@ -87,7 +89,7 @@ public class GameManager extends Group {
         createGrid();
         initGameProperties();
 
-        initializeGrid(true);
+        initializeGrid();
 
         this.setManaged(false);
     }
@@ -158,7 +160,7 @@ public class GameManager extends Group {
                 movingTiles = false;
             }
 
-            grid.getChildren().removeAll(mergedToBeRemoved);
+            gridGroup.getChildren().removeAll(mergedToBeRemoved);
 
             // game is over if there is no more moves
             Location randomAvailableLocation = findRandomAvailableLocation();
@@ -279,12 +281,12 @@ public class GameManager extends Group {
                     return rect2;
                 }))
                 .flatMap(s -> s)
-                .forEach(grid.getChildren()::add);
+                .forEach(gridGroup.getChildren()::add);
 
-        grid.getStyleClass().add("grid");
-        grid.setManaged(false);
-        grid.setLayoutX(BORDER_WIDTH);
-        grid.setLayoutY(BORDER_WIDTH);
+        gridGroup.getStyleClass().add("grid");
+        gridGroup.setManaged(false);
+        gridGroup.setLayoutX(BORDER_WIDTH);
+        gridGroup.setLayoutY(BORDER_WIDTH);
 
         HBox hBottom = new HBox();
         hBottom.getStyleClass().add("backGrid");
@@ -292,7 +294,7 @@ public class GameManager extends Group {
         hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
 
-        hBottom.getChildren().add(grid);
+        hBottom.getChildren().add(gridGroup);
 
         vGame.getChildren().add(hBottom);
     }
@@ -314,8 +316,8 @@ public class GameManager extends Group {
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().setAll("try");
 
-                bTry.setOnTouchPressed(e -> resetGame(true));
-                bTry.setOnAction(e -> resetGame(true));
+                bTry.setOnTouchPressed(e -> resetGame());
+                bTry.setOnAction(e -> resetGame());
 
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
@@ -346,8 +348,8 @@ public class GameManager extends Group {
                 });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
-                bTry.setOnTouchPressed(e -> resetGame(true));
-                bTry.setOnAction(e -> resetGame(true));
+                bTry.setOnTouchPressed(e -> resetGame());
+                bTry.setOnAction(e -> resetGame());
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
                 hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
@@ -356,22 +358,28 @@ public class GameManager extends Group {
         });
     }
 
-    private void resetGame(boolean begin) {
-        layerOnProperty.set(false);
+    private void clearGame() {
+        List<Node> collect = gridGroup.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
+        gridGroup.getChildren().removeAll(collect);
         gameGrid.clear();
+        getChildren().removeAll(hOvrLabel, hOvrButton);
 
-        List<Node> collect = grid.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
-        grid.getChildren().removeAll(collect);
-
-        this.getChildren().removeAll(hOvrLabel, hOvrButton);
-
+        layerOnProperty.set(false);
         gameScoreProperty.set(0);
         gameWonProperty.set(false);
         gameOverProperty.set(false);
 
-        initializeGrid(begin);
+        initializeLocationsInGameGrid();
     }
 
+    private void resetGame() {
+        clearGame();
+        initializeGrid();
+    }
+
+    /**
+     * Clears the grid and redraws all tiles in the <code>gameGrid</code> object
+     */
     private void redrawTilesInGameGrid() {
         gameGrid.values().stream().filter(Objects::nonNull).forEach(t -> {
             double layoutX = t.getLocation().getLayoutX(CELL_SIZE) - (t.getMinWidth() / 2);
@@ -379,7 +387,7 @@ public class GameManager extends Group {
 
             t.setLayoutX(layoutX);
             t.setLayoutY(layoutY);
-            grid.getChildren().add(t);
+            gridGroup.getChildren().add(t);
         });
     }
 
@@ -407,17 +415,19 @@ public class GameManager extends Group {
         void add(int value, int x, int y);
     }
 
-    private void initializeGrid(boolean begin) {
-        // initialize all cells in gameGrid map to null
+    /**
+     * Initializes all cells in gameGrid map to null
+     */
+    private void initializeLocationsInGameGrid() {
         traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             gameGrid.put(thisloc, null);
             return 0;
         });
+    }
 
-        if (!begin) {
-            return;
-        }
+    private void initializeGrid() {
+        initializeLocationsInGameGrid();
 
         Tile tile0 = Tile.newRandomTile();
         List<Location> randomLocs = new ArrayList<>(locations);
@@ -475,55 +485,57 @@ public class GameManager extends Group {
         tile.setScaleY(0);
 
         gameGrid.put(tile.getLocation(), tile);
-        grid.getChildren().add(tile);
+        gridGroup.getChildren().add(tile);
 
         animateNewlyAddedTile(tile).play();
     }
 
-    private Timeline animateExistingTile(Tile tile, Location newLocation) {
-        final Timeline timeline = new Timeline();
-        final KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
-        final KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
+    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(125);
 
-        Duration animationDuration = Duration.millis(125);
-        final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
-        final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
+    private Timeline animateExistingTile(Tile tile, Location newLocation) {
+        Timeline timeline = new Timeline();
+        KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
+        KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
+
+        KeyFrame kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
+        KeyFrame kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
 
         return timeline;
     }
+
+    // after last movement on full grid, check if there are movements available
+    private EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
+        if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+            this.gameOverProperty.set(true);
+        }
+    };
+
+    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
 
     private Timeline animateNewlyAddedTile(Tile tile) {
-        final Timeline timeline = new Timeline();
-        final KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
-        final KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
+        Timeline timeline = new Timeline();
+        KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
+        KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
 
-        Duration animationDuration = Duration.millis(125);
-        final KeyFrame kfX = new KeyFrame(animationDuration, kvX);
-        final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
+        KeyFrame kfX = new KeyFrame(ANIMATION_NEWLY_ADDED_TILE, kvX);
+        KeyFrame kfY = new KeyFrame(ANIMATION_NEWLY_ADDED_TILE, kvY);
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
-        timeline.setOnFinished(e -> {
-            // after last movement on full grid, check if there are movements available
-            if (gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
-                gameOverProperty.set(true);
-            }
-        });
+        timeline.setOnFinished(onFinishNewlyAddedTile);
         return timeline;
     }
 
+    private static final Duration ANIMATION_TILE_TO_BE_MERGED = Duration.millis(150);
+
     private Timeline hideTileToBeMerged(Tile tile) {
-        final Timeline timeline = new Timeline();
-        final KeyValue kv = new KeyValue(tile.opacityProperty(), 0);
-
-        Duration animationDuration = Duration.millis(150);
-        final KeyFrame kf = new KeyFrame(animationDuration, kv);
-
+        Timeline timeline = new Timeline();
+        KeyValue kv = new KeyValue(tile.opacityProperty(), 0);
+        KeyFrame kf = new KeyFrame(ANIMATION_TILE_TO_BE_MERGED, kv);
         timeline.getKeyFrames().add(kf);
-
         return timeline;
     }
 
@@ -535,14 +547,14 @@ public class GameManager extends Group {
     public void restoreSession() {
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
 
-        resetGame(false);
+        clearGame();
         int score = sessionManager.restoreSession(gameGrid);
         if (score >= 0) {
             gameScoreProperty.set(score);
             redrawTilesInGameGrid();
         } else {
             // not session found, restart again
-            resetGame(true);
+            resetGame();
         }
     }
 }
