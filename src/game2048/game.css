@@ -41,8 +41,7 @@
 .label {
     -fx-font-smoothing-type: lcd;
     -fx-smooth: true;
-    -fx-font-weight: bold;
-    -fx-font-family: 'sans-serif';
+    -fx-font-family: 'Clear Sans Bold';
 }
 
 .title {

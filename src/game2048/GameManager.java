@@ -16,9 +16,11 @@ import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
+import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -118,12 +120,13 @@ public class GameManager extends Group {
 
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
+                tileToBeMerged.toFront();
 
                 gameGrid.put(nextLocation, tileToBeMerged);
                 gameGrid.replace(tile.getLocation(), null);
 
                 parallelTransition.getChildren().add(animateExistingTile(tile, tileToBeMerged.getLocation()));
-                parallelTransition.getChildren().add(hideTileToBeMerged(tile));
+                parallelTransition.getChildren().add(animateMergedTile(tileToBeMerged));
                 mergedToBeRemoved.add(tile);
 
                 gameMovePoints.set(gameMovePoints.get() + tileToBeMerged.getValue());
@@ -503,19 +506,22 @@ public class GameManager extends Group {
         });
         return timeline;
     }
-
-    private Timeline hideTileToBeMerged(Tile tile) {
-        final Timeline timeline = new Timeline();
-        final KeyValue kv = new KeyValue(tile.opacityProperty(), 0);
-
-        Duration animationDuration = Duration.millis(150);
-        final KeyFrame kf = new KeyFrame(animationDuration, kv);
-
-        timeline.getKeyFrames().add(kf);
-
-        return timeline;
-    }
     
+    private SequentialTransition animateMergedTile(Tile tile) {
+        Duration animationDuration = Duration.millis(100);
+        final Timeline timeline0 = new Timeline();
+        timeline0.getKeyFrames().add(
+                new KeyFrame(animationDuration, // set end position at 40s
+                   new KeyValue(tile.scaleXProperty(), 1.2, Interpolator.EASE_IN),
+                   new KeyValue(tile.scaleYProperty(), 1.2, Interpolator.EASE_IN)));
+        final Timeline timeline1 = new Timeline();
+        timeline1.getKeyFrames().add(
+                new KeyFrame(animationDuration, // set end position at 40s
+                   new KeyValue(tile.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
+                   new KeyValue(tile.scaleYProperty(), 1.0, Interpolator.EASE_OUT)));
+        return new SequentialTransition(timeline0,timeline1);
+    }
+
     public void saveSession(){
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue());

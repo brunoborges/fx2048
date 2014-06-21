@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
@@ -17,6 +18,13 @@ public class Game2048 extends Application {
     private GameManager gameManager;
     private Bounds gameBounds;
 
+    @Override
+    public void init(){
+        // Downloaded from https://01.org/clear-sans/blogs
+        // The font may be used and redistributed under the terms of the Apache License, Version 2.0.
+        Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
+    }
+    
     @Override
     public void start(Stage primaryStage) {
         gameManager = new GameManager();
@@ -35,7 +43,7 @@ public class Game2048 extends Application {
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
-
+       
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth());
