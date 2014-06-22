@@ -510,7 +510,7 @@ public class GameManager extends Group {
     }
 
     // after last movement on full grid, check if there are movements available
-    private EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
+    private final EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
             this.gameOverProperty.set(true);
         }
@@ -532,16 +532,18 @@ public class GameManager extends Group {
         return timeline;
     }
     
+    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
+
+    // pop effect: increase tile scale to 120% at the middle, then go back to 100%
     private SequentialTransition animateMergedTile(Tile tile) {
-        Duration animationDuration = Duration.millis(100);
         final Timeline timeline0 = new Timeline();
         timeline0.getKeyFrames().add(
-                new KeyFrame(animationDuration, // set end position at 40s
+                new KeyFrame(ANIMATION_MERGED_TILE, 
                    new KeyValue(tile.scaleXProperty(), 1.2, Interpolator.EASE_IN),
                    new KeyValue(tile.scaleYProperty(), 1.2, Interpolator.EASE_IN)));
         final Timeline timeline1 = new Timeline();
         timeline1.getKeyFrames().add(
-                new KeyFrame(animationDuration, // set end position at 40s
+                new KeyFrame(ANIMATION_MERGED_TILE, 
                    new KeyValue(tile.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
                    new KeyValue(tile.scaleYProperty(), 1.0, Interpolator.EASE_OUT)));
         return new SequentialTransition(timeline0,timeline1);
