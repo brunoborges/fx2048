@@ -69,11 +69,11 @@ public class Game2048 extends Application {
     private void addKeyHandler(Scene scene) {
         scene.setOnKeyPressed(ke -> {
             KeyCode keyCode = ke.getCode();
-            if(keyCode.equals(KeyCode.S)){
+            if (keyCode.equals(KeyCode.S)) {
                 gameManager.saveSession();
                 return;
             }
-            if(keyCode.equals(KeyCode.R)){
+            if (keyCode.equals(KeyCode.R)) {
                 gameManager.restoreSession();
                 return;
             }
