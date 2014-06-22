@@ -1,11 +1,13 @@
 package game2048;
 
 import javafx.application.Application;
+import javafx.application.ConditionalFeature;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -31,11 +33,20 @@ public class Game2048 extends Application {
         root.widthProperty().addListener(resize);
         root.heightProperty().addListener(resize);
 
-        Scene scene = new Scene(root, 600, 700);
+        Scene scene = new Scene(root, 600, 720);
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
 
+        if (isARMDevice()) {
+            primaryStage.setFullScreen(true);
+            primaryStage.setFullScreenExitHint("");
+        }
+
+        if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
+            scene.setCursor(Cursor.NONE);
+        }
+        
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth());
@@ -43,8 +54,12 @@ public class Game2048 extends Application {
         primaryStage.show();
     }
 
+    private boolean isARMDevice() {
+        return System.getProperty("os.arch").toUpperCase().contains("ARM");
+    }
+    
     private void addKeyHandler(Scene scene) {
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, ke -> {
+        scene.setOnKeyPressed(ke -> {
             KeyCode keyCode = ke.getCode();
             if(keyCode.equals(KeyCode.S)){
                 gameManager.saveSession();
