@@ -77,6 +77,10 @@ public class Game2048 extends Application {
                 gameManager.restoreSession();
                 return;
             }
+            if (keyCode.equals(KeyCode.P)) {
+                gameManager.pauseGame();
+                return;
+            }
             if (keyCode.isArrowKey() == false) {
                 return;
             }
@@ -92,6 +96,11 @@ public class Game2048 extends Application {
         scene.setOnSwipeDown(e -> gameManager.move(Direction.DOWN));
     }
 
+    @Override
+    public void stop(){
+        gameManager.saveRecord();
+    }
+    
     /**
      * @param args the command line arguments
      */

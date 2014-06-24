@@ -3,7 +3,7 @@
 }
 .vbox {
     -fx-background-color: #bbada0;
-    -fx-padding: 10 25 10 25;
+    -fx-padding: 5 15 5 15;
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
@@ -18,6 +18,10 @@
 .points {
     -fx-font-size: 25px;
     -fx-text-fill: rgba(119, 110, 101, 0.9);
+}
+.time {
+    -fx-font-size: 12px;
+    -fx-text-fill: #bbada0;
 }
 .backGrid {
     -fx-background-color: #bbada0;
@@ -53,15 +57,15 @@
     -fx-text-fill: #f2b179; // f9f6f2
     -fx-effect: dropshadow( three-pass-box, rgba(243, 215, 116, 1), 10, 0.5, 0, 0 );
 }
-.over {
-    -fx-opacity: 0.6;
+.pause {
+    -fx-opacity: 0.9;
     -fx-background-color: #f9f6f2;
     -fx-border-color: #f9f6f2; 
     -fx-border-width: 2; 
     -fx-background-radius: 6;
     -fx-border-radius: 6;
 }
-.lblOver {
+.lblPause {
     -fx-font-size: 60px;
     -fx-text-fill: #776e65;
 }
@@ -87,6 +91,10 @@
     -fx-border-width: 2; 
     -fx-background-radius: 6;
     -fx-border-radius: 6;
+}
+.lblOver {
+    -fx-font-size: 60px;
+    -fx-text-fill: #776e65;
 }
 .try { 
     -fx-font-size: 30px;

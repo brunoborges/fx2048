@@ -1,5 +1,8 @@
 package game2048;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,16 +19,20 @@ import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -52,6 +59,7 @@ public class GameManager extends Group {
     // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
     private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
+    private static final int GAP_HEIGHT = 50;
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
@@ -61,22 +69,32 @@ public class GameManager extends Group {
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty gamePauseProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
+    private final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
     private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
 
+    private LocalTime time;
+    private Timeline timer;
+    private final StringProperty clock = new SimpleStringProperty("00:00:00");
+    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+    
     // User Interface controls
-    private final VBox vGame = new VBox(50);
+    private final VBox vGame = new VBox(0);
     private final Group gridGroup = new Group();
 
     private final HBox hTop = new HBox(0);
+    private final VBox vScore = new VBox(-5);
     private final Label lblScore = new Label("0");
+    private final Label lblBest = new Label("0");
     private final Label lblPoints = new Label();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
-
+    private final Label lblTime=new Label();        
+        
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
     }
@@ -90,9 +108,12 @@ public class GameManager extends Group {
         createScore();
         createGrid();
         initGameProperties();
-
+        restoreRecord();
+        
         initializeGrid();
-
+        time=LocalTime.now();
+        timer.play();
+        
         this.setManaged(false);
     }
 
@@ -239,6 +260,11 @@ public class GameManager extends Group {
     }
 
     private void createScore() {
+        gameScoreProperty.addListener((ov,i,i1)->{
+            if(i1.intValue()>gameBestProperty.get()){
+                gameBestProperty.set(i1.intValue());
+            }
+        });
         Label lblTitle = new Label("2048");
         lblTitle.getStyleClass().add("title");
         Label lblSubtitle = new Label("FX");
@@ -246,7 +272,10 @@ public class GameManager extends Group {
         HBox hFill = new HBox();
         HBox.setHgrow(hFill, Priority.ALWAYS);
         hFill.setAlignment(Pos.CENTER);
-        VBox vScore = new VBox();
+        
+        VBox vScores = new VBox();
+        HBox hScores=new HBox(5);
+        
         vScore.setAlignment(Pos.CENTER);
         vScore.getStyleClass().add("vbox");
         Label lblTit = new Label("SCORE");
@@ -255,16 +284,43 @@ public class GameManager extends Group {
         lblScore.textProperty().bind(gameScoreProperty.asString());
         vScore.getChildren().addAll(lblTit, lblScore);
 
-        hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScore);
+        VBox vRecord = new VBox(-5);
+        vRecord.setAlignment(Pos.CENTER);
+        vRecord.getStyleClass().add("vbox");
+        Label lblTitBest = new Label("BEST");
+        lblTitBest.getStyleClass().add("titScore");
+        lblBest.getStyleClass().add("score");
+        lblBest.textProperty().bind(gameBestProperty.asString());
+        vRecord.getChildren().addAll(lblTitBest, lblBest);
+        hScores.getChildren().addAll(vScore,vRecord);
+        VBox vFill = new VBox();
+        VBox.setVgrow(vFill, Priority.ALWAYS);
+        vScores.getChildren().addAll(hScores,vFill);
+                
+        hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill,vScores);
         hTop.setMinSize(GRID_WIDTH, TOP_HEIGHT);
         hTop.setPrefSize(GRID_WIDTH, TOP_HEIGHT);
         hTop.setMaxSize(GRID_WIDTH, TOP_HEIGHT);
 
         vGame.getChildren().add(hTop);
+
+        HBox hTime=new HBox();
+        hTime.setMinSize(GRID_WIDTH, GAP_HEIGHT);
+        hTime.setAlignment(Pos.BOTTOM_RIGHT);
+        lblTime.getStyleClass().add("time");
+        lblTime.textProperty().bind(clock);
+        timer=new Timeline(new KeyFrame(Duration.ZERO, e->{
+            clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt));
+        }),new KeyFrame(Duration.seconds(1)));
+        timer.setCycleCount(Animation.INDEFINITE);
+        hTime.getChildren().add(lblTime);
+        
+        vGame.getChildren().add(hTime);
         getChildren().add(vGame);
-
+        
         lblPoints.getStyleClass().add("points");
-
+        lblPoints.setAlignment(Pos.CENTER);
+        lblPoints.setMinWidth(100);
         getChildren().add(lblPoints);
     }
 
@@ -305,6 +361,7 @@ public class GameManager extends Group {
     private void initGameProperties() {
         gameOverProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
+                timer.stop();
                 layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("over");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -312,7 +369,7 @@ public class GameManager extends Group {
                 lblOver.getStyleClass().add("lblOver");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblOver);
-                hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
+                hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
                 this.getChildren().add(hOvrLabel);
 
                 hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
@@ -324,13 +381,18 @@ public class GameManager extends Group {
 
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
 
         gameWonProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
+                timer.stop();
+                Timeline timerPause=new Timeline(new KeyFrame(Duration.seconds(1), e->
+                    time=time.plusNanos(1_000_000_000)));
+                timerPause.setCycleCount(Animation.INDEFINITE);
+                timerPause.play();
                 layerOnProperty.set(true);
                 hOvrLabel.getStyleClass().setAll("won");
                 hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
@@ -338,7 +400,57 @@ public class GameManager extends Group {
                 lblWin.getStyleClass().add("lblWon");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblWin);
-                hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
+                hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
+                this.getChildren().add(hOvrLabel);
+
+                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+                hOvrButton.setSpacing(10);
+                Button bContinue = new Button("Keep going");
+                bContinue.getStyleClass().add("try");
+                bContinue.setOnTouchPressed(e -> {
+                    timerPause.stop();
+                    timer.play();
+                    layerOnProperty.set(false);
+                    getChildren().removeAll(hOvrLabel, hOvrButton);
+                });
+                bContinue.setOnAction(e -> {
+                    timerPause.stop();
+                    timer.play();
+                    layerOnProperty.set(false);
+                    getChildren().removeAll(hOvrLabel, hOvrButton);
+                });
+                Button bTry = new Button("Try again");
+                bTry.getStyleClass().add("try");
+                bTry.setOnTouchPressed(e -> {
+                    timerPause.stop();
+                    resetGame();
+                });
+                bTry.setOnAction(e -> {
+                    timerPause.stop();
+                    resetGame();
+                });
+                hOvrButton.setAlignment(Pos.CENTER);
+                hOvrButton.getChildren().setAll(bContinue, bTry);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
+                this.getChildren().add(hOvrButton);
+            }
+        });
+        
+        gamePauseProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                timer.stop();
+                Timeline timerPause=new Timeline(new KeyFrame(Duration.seconds(1), e->
+                    time=time.plusNanos(1_000_000_000)));
+                timerPause.setCycleCount(Animation.INDEFINITE);
+                timerPause.play();
+                layerOnProperty.set(true);
+                hOvrLabel.getStyleClass().setAll("pause");
+                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                Label lblWin = new Label("Game Paused");
+                lblWin.getStyleClass().add("lblPause");
+                hOvrLabel.setAlignment(Pos.CENTER);
+                hOvrLabel.getChildren().setAll(lblWin);
+                hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
                 this.getChildren().add(hOvrLabel);
 
                 hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
@@ -346,16 +458,25 @@ public class GameManager extends Group {
                 Button bContinue = new Button("Keep going");
                 bContinue.getStyleClass().add("try");
                 bContinue.setOnAction(e -> {
+                    gamePauseProperty.set(false);
+                    timerPause.stop();
+                    timer.play();
                     layerOnProperty.set(false);
                     getChildren().removeAll(hOvrLabel, hOvrButton);
                 });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
-                bTry.setOnTouchPressed(e -> resetGame());
-                bTry.setOnAction(e -> resetGame());
+                bTry.setOnTouchPressed(e -> {
+                    timerPause.stop();
+                    resetGame();
+                });
+                bTry.setOnAction(e -> {
+                    timerPause.stop();
+                    resetGame();
+                });
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
@@ -371,13 +492,18 @@ public class GameManager extends Group {
         gameScoreProperty.set(0);
         gameWonProperty.set(false);
         gameOverProperty.set(false);
-
+        gamePauseProperty.set(false);
+            
         initializeLocationsInGameGrid();
     }
 
     private void resetGame() {
+        saveRecord();
         clearGame();
         initializeGrid();
+        restoreRecord();
+        time=LocalTime.now();
+        timer.playFromStart();
     }
 
     /**
@@ -398,7 +524,8 @@ public class GameManager extends Group {
         final Timeline timeline = new Timeline();
         lblPoints.setText("+" + v1);
         lblPoints.setOpacity(1);
-        lblPoints.setLayoutX(400);
+        double posX=vScore.localToScene(vScore.getWidth()/2d,0).getX()-lblPoints.getWidth()/2d-this.getLayoutX();
+        lblPoints.setLayoutX(posX);
         lblPoints.setLayoutY(20);
         final KeyValue kvO = new KeyValue(lblPoints.opacityProperty(), 0);
         final KeyValue kvY = new KeyValue(lblPoints.layoutYProperty(), 100);
@@ -489,16 +616,18 @@ public class GameManager extends Group {
 
         gameGrid.put(tile.getLocation(), tile);
         gridGroup.getChildren().add(tile);
-
+        
         animateNewlyAddedTile(tile).play();
     }
 
-    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(125);
+    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
 
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         Timeline timeline = new Timeline();
-        KeyValue kvX = new KeyValue(tile.layoutXProperty(), newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2));
-        KeyValue kvY = new KeyValue(tile.layoutYProperty(), newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2));
+        KeyValue kvX = new KeyValue(tile.layoutXProperty(), 
+                newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+        KeyValue kvY = new KeyValue(tile.layoutYProperty(), 
+                newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
         KeyFrame kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
         KeyFrame kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
@@ -518,53 +647,68 @@ public class GameManager extends Group {
 
     private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
 
-    private Timeline animateNewlyAddedTile(Tile tile) {
-        Timeline timeline = new Timeline();
-        KeyValue kvX = new KeyValue(tile.scaleXProperty(), 1);
-        KeyValue kvY = new KeyValue(tile.scaleYProperty(), 1);
-
-        KeyFrame kfX = new KeyFrame(ANIMATION_NEWLY_ADDED_TILE, kvX);
-        KeyFrame kfY = new KeyFrame(ANIMATION_NEWLY_ADDED_TILE, kvY);
-
-        timeline.getKeyFrames().add(kfX);
-        timeline.getKeyFrames().add(kfY);
-        timeline.setOnFinished(onFinishNewlyAddedTile);
-        return timeline;
+    private ScaleTransition animateNewlyAddedTile(Tile tile) {
+        final ScaleTransition scale=new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
+        scale.setToX(1.0); scale.setToY(1.0);
+        scale.setInterpolator(Interpolator.EASE_OUT);
+        scale.setOnFinished(onFinishNewlyAddedTile);
+        return scale;
     }
     
     private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     // pop effect: increase tile scale to 120% at the middle, then go back to 100%
     private SequentialTransition animateMergedTile(Tile tile) {
-        final Timeline timeline0 = new Timeline();
-        timeline0.getKeyFrames().add(
-                new KeyFrame(ANIMATION_MERGED_TILE, 
-                   new KeyValue(tile.scaleXProperty(), 1.2, Interpolator.EASE_IN),
-                   new KeyValue(tile.scaleYProperty(), 1.2, Interpolator.EASE_IN)));
-        final Timeline timeline1 = new Timeline();
-        timeline1.getKeyFrames().add(
-                new KeyFrame(ANIMATION_MERGED_TILE, 
-                   new KeyValue(tile.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
-                   new KeyValue(tile.scaleYProperty(), 1.0, Interpolator.EASE_OUT)));
-        return new SequentialTransition(timeline0,timeline1);
+        final ScaleTransition scale0=new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        scale0.setToX(1.2); scale0.setToY(1.2);
+        scale0.setInterpolator(Interpolator.EASE_IN);
+        
+        final ScaleTransition scale1=new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        scale1.setToX(1.0); scale1.setToY(1.0);
+        scale1.setInterpolator(Interpolator.EASE_OUT);
+        
+        return new SequentialTransition(scale0,scale1);
     }
 
+    public void pauseGame(){
+        if(!gamePauseProperty.get()){
+            gamePauseProperty.set(true);
+        }
+    }
+    
     public void saveSession() {
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
-        sessionManager.saveSession(gameGrid, gameScoreProperty.getValue());
+        sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
 
     public void restoreSession() {
         SessionManager sessionManager = new SessionManager(DEFAULT_GRID_SIZE);
 
         clearGame();
-        int score = sessionManager.restoreSession(gameGrid);
+        timer.stop();
+        StringProperty sTime=new SimpleStringProperty("");
+        int score = sessionManager.restoreSession(gameGrid, sTime);
         if (score >= 0) {
             gameScoreProperty.set(score);
+            if(!sTime.get().isEmpty()){
+                time = LocalTime.now().minusNanos(new Long(sTime.get()));
+            }
+            timer.play();
             redrawTilesInGameGrid();
         } else {
             // not session found, restart again
             resetGame();
         }
     }
+    
+    public void saveRecord() {
+        RecordManager recordManager = new RecordManager(DEFAULT_GRID_SIZE);
+        recordManager.saveRecord(gameScoreProperty.getValue());
+    }
+    
+    private void restoreRecord() {
+        RecordManager recordManager = new RecordManager(DEFAULT_GRID_SIZE);
+        gameBestProperty.set(recordManager.restoreRecord());
+    }
+    
 }

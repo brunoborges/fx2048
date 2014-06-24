@@ -5,11 +5,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
+import javafx.beans.property.StringProperty;
 
 /**
  *
@@ -27,7 +29,7 @@ public class SessionManager {
         this.SESSION_PROPERTIES_FILENAME = "game2048_" + grid_size + ".properties";
     }
 
-    public void saveSession(Map<Location, Tile> gameGrid, Integer score) {
+    public void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
         try {
             IntStream.range(0, grid_size).boxed().forEach(t_x -> {
                 IntStream.range(0, grid_size).boxed().forEach(t_y -> {
@@ -37,13 +39,14 @@ public class SessionManager {
                 });
             });
             props.setProperty("score", score.toString());
+            props.setProperty("time", time.toString());
             props.store(new FileWriter(SESSION_PROPERTIES_FILENAME), SESSION_PROPERTIES_FILENAME);
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public int restoreSession(Map<Location, Tile> gameGrid) {
+    public int restoreSession(Map<Location, Tile> gameGrid, StringProperty time) {
         Reader reader = null;
         try {
             reader = new FileReader(SESSION_PROPERTIES_FILENAME);
@@ -74,6 +77,8 @@ public class SessionManager {
             });
         });
 
+        time.set(props.getProperty("time"));
+        
         String score = props.getProperty("score");
         if (score != null) {
             return new Integer(score);
