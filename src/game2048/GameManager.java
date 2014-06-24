@@ -16,9 +16,11 @@ import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
+import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -122,12 +124,13 @@ public class GameManager extends Group {
 
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
+                tileToBeMerged.toFront();
 
                 gameGrid.put(nextLocation, tileToBeMerged);
                 gameGrid.replace(tile.getLocation(), null);
 
                 parallelTransition.getChildren().add(animateExistingTile(tile, tileToBeMerged.getLocation()));
-                parallelTransition.getChildren().add(hideTileToBeMerged(tile));
+                parallelTransition.getChildren().add(animateMergedTile(tileToBeMerged));
                 mergedToBeRemoved.add(tile);
 
                 gameMovePoints.set(gameMovePoints.get() + tileToBeMerged.getValue());
@@ -507,7 +510,7 @@ public class GameManager extends Group {
     }
 
     // after last movement on full grid, check if there are movements available
-    private EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
+    private final EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
             this.gameOverProperty.set(true);
         }
@@ -528,15 +531,22 @@ public class GameManager extends Group {
         timeline.setOnFinished(onFinishNewlyAddedTile);
         return timeline;
     }
+    
+    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
-    private static final Duration ANIMATION_TILE_TO_BE_MERGED = Duration.millis(150);
-
-    private Timeline hideTileToBeMerged(Tile tile) {
-        Timeline timeline = new Timeline();
-        KeyValue kv = new KeyValue(tile.opacityProperty(), 0);
-        KeyFrame kf = new KeyFrame(ANIMATION_TILE_TO_BE_MERGED, kv);
-        timeline.getKeyFrames().add(kf);
-        return timeline;
+    // pop effect: increase tile scale to 120% at the middle, then go back to 100%
+    private SequentialTransition animateMergedTile(Tile tile) {
+        final Timeline timeline0 = new Timeline();
+        timeline0.getKeyFrames().add(
+                new KeyFrame(ANIMATION_MERGED_TILE, 
+                   new KeyValue(tile.scaleXProperty(), 1.2, Interpolator.EASE_IN),
+                   new KeyValue(tile.scaleYProperty(), 1.2, Interpolator.EASE_IN)));
+        final Timeline timeline1 = new Timeline();
+        timeline1.getKeyFrames().add(
+                new KeyFrame(ANIMATION_MERGED_TILE, 
+                   new KeyValue(tile.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
+                   new KeyValue(tile.scaleYProperty(), 1.0, Interpolator.EASE_OUT)));
+        return new SequentialTransition(timeline0,timeline1);
     }
 
     public void saveSession() {

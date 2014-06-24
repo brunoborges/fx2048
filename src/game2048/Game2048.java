@@ -1,6 +1,5 @@
 package game2048;
 
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -10,6 +9,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
@@ -19,6 +19,13 @@ public class Game2048 extends Application {
 
     private GameManager gameManager;
     private Bounds gameBounds;
+
+    @Override
+    public void init(){
+        // Downloaded from https://01.org/clear-sans/blogs
+        // The font may be used and redistributed under the terms of the Apache License, Version 2.0.
+        Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -47,7 +54,7 @@ public class Game2048 extends Application {
         if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
             scene.setCursor(Cursor.NONE);
         }
-
+        
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth());
@@ -58,7 +65,7 @@ public class Game2048 extends Application {
     private boolean isARMDevice() {
         return System.getProperty("os.arch").toUpperCase().contains("ARM");
     }
-
+    
     private void addKeyHandler(Scene scene) {
         scene.setOnKeyPressed(ke -> {
             KeyCode keyCode = ke.getCode();
