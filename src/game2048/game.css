@@ -20,7 +20,7 @@
     -fx-text-fill: rgba(119, 110, 101, 0.9);
 }
 .time {
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-text-fill: #bbada0;
 }
 .backGrid {

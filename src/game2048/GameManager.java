@@ -352,9 +352,11 @@ public class GameManager extends Group {
         hBottom.setMinSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
         hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
-
+        // Clip hBottom to keep the dropshadow effects within the hBottom
+        Rectangle rect = new Rectangle(GRID_WIDTH, GRID_WIDTH);
+        hBottom.setClip(rect);
         hBottom.getChildren().add(gridGroup);
-
+        
         vGame.getChildren().add(hBottom);
     }
 
@@ -524,8 +526,9 @@ public class GameManager extends Group {
         final Timeline timeline = new Timeline();
         lblPoints.setText("+" + v1);
         lblPoints.setOpacity(1);
-        double posX=vScore.localToScene(vScore.getWidth()/2d,0).getX()-lblPoints.getWidth()/2d-this.getLayoutX();
-        lblPoints.setLayoutX(posX);
+        double posX=vScore.localToScene(vScore.getWidth()/2d,0).getX();
+        lblPoints.setTranslateX(0);
+        lblPoints.setTranslateX(lblPoints.sceneToLocal(posX, 0).getX()-lblPoints.getWidth()/2d);
         lblPoints.setLayoutY(20);
         final KeyValue kvO = new KeyValue(lblPoints.opacityProperty(), 0);
         final KeyValue kvY = new KeyValue(lblPoints.layoutYProperty(), 100);
@@ -668,6 +671,11 @@ public class GameManager extends Group {
         scale1.setInterpolator(Interpolator.EASE_OUT);
         
         return new SequentialTransition(scale0,scale1);
+    }
+
+    public void setScale(double scale) {
+        this.setScaleX(scale);
+        this.setScaleY(scale);
     }
 
     public void pauseGame(){
