@@ -41,7 +41,6 @@ public class Game2048 extends Application {
             gameManager.setScale(scale);
             gameManager.setLayoutX((root.getWidth() - gameBounds.getWidth()) / 2d);
             gameManager.setLayoutY((root.getHeight() - gameBounds.getHeight()) / 2d);
-            System.out.println("s: "+scale);
         };
         root.widthProperty().addListener(resize);
         root.heightProperty().addListener(resize);
