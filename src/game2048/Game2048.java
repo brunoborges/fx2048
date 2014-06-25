@@ -5,11 +5,13 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -19,7 +21,8 @@ public class Game2048 extends Application {
 
     private GameManager gameManager;
     private Bounds gameBounds;
-
+    private final static int MARGIN = 36;
+    
     @Override
     public void init(){
         // Downloaded from https://01.org/clear-sans/blogs
@@ -33,15 +36,16 @@ public class Game2048 extends Application {
         gameBounds = gameManager.getLayoutBounds();
 
         StackPane root = new StackPane(gameManager);
-        root.setPrefSize(gameBounds.getWidth(), gameBounds.getHeight());
         ChangeListener<Number> resize = (ov, v, v1) -> {
+            double scale=Math.min((root.getWidth()-MARGIN)/gameBounds.getWidth(),(root.getHeight()-MARGIN)/gameBounds.getHeight());
+            gameManager.setScale(scale);
             gameManager.setLayoutX((root.getWidth() - gameBounds.getWidth()) / 2d);
             gameManager.setLayoutY((root.getHeight() - gameBounds.getHeight()) / 2d);
         };
         root.widthProperty().addListener(resize);
         root.heightProperty().addListener(resize);
 
-        Scene scene = new Scene(root, 600, 720);
+        Scene scene = new Scene(root);
         scene.getStylesheets().add("game2048/game.css");
         addKeyHandler(scene);
         addSwipeHandlers(scene);
@@ -55,10 +59,15 @@ public class Game2048 extends Application {
             scene.setCursor(Cursor.NONE);
         }
         
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        double factor=Math.min(visualBounds.getWidth()/(gameBounds.getWidth()+MARGIN),
+                               visualBounds.getHeight()/(gameBounds.getHeight()+MARGIN));
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(gameBounds.getWidth());
-        primaryStage.setMinHeight(gameBounds.getHeight());
+        primaryStage.setMinWidth(gameBounds.getWidth()/2d);
+        primaryStage.setMinHeight(gameBounds.getHeight()/2d);
+        primaryStage.setWidth((gameBounds.getWidth()+MARGIN)*factor);
+        primaryStage.setHeight((gameBounds.getHeight()+MARGIN)*factor);
         primaryStage.show();
     }
 
@@ -77,6 +86,10 @@ public class Game2048 extends Application {
                 gameManager.restoreSession();
                 return;
             }
+            if (keyCode.equals(KeyCode.P)) {
+                gameManager.pauseGame();
+                return;
+            }
             if (keyCode.isArrowKey() == false) {
                 return;
             }
@@ -92,6 +105,11 @@ public class Game2048 extends Application {
         scene.setOnSwipeDown(e -> gameManager.move(Direction.DOWN));
     }
 
+    @Override
+    public void stop(){
+        gameManager.saveRecord();
+    }
+    
     /**
      * @param args the command line arguments
      */
