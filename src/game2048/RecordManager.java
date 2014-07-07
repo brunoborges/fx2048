@@ -40,7 +40,7 @@ public class RecordManager {
             reader = new FileReader(SESSION_PROPERTIES_FILENAME);
             props.load(reader);
         } catch (FileNotFoundException ignored) {
-            return -1;
+            return 0;
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         } finally {
