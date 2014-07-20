@@ -32,7 +32,7 @@ public class Game2048 extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        gameManager = new GameManager(5);
+        gameManager = new GameManager();
         gameBounds = gameManager.getLayoutBounds();
 
         StackPane root = new StackPane(gameManager);
