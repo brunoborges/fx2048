@@ -32,10 +32,11 @@ public class Game2048 extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        gameManager = new GameManager();
+        gameManager = new GameManager(5);
         gameBounds = gameManager.getLayoutBounds();
 
         StackPane root = new StackPane(gameManager);
+        root.getStyleClass().addAll("game-root");
         ChangeListener<Number> resize = (ov, v, v1) -> {
             double scale=Math.min((root.getWidth()-MARGIN)/gameBounds.getWidth(),(root.getHeight()-MARGIN)/gameBounds.getHeight());
             gameManager.setScale(scale);

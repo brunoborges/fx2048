@@ -33,8 +33,6 @@ import javafx.util.Duration;
  */
 public class Board extends Group {
     private static final int BORDER_WIDTH = (14 + 2) / 2;
-    // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
-    private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
     private static final int GAP_HEIGHT = 50;
 
@@ -67,9 +65,12 @@ public class Board extends Group {
     private final HBox hOvrButton = new HBox();
     private final Label lblTime=new Label();   
     
-    public Board(int gridsize){
-        this.gridSize=gridsize;
+    private final int gridWidth;
     
+    public Board(int gridSize){
+        this.gridSize=gridSize;
+        gridWidth = CELL_SIZE * gridSize + BORDER_WIDTH * 2;
+        
         createScore();
         createGrid();
         
@@ -78,9 +79,9 @@ public class Board extends Group {
     
     private void createScore() {
         Label lblTitle = new Label("2048");
-        lblTitle.getStyleClass().add("title");
+        lblTitle.getStyleClass().addAll("game-label","game-title");
         Label lblSubtitle = new Label("FX");
-        lblSubtitle.getStyleClass().add("subtitle");
+        lblSubtitle.getStyleClass().addAll("game-label","game-subtitle");
         HBox hFill = new HBox();
         HBox.setHgrow(hFill, Priority.ALWAYS);
         hFill.setAlignment(Pos.CENTER);
@@ -89,19 +90,19 @@ public class Board extends Group {
         HBox hScores=new HBox(5);
         
         vScore.setAlignment(Pos.CENTER);
-        vScore.getStyleClass().add("vbox");
+        vScore.getStyleClass().add("game-vbox");
         Label lblTit = new Label("SCORE");
-        lblTit.getStyleClass().add("titScore");
-        lblScore.getStyleClass().add("score");
+        lblTit.getStyleClass().addAll("game-label","game-titScore");
+        lblScore.getStyleClass().addAll("game-label","game-score");
         lblScore.textProperty().bind(gameScoreProperty.asString());
         vScore.getChildren().addAll(lblTit, lblScore);
 
         VBox vRecord = new VBox(-5);
         vRecord.setAlignment(Pos.CENTER);
-        vRecord.getStyleClass().add("vbox");
+        vRecord.getStyleClass().add("game-vbox");
         Label lblTitBest = new Label("BEST");
-        lblTitBest.getStyleClass().add("titScore");
-        lblBest.getStyleClass().add("score");
+        lblTitBest.getStyleClass().addAll("game-label","game-titScore");
+        lblBest.getStyleClass().addAll("game-label","game-score");
         lblBest.textProperty().bind(gameBestProperty.asString());
         vRecord.getChildren().addAll(lblTitBest, lblBest);
         hScores.getChildren().addAll(vScore,vRecord);
@@ -110,16 +111,16 @@ public class Board extends Group {
         vScores.getChildren().addAll(hScores,vFill);
                 
         hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill,vScores);
-        hTop.setMinSize(GRID_WIDTH, TOP_HEIGHT);
-        hTop.setPrefSize(GRID_WIDTH, TOP_HEIGHT);
-        hTop.setMaxSize(GRID_WIDTH, TOP_HEIGHT);
+        hTop.setMinSize(gridWidth, TOP_HEIGHT);
+        hTop.setPrefSize(gridWidth, TOP_HEIGHT);
+        hTop.setMaxSize(gridWidth, TOP_HEIGHT);
 
         vGame.getChildren().add(hTop);
 
         HBox hTime=new HBox();
-        hTime.setMinSize(GRID_WIDTH, GAP_HEIGHT);
+        hTime.setMinSize(gridWidth, GAP_HEIGHT);
         hTime.setAlignment(Pos.BOTTOM_RIGHT);
-        lblTime.getStyleClass().add("time");
+        lblTime.getStyleClass().addAll("game-label","game-time");
         lblTime.textProperty().bind(clock);
         timer=new Timeline(new KeyFrame(Duration.ZERO, e->{
             clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt));
@@ -130,7 +131,7 @@ public class Board extends Group {
         vGame.getChildren().add(hTime);
         getChildren().add(vGame);
         
-        lblPoints.getStyleClass().add("points");
+        lblPoints.getStyleClass().addAll("game-label","game-points");
         lblPoints.setAlignment(Pos.CENTER);
         lblPoints.setMinWidth(100);
         getChildren().add(lblPoints);
@@ -145,25 +146,25 @@ public class Board extends Group {
                     Rectangle rect2 = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     rect2.setArcHeight(arcSize);
                     rect2.setArcWidth(arcSize);
-                    rect2.getStyleClass().add("grid-cell");
+                    rect2.getStyleClass().add("game-grid-cell");
                     return rect2;
                 }))
             .flatMap(s -> s)
             .forEach(gridGroup.getChildren()::add);
 
-        gridGroup.getStyleClass().add("grid");
+        gridGroup.getStyleClass().add("game-grid");
         gridGroup.setManaged(false);
         gridGroup.setLayoutX(BORDER_WIDTH);
         gridGroup.setLayoutY(BORDER_WIDTH);
 
         HBox hBottom = new HBox();
-        hBottom.getStyleClass().add("backGrid");
-        hBottom.setMinSize(GRID_WIDTH, GRID_WIDTH);
-        hBottom.setPrefSize(GRID_WIDTH, GRID_WIDTH);
-        hBottom.setMaxSize(GRID_WIDTH, GRID_WIDTH);
+        hBottom.getStyleClass().add("game-backGrid");
+        hBottom.setMinSize(gridWidth, gridWidth);
+        hBottom.setPrefSize(gridWidth, gridWidth);
+        hBottom.setMaxSize(gridWidth, gridWidth);
         
         // Clip hBottom to keep the dropshadow effects within the hBottom
-        Rectangle rect = new Rectangle(GRID_WIDTH, GRID_WIDTH);
+        Rectangle rect = new Rectangle(gridWidth, gridWidth);
         hBottom.setClip(rect);
         hBottom.getChildren().add(gridGroup);
         
@@ -175,25 +176,31 @@ public class Board extends Group {
             if (newValue) {
                 timer.stop();
                 layerOnProperty.set(true);
-                hOvrLabel.getStyleClass().setAll("over");
-                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                hOvrLabel.getStyleClass().setAll("game-over");
+                hOvrLabel.setMinSize(gridWidth, gridWidth);
                 Label lblOver = new Label("Game over!");
-                lblOver.getStyleClass().add("lblOver");
+                lblOver.getStyleClass().addAll("game-label","game-lblOver");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblOver);
                 hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
                 this.getChildren().add(hOvrLabel);
 
-                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+                hOvrButton.setMinSize(gridWidth, gridWidth / 2);
                 Button bTry = new Button("Try again");
-                bTry.getStyleClass().setAll("try");
+                bTry.getStyleClass().setAll("game-try");
 
-                bTry.setOnTouchPressed(e -> doResetGame());
-                bTry.setOnAction(e -> doResetGame());
+                bTry.setOnTouchPressed(e -> {
+                    layerOnProperty.set(false);
+                    doResetGame();
+                });
+                bTry.setOnAction(e -> {
+                    layerOnProperty.set(false);
+                    doResetGame();
+                });
 
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridWidth / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
@@ -206,44 +213,48 @@ public class Board extends Group {
                 timerPause.setCycleCount(Animation.INDEFINITE);
                 timerPause.play();
                 layerOnProperty.set(true);
-                hOvrLabel.getStyleClass().setAll("won");
-                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                hOvrLabel.getStyleClass().setAll("game-won");
+                hOvrLabel.setMinSize(gridWidth, gridWidth);
                 Label lblWin = new Label("You win!");
-                lblWin.getStyleClass().add("lblWon");
+                lblWin.getStyleClass().addAll("game-label","game-lblWon");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblWin);
                 hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
                 this.getChildren().add(hOvrLabel);
 
-                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+                hOvrButton.setMinSize(gridWidth, gridWidth / 2);
                 hOvrButton.setSpacing(10);
                 Button bContinue = new Button("Keep going");
-                bContinue.getStyleClass().add("try");
+                bContinue.getStyleClass().add("game-try");
                 bContinue.setOnTouchPressed(e -> {
                     timerPause.stop();
                     timer.play();
                     layerOnProperty.set(false);
-                    getChildren().removeAll(hOvrLabel, hOvrButton);
+                    e.consume();
                 });
                 bContinue.setOnAction(e -> {
                     timerPause.stop();
                     timer.play();
                     layerOnProperty.set(false);
-                    getChildren().removeAll(hOvrLabel, hOvrButton);
+                    e.consume();
                 });
                 Button bTry = new Button("Try again");
-                bTry.getStyleClass().add("try");
+                bTry.getStyleClass().add("game-try");
                 bTry.setOnTouchPressed(e -> {
                     timerPause.stop();
+                    layerOnProperty.set(false);
                     doResetGame();
+                    e.consume();
                 });
                 bTry.setOnAction(e -> {
                     timerPause.stop();
+                    layerOnProperty.set(false);
                     doResetGame();
+                    e.consume();
                 });
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridWidth / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
@@ -256,39 +267,41 @@ public class Board extends Group {
                 timerPause.setCycleCount(Animation.INDEFINITE);
                 timerPause.play();
                 layerOnProperty.set(true);
-                hOvrLabel.getStyleClass().setAll("pause");
-                hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+                hOvrLabel.getStyleClass().setAll("game-pause");
+                hOvrLabel.setMinSize(gridWidth, gridWidth);
                 Label lblWin = new Label("Game Paused");
-                lblWin.getStyleClass().add("lblPause");
+                lblWin.getStyleClass().addAll("game-label","game-lblPause");
                 hOvrLabel.setAlignment(Pos.CENTER);
                 hOvrLabel.getChildren().setAll(lblWin);
                 hOvrLabel.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
                 this.getChildren().add(hOvrLabel);
 
-                hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+                hOvrButton.setMinSize(gridWidth, gridWidth / 2);
                 hOvrButton.setSpacing(10);
                 Button bContinue = new Button("Keep going");
-                bContinue.getStyleClass().add("try");
-                bContinue.setOnAction(e -> {
+                bContinue.getStyleClass().add("game-try");
+                bContinue.setOnMouseClicked(e -> {
                     gamePauseProperty.set(false);
                     timerPause.stop();
                     timer.play();
                     layerOnProperty.set(false);
-                    getChildren().removeAll(hOvrLabel, hOvrButton);
                 });
                 Button bTry = new Button("Try again");
-                bTry.getStyleClass().add("try");
+                bTry.getStyleClass().add("game-try");
                 bTry.setOnTouchPressed(e -> {
                     timerPause.stop();
+                    layerOnProperty.set(false);
                     doResetGame();
                 });
-                bTry.setOnAction(e -> {
+                bTry.setOnMouseClicked(e -> {
+                    e.consume();
                     timerPause.stop();
+                    layerOnProperty.set(false);
                     doResetGame();
                 });
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
-                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + GRID_WIDTH / 2);
+                hOvrButton.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridWidth / 2);
                 this.getChildren().add(hOvrButton);
             }
         });
@@ -296,6 +309,14 @@ public class Board extends Group {
         gameScoreProperty.addListener((ov,i,i1)->{
             if(i1.intValue()>gameBestProperty.get()){
                 gameBestProperty.set(i1.intValue());
+            }
+        });
+        
+        layerOnProperty.addListener((ov,b,b1)->{
+            if(b&&!b1){
+                getChildren().removeAll(hOvrLabel, hOvrButton);
+                // Keep the focus on the game when the layer is removed:
+                getParent().requestFocus();
             }
         });
         
@@ -401,7 +422,7 @@ public class Board extends Group {
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
     
-    public void restoreSession(Map<Location, Tile> gameGrid) {
+    public boolean restoreSession(Map<Location, Tile> gameGrid) {
         SessionManager sessionManager = new SessionManager(gridSize);
 
         doClearGame();
@@ -414,10 +435,11 @@ public class Board extends Group {
                 time = LocalTime.now().minusNanos(new Long(sTime.get()));
             }
             timer.play();
-        } else {
-            // not session found, restart again
-            doResetGame();
-        }
+            return true;
+        } 
+        // not session found, restart again
+        doResetGame();
+        return false;
     }
     
     public void saveRecord() {

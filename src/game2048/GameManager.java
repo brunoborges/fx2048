@@ -370,8 +370,9 @@ public class GameManager extends Group {
     }
 
     public void restoreSession() {
-        board.restoreSession(gameGrid);
-        redrawTilesInGameGrid();
+        if(board.restoreSession(gameGrid)){
+            redrawTilesInGameGrid();
+        }
     }
     
     public void saveRecord(){
