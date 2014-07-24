@@ -91,14 +91,17 @@ public class Game2048 extends Application {
                 gameManager.pauseGame();
                 return;
             }
-            if (keyCode.isArrowKey() == false) {
+            if (keyCode.equals(KeyCode.Q) || keyCode.equals(KeyCode.ESCAPE)) {
+                gameManager.quitGame();
                 return;
             }
-            Direction direction = Direction.valueFor(keyCode);
-            gameManager.move(direction);
+            if (keyCode.isArrowKey() ) {
+                Direction direction = Direction.valueFor(keyCode);
+                gameManager.move(direction);
+            }
         });
     }
-
+    
     private void addSwipeHandlers(Scene scene) {
         scene.setOnSwipeUp(e -> gameManager.move(Direction.UP));
         scene.setOnSwipeRight(e -> gameManager.move(Direction.RIGHT));

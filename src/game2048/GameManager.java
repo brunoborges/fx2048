@@ -23,6 +23,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -35,7 +36,7 @@ import javafx.util.Duration;
  */
 public class GameManager extends Group {
 
-    private static final int FINAL_VALUE_TO_WIN = 2048;
+    public static final int FINAL_VALUE_TO_WIN = 2048;
     public static final int CELL_SIZE = 128;
     public static final int DEFAULT_GRID_SIZE = 4;
 
@@ -79,7 +80,7 @@ public class GameManager extends Group {
     }
     
     public void move(Direction direction) {
-        if (board.isLayerOn()) {
+        if (board.isLayerOn().get()) {
             return;
         }
 
@@ -361,8 +362,16 @@ public class GameManager extends Group {
         this.setScaleY(scale);
     }
 
+    public BooleanProperty isLayerOn(){
+        return board.isLayerOn();
+    }
+    
     public void pauseGame(){
         board.pauseGame();
+    }
+    
+    public void quitGame(){
+        board.quitGame();
     }
     
     public void saveSession() {
