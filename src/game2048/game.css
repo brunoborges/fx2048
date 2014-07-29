@@ -1,102 +1,92 @@
-.root {
+.game-root {
     -fx-background-color: #faf8ef; 
 }
-.vbox {
+.game-vbox {
     -fx-background-color: #bbada0;
     -fx-padding: 5 15 5 15;
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.titScore {
+.game-titScore {
     -fx-font-size: 13px;
     -fx-text-fill: #eee4da;
 }
-.score {
+.game-score {
     -fx-font-size: 25px;
     -fx-text-fill: white;
 }
-.points {
+.game-points {
     -fx-font-size: 25px;
     -fx-text-fill: rgba(119, 110, 101, 0.9);
 }
-.time {
+.game-time {
     -fx-font-size: 14px;
     -fx-text-fill: #bbada0;
 }
-.backGrid {
+.game-backGrid {
     -fx-background-color: #bbada0;
     -fx-border-color: #bbada0; 
     -fx-border-width: 2; 
     -fx-background-radius: 6;
     -fx-border-radius: 6;
 }
-.grid {
+.game-grid {
     -fx-background-color: #bbada0; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.grid-cell {
+.game-grid-cell {
     -fx-fill: #cdc1b4;
     -fx-stroke-width: 14px;
     -fx-stroke-type: centered;
     -fx-stroke: #BBADA0;
 }
 
-.label {
+.game-label {
     -fx-font-smoothing-type: lcd;
     -fx-smooth: true;
     -fx-font-family: 'Clear Sans Bold';
 }
 
-.title {
+.game-title {
     -fx-font-size: 80px;
     -fx-text-fill: #776e65;
 }
-.subtitle {
+.game-subtitle {
     -fx-font-size: 40px;
     -fx-text-fill: #f2b179; // f9f6f2
     -fx-effect: dropshadow( three-pass-box, rgba(243, 215, 116, 1), 10, 0.5, 0, 0 );
 }
-.pause {
+
+.game-overlay {
+    -fx-font-size: 60px;
+    -fx-text-fill: #f9f6f2;
+    -fx-border-color: #f9f6f2; 
+    -fx-border-width: 2; 
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.game-overlay-pause, .game-overlay-quit {
     -fx-opacity: 0.9;
     -fx-background-color: #f9f6f2;
-    -fx-border-color: #f9f6f2; 
-    -fx-border-width: 2; 
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
 }
-.lblPause {
+.game-lblPause, .game-lblOver, .game-lblQuit {
     -fx-font-size: 60px;
     -fx-text-fill: #776e65;
 }
-.won {
-    -fx-font-size: 60px;
-    -fx-text-fill: #f9f6f2;
+.game-overlay-won {
     -fx-background-color: rgba(237, 194, 46, 0.5);
-    -fx-border-color: #f9f6f2; 
-    -fx-border-width: 2; 
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
 }
-.lblWon {
+.game-lblWon {
     -fx-font-size: 60px;
     -fx-text-fill: #f9f6f2;
 }
-.over {
-    -fx-font-size: 60px;
-    -fx-text-fill: #776e65;
+.game-overlay-over {
     -fx-opacity: 0.6;
     -fx-background-color: #f9f6f2;
-    -fx-border-color: #f9f6f2; 
-    -fx-border-width: 2; 
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
 }
-.lblOver {
-    -fx-font-size: 60px;
-    -fx-text-fill: #776e65;
-}
-.try { 
+.game-button { 
     -fx-font-size: 30px;
     -fx-text-fill: white;
     -fx-background-color: #8f7a66;
@@ -106,52 +96,56 @@
     -fx-border-radius: 3;
     -fx-padding: 6 20 12 20;
 }
-.try:pressed {
+.game-button:pressed {
     -fx-padding: 4 22 12 22;
 }
-.tile-2    { 
+.game-button:focused, .game-button:hover {
+    -fx-border-color: -fx-focus-color;
+    -fx-border-width: 0.5px;
+}
+.game-tile-2    { 
     -fx-font-size: 55px;
     -fx-text-fill: #776e65;
     -fx-background-color: #eee4da; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-4    { 
+.game-tile-4    { 
     -fx-font-size: 55px;
     -fx-text-fill: #776e65;
     -fx-background-color: #ede0c8; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-8    { 
+.game-tile-8    { 
     -fx-font-size: 55px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #f2b179; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-16   { 
+.game-tile-16   { 
     -fx-font-size: 55px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #f59563; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-32   { 
+.game-tile-32   { 
     -fx-font-size: 55px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #f67c5f; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-64   { 
+.game-tile-64   { 
     -fx-font-size: 55px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #f65e3b; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
 }
-.tile-128  { 
+.game-tile-128  { 
     -fx-font-size: 45px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #edcf72; 
@@ -161,7 +155,7 @@
     -fx-border-color: rgba(255, 255, 255, 0.14286);
     -fx-border-width: 1;
 }
-.tile-256  { 
+.game-tile-256  { 
     -fx-font-size: 45px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #edcc61;
@@ -171,7 +165,7 @@
     -fx-border-color: rgba(255, 255, 255, 0.19048);
     -fx-border-width: 1;
 }
-.tile-512  { 
+.game-tile-512  { 
     -fx-font-size: 45px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #edc850; 
@@ -181,7 +175,7 @@
     -fx-border-color: rgba(255, 255, 255, 0.2381);
     -fx-border-width: 1;
 }
-.tile-1024 { 
+.game-tile-1024 { 
     -fx-font-size: 35px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #edc53f; 
@@ -191,7 +185,7 @@
     -fx-border-color: rgba(255, 255, 255, 0.28571);
     -fx-border-width: 1;
 }
-.tile-2048 { 
+.game-tile-2048 { 
     -fx-font-size: 35px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #edc22e; 
@@ -201,8 +195,36 @@
     -fx-border-color: rgba(255, 255, 255, 0.33333);
     -fx-border-width: 1;
 }
-.tile-4096, .tile-8192, .tile-16384 { 
+.game-tile-4096   { 
     -fx-font-size: 30px;
+    -fx-text-fill: #f9f6f2;
+    -fx-background-color: #b885ac; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.game-tile-8192   { 
+    -fx-font-size: 30px;
+    -fx-text-fill: #f9f6f2;
+    -fx-background-color: #af6da9; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.game-tile-16384 { 
+    -fx-font-size: 30px;
+    -fx-text-fill: #f9f6f2;
+    -fx-background-color: #ab61a7; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.game-tile-32768 { 
+    -fx-font-size: 30px;
+    -fx-text-fill: #f9f6f2;
+    -fx-background-color: #a755a6; 
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.game-tile-65536, .game-tile-131072, .game-tile-262144 { 
+    -fx-font-size: 25px;
     -fx-text-fill: #f9f6f2;
     -fx-background-color: #3c3a32; 
     -fx-background-radius: 3;

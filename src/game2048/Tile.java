@@ -33,15 +33,15 @@ public class Tile extends Label {
         this.value = value;
         this.merged = false;
         setText(value.toString());
-        getStyleClass().add("tile-" + value);
+        getStyleClass().addAll("game-label","game-tile-" + value);
     }
 
     public void merge(Tile another) {
-        getStyleClass().remove("tile-" + value);
+        getStyleClass().remove("game-tile-" + value);
         this.value += another.getValue();
         setText(value.toString());
         merged = true;
-        getStyleClass().add("tile-" + value);
+        getStyleClass().add("game-tile-" + value);
     }
 
     public Integer getValue() {
