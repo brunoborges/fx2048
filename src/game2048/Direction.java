@@ -30,20 +30,6 @@ public enum Direction {
         return "Direction{" + "y=" + y + ", x=" + x + '}' + name();
     }
 
-    public Direction goBack() {
-        switch (this) {
-            case UP:
-                return DOWN;
-            case DOWN:
-                return UP;
-            case LEFT:
-                return RIGHT;
-            case RIGHT:
-                return LEFT;
-        }
-        return null;
-    }
-
     public static Direction valueFor(KeyCode keyCode) {
         return valueOf(keyCode.name());
     }
