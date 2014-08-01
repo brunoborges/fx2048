@@ -1,5 +1,6 @@
 package game2048;
 
+import java.util.Optional;
 import java.util.Random;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -23,7 +24,6 @@ public class Tile extends Label {
     }
 
     private Tile(Integer value) {
-        // TODO adjust size to be more... err... responsive? :)
         final int squareSize = GameManager.CELL_SIZE - 13;
         setMinSize(squareSize, squareSize);
         setMaxSize(squareSize, squareSize);
@@ -33,7 +33,7 @@ public class Tile extends Label {
         this.value = value;
         this.merged = false;
         setText(value.toString());
-        getStyleClass().addAll("game-label","game-tile-" + value);
+        getStyleClass().addAll("game-label", "game-tile-" + value);
     }
 
     public void merge(Tile another) {
@@ -69,7 +69,7 @@ public class Tile extends Label {
         merged = false;
     }
 
-    public boolean isMergeable(Tile anotherTile) {
-        return anotherTile != null && getValue().equals(anotherTile.getValue());
+    public boolean isMergeable(Optional<Tile> anotherTile) {
+        return anotherTile.isPresent() ? getValue().equals(anotherTile.get().getValue()) : false;
     }
 }

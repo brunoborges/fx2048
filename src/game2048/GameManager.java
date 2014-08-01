@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,9 +49,9 @@ public class GameManager extends Group {
     private final Map<Location, Tile> gameGrid;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
-    
+
     private Board board;
-    
+
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
     }
@@ -61,24 +62,24 @@ public class GameManager extends Group {
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
         this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
 
-        board=new Board(gridSize);
+        board = new Board(gridSize);
         this.getChildren().add(board);
-        
-        board.clearGameProperty().addListener((ov,b,b1)->{
-            if(b1){
+
+        board.clearGameProperty().addListener((ov, b, b1) -> {
+            if (b1) {
                 initializeGameGrid();
             }
         });
-        board.resetGameProperty().addListener((ov,b,b1)->{
-            if(b1){
+        board.resetGameProperty().addListener((ov, b, b1) -> {
+            if (b1) {
                 startGame();
             }
         });
-        
+
         initializeGameGrid();
         startGame();
     }
-    
+
     public void move(Direction direction) {
         if (board.isLayerOn().get()) {
             return;
@@ -117,7 +118,7 @@ public class GameManager extends Group {
                 mergedToBeRemoved.add(tile);
 
                 board.addPoints(tileToBeMerged.getValue());
-                
+
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
                     board.setGameWin(true);
                 }
@@ -201,7 +202,7 @@ public class GameManager extends Group {
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
                     if (nextLocation.isValidFor(gridSize)) {
                         Tile tileToBeMerged = gameGrid.get(nextLocation);
-                        if (tile.isMergeable(tileToBeMerged)) {
+                        if (tile.isMergeable(Optional.of(tileToBeMerged))) {
                             return 1;
                         }
                     }
@@ -266,7 +267,7 @@ public class GameManager extends Group {
                 .forEach(t -> gameGrid.put(t.getLocation(), t));
 
         redrawTilesInGameGrid();
-        
+
         board.startGame();
     }
 
@@ -303,7 +304,7 @@ public class GameManager extends Group {
 
         gameGrid.put(tile.getLocation(), tile);
         board.getGridGroup().getChildren().add(tile);
-        
+
         animateNewlyAddedTile(tile).play();
     }
 
@@ -311,9 +312,9 @@ public class GameManager extends Group {
 
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         Timeline timeline = new Timeline();
-        KeyValue kvX = new KeyValue(tile.layoutXProperty(), 
+        KeyValue kvX = new KeyValue(tile.layoutXProperty(),
                 newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
-        KeyValue kvY = new KeyValue(tile.layoutYProperty(), 
+        KeyValue kvY = new KeyValue(tile.layoutYProperty(),
                 newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
         KeyFrame kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
@@ -335,26 +336,29 @@ public class GameManager extends Group {
     private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
 
     private ScaleTransition animateNewlyAddedTile(Tile tile) {
-        final ScaleTransition scale=new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
-        scale.setToX(1.0); scale.setToY(1.0);
+        final ScaleTransition scale = new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
+        scale.setToX(1.0);
+        scale.setToY(1.0);
         scale.setInterpolator(Interpolator.EASE_OUT);
         scale.setOnFinished(onFinishNewlyAddedTile);
         return scale;
     }
-    
+
     private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     // pop effect: increase tile scale to 120% at the middle, then go back to 100%
     private SequentialTransition animateMergedTile(Tile tile) {
-        final ScaleTransition scale0=new ScaleTransition(ANIMATION_MERGED_TILE, tile);
-        scale0.setToX(1.2); scale0.setToY(1.2);
+        final ScaleTransition scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        scale0.setToX(1.2);
+        scale0.setToY(1.2);
         scale0.setInterpolator(Interpolator.EASE_IN);
-        
-        final ScaleTransition scale1=new ScaleTransition(ANIMATION_MERGED_TILE, tile);
-        scale1.setToX(1.0); scale1.setToY(1.0);
+
+        final ScaleTransition scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        scale1.setToX(1.0);
+        scale1.setToY(1.0);
         scale1.setInterpolator(Interpolator.EASE_OUT);
-        
-        return new SequentialTransition(scale0,scale1);
+
+        return new SequentialTransition(scale0, scale1);
     }
 
     public void setScale(double scale) {
@@ -362,30 +366,30 @@ public class GameManager extends Group {
         this.setScaleY(scale);
     }
 
-    public BooleanProperty isLayerOn(){
+    public BooleanProperty isLayerOn() {
         return board.isLayerOn();
     }
-    
-    public void pauseGame(){
+
+    public void pauseGame() {
         board.pauseGame();
     }
-    
-    public void quitGame(){
+
+    public void quitGame() {
         board.quitGame();
     }
-    
+
     public void saveSession() {
-        board.saveSession(gameGrid);               
+        board.saveSession(gameGrid);
     }
 
     public void restoreSession() {
-        if(board.restoreSession(gameGrid)){
+        if (board.restoreSession(gameGrid)) {
             redrawTilesInGameGrid();
         }
     }
-    
-    public void saveRecord(){
+
+    public void saveRecord() {
         board.saveRecord();
     }
-    
+
 }
