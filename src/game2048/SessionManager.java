@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.time.LocalTime;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -78,7 +77,7 @@ public class SessionManager {
         });
 
         time.set(props.getProperty("time"));
-        
+
         String score = props.getProperty("score");
         if (score != null) {
             return new Integer(score);

@@ -22,9 +22,9 @@ public class Game2048 extends Application {
     private GameManager gameManager;
     private Bounds gameBounds;
     private final static int MARGIN = 36;
-    
+
     @Override
-    public void init(){
+    public void init() {
         // Downloaded from https://01.org/clear-sans/blogs
         // The font may be used and redistributed under the terms of the Apache License, Version 2.0.
         Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
@@ -38,7 +38,7 @@ public class Game2048 extends Application {
         StackPane root = new StackPane(gameManager);
         root.getStyleClass().addAll("game-root");
         ChangeListener<Number> resize = (ov, v, v1) -> {
-            double scale=Math.min((root.getWidth()-MARGIN)/gameBounds.getWidth(),(root.getHeight()-MARGIN)/gameBounds.getHeight());
+            double scale = Math.min((root.getWidth() - MARGIN) / gameBounds.getWidth(), (root.getHeight() - MARGIN) / gameBounds.getHeight());
             gameManager.setScale(scale);
             gameManager.setLayoutX((root.getWidth() - gameBounds.getWidth()) / 2d);
             gameManager.setLayoutY((root.getHeight() - gameBounds.getHeight()) / 2d);
@@ -59,23 +59,23 @@ public class Game2048 extends Application {
         if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
             scene.setCursor(Cursor.NONE);
         }
-        
+
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
-        double factor=Math.min(visualBounds.getWidth()/(gameBounds.getWidth()+MARGIN),
-                               visualBounds.getHeight()/(gameBounds.getHeight()+MARGIN));
+        double factor = Math.min(visualBounds.getWidth() / (gameBounds.getWidth() + MARGIN),
+                visualBounds.getHeight() / (gameBounds.getHeight() + MARGIN));
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(gameBounds.getWidth()/2d);
-        primaryStage.setMinHeight(gameBounds.getHeight()/2d);
-        primaryStage.setWidth((gameBounds.getWidth()+MARGIN)*factor);
-        primaryStage.setHeight((gameBounds.getHeight()+MARGIN)*factor);
+        primaryStage.setMinWidth(gameBounds.getWidth() / 2d);
+        primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
+        primaryStage.setWidth((gameBounds.getWidth() + MARGIN) * factor);
+        primaryStage.setHeight((gameBounds.getHeight() + MARGIN) * factor);
         primaryStage.show();
     }
 
     private boolean isARMDevice() {
         return System.getProperty("os.arch").toUpperCase().contains("ARM");
     }
-    
+
     private void addKeyHandler(Scene scene) {
         scene.setOnKeyPressed(ke -> {
             KeyCode keyCode = ke.getCode();
@@ -95,13 +95,13 @@ public class Game2048 extends Application {
                 gameManager.quitGame();
                 return;
             }
-            if (keyCode.isArrowKey() ) {
+            if (keyCode.isArrowKey()) {
                 Direction direction = Direction.valueFor(keyCode);
                 gameManager.move(direction);
             }
         });
     }
-    
+
     private void addSwipeHandlers(Scene scene) {
         scene.setOnSwipeUp(e -> gameManager.move(Direction.UP));
         scene.setOnSwipeRight(e -> gameManager.move(Direction.RIGHT));
@@ -110,10 +110,10 @@ public class Game2048 extends Application {
     }
 
     @Override
-    public void stop(){
+    public void stop() {
         gameManager.saveRecord();
     }
-    
+
     /**
      * @param args the command line arguments
      */

@@ -24,8 +24,8 @@ public class RecordManager {
     }
 
     public void saveRecord(Integer score) {
-        int oldRecord=restoreRecord();
-        
+        int oldRecord = restoreRecord();
+
         try {
             props.setProperty("record", Integer.toString(Math.max(oldRecord, score)));
             props.store(new FileWriter(SESSION_PROPERTIES_FILENAME), SESSION_PROPERTIES_FILENAME);
