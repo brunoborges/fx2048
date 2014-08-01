@@ -71,18 +71,4 @@ public class Location {
         return x >= 0 && x < gridSize && y >= 0 && y < gridSize;
     }
 
-    public boolean validFor(Direction direction, int gridSize) {
-        switch (direction) {
-            case UP:
-                return x >= 0;
-            case RIGHT:
-                return y < gridSize;
-            case DOWN:
-                return x < gridSize;
-            case LEFT:
-                return y >= 0;
-        }
-        return false;
-    }
-
 }
