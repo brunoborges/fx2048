@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
  *
  * @author jpereda
  */
-public class Grid {
+public class GridOperator {
     
     public static final int DEFAULT_GRID_SIZE = 4;
 
@@ -19,11 +19,11 @@ public class Grid {
     private final List<Integer> traversalX;
     private final List<Integer> traversalY;
     
-    public Grid(){
+    public GridOperator(){
         this(DEFAULT_GRID_SIZE);
     }
     
-    public Grid(int gridSize){
+    public GridOperator(int gridSize){
         this.gridSize=gridSize;
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
         this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());

@@ -45,17 +45,17 @@ public class GameManager extends Group {
     private final ParallelTransition parallelTransition = new ParallelTransition();
 
     private final Board board;
-    private final Grid grid;
+    private final GridOperator gridOperator;
 
     public GameManager() {
-        this(Grid.DEFAULT_GRID_SIZE);
+        this(GridOperator.DEFAULT_GRID_SIZE);
     }
 
     public GameManager(int gridSize) {
         this.gameGrid = new HashMap<>();
         
-        grid=new Grid(gridSize);
-        board = new Board(grid);
+        gridOperator=new GridOperator(gridSize);
+        board = new Board(gridOperator);
         this.getChildren().add(board);
 
         board.clearGameProperty().addListener((ov, b, b1) -> {
@@ -86,8 +86,8 @@ public class GameManager extends Group {
 
         board.setPoints(0);
 
-        grid.sortGrid(direction);
-        final int tilesWereMoved = grid.traverseGrid((x, y) -> {
+        gridOperator.sortGrid(direction);
+        final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -96,7 +96,7 @@ public class GameManager extends Group {
 
             Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
             Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-            Tile tileToBeMerged = nextLocation.isValidFor(grid.getGridSize()) ? gameGrid.get(nextLocation) : null;
+            Tile tileToBeMerged = nextLocation.isValidFor(gridOperator.getGridSize()) ? gameGrid.get(nextLocation) : null;
 
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
@@ -166,7 +166,7 @@ public class GameManager extends Group {
         do {
             farthest = location;
             location = farthest.offset(direction);
-        } while (location.isValidFor(grid.getGridSize()) && gameGrid.get(location) == null);
+        } while (location.isValidFor(gridOperator.getGridSize()) && gameGrid.get(location) == null);
 
         return farthest;
     }
@@ -179,11 +179,11 @@ public class GameManager extends Group {
         final AtomicInteger pairsOfMergeableTiles = new AtomicInteger();
 
         Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
-            grid.traverseGrid((x, y) -> {
+            gridOperator.traverseGrid((x, y) -> {
                 Location thisloc = new Location(x, y);
                 Optional.ofNullable(gameGrid.get(thisloc)).ifPresent(t->{
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
-                    if (nextLocation.isValidFor(grid.getGridSize())) {
+                    if (nextLocation.isValidFor(gridOperator.getGridSize())) {
                         Tile tileToBeMerged = gameGrid.get(nextLocation);
                         if(t.isMergeable(Optional.ofNullable(tileToBeMerged))){
                             pairsOfMergeableTiles.incrementAndGet();
@@ -216,7 +216,7 @@ public class GameManager extends Group {
     private void initializeGameGrid() {
         gameGrid.clear();
         locations.clear();
-        grid.traverseGrid((x, y) -> {
+        gridOperator.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             locations.add(thisloc);
             gameGrid.put(thisloc, null);

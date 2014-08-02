@@ -75,9 +75,9 @@ public class Board extends Group {
     private Timeline timerPause;
     
     private final int gridWidth;
-    private final Grid grid;
+    private final GridOperator grid;
     
-    public Board(Grid grid){
+    public Board(GridOperator grid){
         this.grid=grid;
         gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
         
