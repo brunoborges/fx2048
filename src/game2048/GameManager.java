@@ -13,9 +13,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -25,7 +23,6 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -43,14 +40,13 @@ public class GameManager extends Group {
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
-    private final List<Integer> traversalX;
-    private final List<Integer> traversalY;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
 
     private Board board;
+    private final Grid grid;
 
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
@@ -59,9 +55,8 @@ public class GameManager extends Group {
     public GameManager(int gridSize) {
         this.gameGrid = new HashMap<>();
         this.gridSize = gridSize;
-        this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-        this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
-
+        
+        grid=new Grid(gridSize);
         board = new Board(gridSize);
         this.getChildren().add(board);
 
@@ -93,9 +88,8 @@ public class GameManager extends Group {
 
         board.setPoints(0);
 
-        Collections.sort(traversalX, direction.getX() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-        Collections.sort(traversalY, direction.getY() == 1 ? Collections.reverseOrder() : Integer::compareTo);
-        final int tilesWereMoved = traverseGrid((int x, int y) -> {
+        grid.sortGrid(direction);
+        final int tilesWereMoved = grid.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             Tile tile = gameGrid.get(thisloc);
             if (tile == null) {
@@ -179,44 +173,29 @@ public class GameManager extends Group {
         return farthest;
     }
 
-    private int traverseGrid(IntBinaryOperator func) {
-        AtomicInteger at = new AtomicInteger();
-        traversalX.forEach(t_x -> {
-            traversalY.forEach(t_y -> {
-                at.addAndGet(func.applyAsInt(t_x, t_y));
-            });
-        });
-
-        return at.get();
-    }
-
+    // For the moment, this method is called only when the grid is full of tiles,
+    // what makes the use of Optional unnecessary
+    // But in this way it can be used when the board is not full to find the number 
+    // of mergeable tiles and provide a hint for the user, for instance   
     private boolean mergeMovementsAvailable() {
-        final SimpleBooleanProperty foundMergeableTile = new SimpleBooleanProperty(false);
+        final AtomicInteger pairsOfMergeableTiles = new AtomicInteger();
 
         Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
-            int mergeableFound = traverseGrid((x, y) -> {
+            grid.traverseGrid((x, y) -> {
                 Location thisloc = new Location(x, y);
-                Tile tile = gameGrid.get(thisloc);
-
-                if (tile != null) {
+                Optional.ofNullable(gameGrid.get(thisloc)).ifPresent(t->{
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
                     if (nextLocation.isValidFor(gridSize)) {
                         Tile tileToBeMerged = gameGrid.get(nextLocation);
-                        if (tile.isMergeable(Optional.of(tileToBeMerged))) {
-                            return 1;
+                        if(t.isMergeable(Optional.ofNullable(tileToBeMerged))){
+                            pairsOfMergeableTiles.incrementAndGet();
                         }
                     }
-                }
-
+                });
                 return 0;
             });
-
-            if (mergeableFound > 0) {
-                foundMergeableTile.set(true);
-            }
         });
-
-        return foundMergeableTile.getValue();
+        return pairsOfMergeableTiles.get()>0;
     }
 
     /**
@@ -239,7 +218,7 @@ public class GameManager extends Group {
     private void initializeGameGrid() {
         gameGrid.clear();
         locations.clear();
-        traverseGrid((x, y) -> {
+        grid.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
             locations.add(thisloc);
             gameGrid.put(thisloc, null);

@@ -70,6 +70,6 @@ public class Tile extends Label {
     }
 
     public boolean isMergeable(Optional<Tile> anotherTile) {
-        return anotherTile.isPresent() ? getValue().equals(anotherTile.get().getValue()) : false;
+        return anotherTile.filter(t->t.getValue().equals(getValue())).isPresent();
     }
 }

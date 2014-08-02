@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.stream.IntStream;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -26,6 +25,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -76,9 +76,11 @@ public class Board extends Group {
     private Timeline timerPause;
     
     private final int gridWidth;
+    private final Grid grid;
     
     public Board(int gridSize){
         this.gridSize=gridSize;
+        this.grid=new Grid(gridSize);
         gridWidth = CELL_SIZE * gridSize + BORDER_WIDTH * 2;
         
         createScore();
@@ -147,20 +149,24 @@ public class Board extends Group {
         getChildren().add(lblPoints);
     }
     
-    private void createGrid() {
+    private Rectangle createCell(int i, int j){
         final double arcSize = CELL_SIZE / 6d;
-
-        IntStream.range(0, gridSize)
-            .mapToObj(i -> IntStream.range(0, gridSize)
-                .mapToObj(j -> {
-                    Rectangle rect2 = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                    rect2.setArcHeight(arcSize);
-                    rect2.setArcWidth(arcSize);
-                    rect2.getStyleClass().add("game-grid-cell");
-                    return rect2;
-                }))
-            .flatMap(s -> s)
-            .forEach(gridGroup.getChildren()::add);
+        Rectangle cell = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        // provide default style in case css are not loaded
+        cell.setFill(Color.WHITE);
+        cell.setStroke(Color.GREY);
+        cell.setArcHeight(arcSize);
+        cell.setArcWidth(arcSize);
+        cell.getStyleClass().add("game-grid-cell");
+        return cell;
+    }
+    
+    private void createGrid() {
+        
+        grid.traverseGrid((i,j)->{
+            gridGroup.getChildren().add(createCell(i, j));
+            return 0;
+        });
 
         gridGroup.getStyleClass().add("game-grid");
         gridGroup.setManaged(false);
