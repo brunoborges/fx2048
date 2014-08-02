@@ -13,10 +13,18 @@ import java.util.stream.IntStream;
  */
 public class Grid {
     
+    public static final int DEFAULT_GRID_SIZE = 4;
+
+    private final int gridSize;
     private final List<Integer> traversalX;
     private final List<Integer> traversalY;
     
+    public Grid(){
+        this(DEFAULT_GRID_SIZE);
+    }
+    
     public Grid(int gridSize){
+        this.gridSize=gridSize;
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
         this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
     }
@@ -36,5 +44,7 @@ public class Grid {
 
         return at.get();
     }
+    
+    public int getGridSize(){ return gridSize; }
     
 }

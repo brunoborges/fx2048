@@ -23,8 +23,6 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.util.Duration;
 
@@ -35,29 +33,29 @@ import javafx.util.Duration;
 public class GameManager extends Group {
 
     public static final int FINAL_VALUE_TO_WIN = 2048;
-    public static final int CELL_SIZE = 128;
-    public static final int DEFAULT_GRID_SIZE = 4;
-
+    
+    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
+    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
+    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
+    
     private volatile boolean movingTiles = false;
-    private final int gridSize;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
 
-    private Board board;
+    private final Board board;
     private final Grid grid;
 
     public GameManager() {
-        this(DEFAULT_GRID_SIZE);
+        this(Grid.DEFAULT_GRID_SIZE);
     }
 
     public GameManager(int gridSize) {
         this.gameGrid = new HashMap<>();
-        this.gridSize = gridSize;
         
         grid=new Grid(gridSize);
-        board = new Board(gridSize);
+        board = new Board(grid);
         this.getChildren().add(board);
 
         board.clearGameProperty().addListener((ov, b, b1) -> {
@@ -98,7 +96,7 @@ public class GameManager extends Group {
 
             Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
             Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-            Tile tileToBeMerged = nextLocation.isValidFor(gridSize) ? gameGrid.get(nextLocation) : null;
+            Tile tileToBeMerged = nextLocation.isValidFor(grid.getGridSize()) ? gameGrid.get(nextLocation) : null;
 
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
@@ -168,7 +166,7 @@ public class GameManager extends Group {
         do {
             farthest = location;
             location = farthest.offset(direction);
-        } while (location.isValidFor(gridSize) && gameGrid.get(location) == null);
+        } while (location.isValidFor(grid.getGridSize()) && gameGrid.get(location) == null);
 
         return farthest;
     }
@@ -185,7 +183,7 @@ public class GameManager extends Group {
                 Location thisloc = new Location(x, y);
                 Optional.ofNullable(gameGrid.get(thisloc)).ifPresent(t->{
                     Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
-                    if (nextLocation.isValidFor(gridSize)) {
+                    if (nextLocation.isValidFor(grid.getGridSize())) {
                         Tile tileToBeMerged = gameGrid.get(nextLocation);
                         if(t.isMergeable(Optional.ofNullable(tileToBeMerged))){
                             pairsOfMergeableTiles.incrementAndGet();
@@ -203,8 +201,8 @@ public class GameManager extends Group {
      */
     private void redrawTilesInGameGrid() {
         gameGrid.values().stream().filter(Objects::nonNull).forEach(t -> {
-            double layoutX = t.getLocation().getLayoutX(CELL_SIZE) - (t.getMinWidth() / 2);
-            double layoutY = t.getLocation().getLayoutY(CELL_SIZE) - (t.getMinHeight() / 2);
+            double layoutX = t.getLocation().getLayoutX(Board.CELL_SIZE) - (t.getMinWidth() / 2);
+            double layoutY = t.getLocation().getLayoutY(Board.CELL_SIZE) - (t.getMinHeight() / 2);
 
             t.setLayoutX(layoutX);
             t.setLayoutY(layoutY);
@@ -273,8 +271,8 @@ public class GameManager extends Group {
         Tile tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
 
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+        double layoutX = tile.getLocation().getLayoutX(Board.CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2);
 
         tile.setLayoutX(layoutX);
         tile.setLayoutY(layoutY);
@@ -287,14 +285,12 @@ public class GameManager extends Group {
         animateNewlyAddedTile(tile).play();
     }
 
-    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
-
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         Timeline timeline = new Timeline();
         KeyValue kvX = new KeyValue(tile.layoutXProperty(),
-                newLocation.getLayoutX(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
         KeyValue kvY = new KeyValue(tile.layoutYProperty(),
-                newLocation.getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
         KeyFrame kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
         KeyFrame kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
@@ -305,25 +301,19 @@ public class GameManager extends Group {
         return timeline;
     }
 
-    // after last movement on full grid, check if there are movements available
-    private final EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
-        if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
-            board.setGameOver(true);
-        }
-    };
-
-    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
-
     private ScaleTransition animateNewlyAddedTile(Tile tile) {
         final ScaleTransition scale = new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
         scale.setToX(1.0);
         scale.setToY(1.0);
         scale.setInterpolator(Interpolator.EASE_OUT);
-        scale.setOnFinished(onFinishNewlyAddedTile);
+        scale.setOnFinished(e -> {
+            // after last movement on full grid, check if there are movements available
+            if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+                board.setGameOver(true);
+            }
+        });
         return scale;
     }
-
-    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     // pop effect: increase tile scale to 120% at the middle, then go back to 100%
     private SequentialTransition animateMergedTile(Tile tile) {
@@ -348,7 +338,7 @@ public class GameManager extends Group {
     public BooleanProperty isLayerOn() {
         return board.isLayerOn();
     }
-
+    
     public void pauseGame() {
         board.pauseGame();
     }

@@ -1,6 +1,5 @@
 package game2048;
 
-import static game2048.GameManager.CELL_SIZE;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -34,11 +33,11 @@ import javafx.util.Duration;
  * @author jpereda
  */
 public class Board extends Group {
+    public static final int CELL_SIZE = 128;
     private static final int BORDER_WIDTH = (14 + 2) / 2;
     private static final int TOP_HEIGHT = 92;
     private static final int GAP_HEIGHT = 50;
 
-    private final int gridSize;
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
@@ -78,10 +77,9 @@ public class Board extends Group {
     private final int gridWidth;
     private final Grid grid;
     
-    public Board(int gridSize){
-        this.gridSize=gridSize;
-        this.grid=new Grid(gridSize);
-        gridWidth = CELL_SIZE * gridSize + BORDER_WIDTH * 2;
+    public Board(Grid grid){
+        this.grid=grid;
+        gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
         
         createScore();
         createGrid();
@@ -425,12 +423,12 @@ public class Board extends Group {
     }
     
     public void saveSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridSize);
+        SessionManager sessionManager = new SessionManager(grid.getGridSize());
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
     
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridSize);
+        SessionManager sessionManager = new SessionManager(grid.getGridSize());
 
         doClearGame();
         timer.stop();
@@ -459,12 +457,12 @@ public class Board extends Group {
     }
     
     public void saveRecord() {
-        RecordManager recordManager = new RecordManager(gridSize);
+        RecordManager recordManager = new RecordManager(grid.getGridSize());
         recordManager.saveRecord(gameScoreProperty.getValue());
     }
     
     private void restoreRecord() {
-        RecordManager recordManager = new RecordManager(gridSize);
+        RecordManager recordManager = new RecordManager(grid.getGridSize());
         gameBestProperty.set(recordManager.restoreRecord());
     }
     

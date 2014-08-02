@@ -24,7 +24,7 @@ public class Tile extends Label {
     }
 
     private Tile(Integer value) {
-        final int squareSize = GameManager.CELL_SIZE - 13;
+        final int squareSize = Board.CELL_SIZE - 13;
         setMinSize(squareSize, squareSize);
         setMaxSize(squareSize, squareSize);
         setPrefSize(squareSize, squareSize);
