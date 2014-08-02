@@ -75,10 +75,10 @@ public class Board extends Group {
     private Timeline timerPause;
     
     private final int gridWidth;
-    private final GridOperator grid;
+    private final GridOperator gridOperator;
     
     public Board(GridOperator grid){
-        this.grid=grid;
+        this.gridOperator=grid;
         gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
         
         createScore();
@@ -161,7 +161,7 @@ public class Board extends Group {
     
     private void createGrid() {
         
-        grid.traverseGrid((i,j)->{
+        gridOperator.traverseGrid((i,j)->{
             gridGroup.getChildren().add(createCell(i, j));
             return 0;
         });
@@ -423,12 +423,12 @@ public class Board extends Group {
     }
     
     public void saveSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(grid.getGridSize());
+        SessionManager sessionManager = new SessionManager(gridOperator.getGridSize());
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
     
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(grid.getGridSize());
+        SessionManager sessionManager = new SessionManager(gridOperator.getGridSize());
 
         doClearGame();
         timer.stop();
@@ -457,12 +457,12 @@ public class Board extends Group {
     }
     
     public void saveRecord() {
-        RecordManager recordManager = new RecordManager(grid.getGridSize());
+        RecordManager recordManager = new RecordManager(gridOperator.getGridSize());
         recordManager.saveRecord(gameScoreProperty.getValue());
     }
     
     private void restoreRecord() {
-        RecordManager recordManager = new RecordManager(grid.getGridSize());
+        RecordManager recordManager = new RecordManager(gridOperator.getGridSize());
         gameBestProperty.set(recordManager.restoreRecord());
     }
     
