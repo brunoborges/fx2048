@@ -76,10 +76,13 @@ public class Board extends Group {
     
     private final int gridWidth;
     private final GridOperator gridOperator;
+    private final SessionManager sessionManager;
+
     
     public Board(GridOperator grid){
         this.gridOperator=grid;
         gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        sessionManager = new SessionManager(gridOperator);
         
         createScore();
         createGrid();
@@ -423,13 +426,10 @@ public class Board extends Group {
     }
     
     public void saveSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridOperator.getGridSize());
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
     
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridOperator.getGridSize());
-
         doClearGame();
         timer.stop();
         StringProperty sTime=new SimpleStringProperty("");

@@ -89,44 +89,43 @@ public class GameManager extends Group {
         gridOperator.sortGrid(direction);
         final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
-            Tile tile = gameGrid.get(thisloc);
-            if (tile == null) {
-                return 0;
-            }
-
             Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
+            Optional<Tile> opTile = optionalTile(thisloc);
+            
+            AtomicInteger result=new AtomicInteger();
             Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-            Tile tileToBeMerged = nextLocation.isValidFor(gridOperator.getGridSize()) ? gameGrid.get(nextLocation) : null;
+            optionalTile(nextLocation).filter(t-> t.isMergeable(opTile) && !t.isMerged())
+                    .ifPresent(t->{
+                        Tile tile=opTile.get();
+                        t.merge(tile);
+                        t.toFront();
+                        gameGrid.put(nextLocation, t);
+                        gameGrid.replace(thisloc, null);
 
-            if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
-                tileToBeMerged.merge(tile);
-                tileToBeMerged.toFront();
+                        parallelTransition.getChildren().add(animateExistingTile(tile, t.getLocation()));
+                        parallelTransition.getChildren().add(animateMergedTile(t));
+                        mergedToBeRemoved.add(tile);
 
-                gameGrid.put(nextLocation, tileToBeMerged);
-                gameGrid.replace(tile.getLocation(), null);
+                        board.addPoints(t.getValue());
 
-                parallelTransition.getChildren().add(animateExistingTile(tile, tileToBeMerged.getLocation()));
-                parallelTransition.getChildren().add(animateMergedTile(tileToBeMerged));
-                mergedToBeRemoved.add(tile);
-
-                board.addPoints(tileToBeMerged.getValue());
-
-                if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                    board.setGameWin(true);
-                }
-                return 1;
-            } else if (!farthestLocation.equals(tile.getLocation())) {
+                        if (t.getValue() == FINAL_VALUE_TO_WIN) {
+                            board.setGameWin(true);
+                        }
+                        result.set(1);
+                    });
+            if (result.get()==0 && opTile.isPresent() && !farthestLocation.equals(thisloc)) {
+                Tile tile=opTile.get();
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
 
                 gameGrid.put(farthestLocation, tile);
-                gameGrid.replace(tile.getLocation(), null);
+                gameGrid.replace(thisloc, null);
 
                 tile.setLocation(farthestLocation);
 
-                return 1;
+                result.set(1);
             }
 
-            return 0;
+            return result.get();
         });
 
         board.animateScore();
@@ -160,6 +159,10 @@ public class GameManager extends Group {
         parallelTransition.getChildren().clear();
     }
 
+    private Optional<Tile> optionalTile(Location loc) { 
+        return Optional.ofNullable(gameGrid.get(loc)); 
+    }
+    
     private Location findFarthestLocation(Location location, Direction direction) {
         Location farthest;
 
@@ -181,13 +184,9 @@ public class GameManager extends Group {
         Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
             gridOperator.traverseGrid((x, y) -> {
                 Location thisloc = new Location(x, y);
-                Optional.ofNullable(gameGrid.get(thisloc)).ifPresent(t->{
-                    Location nextLocation = thisloc.offset(direction); // calculates to a possible merge
-                    if (nextLocation.isValidFor(gridOperator.getGridSize())) {
-                        Tile tileToBeMerged = gameGrid.get(nextLocation);
-                        if(t.isMergeable(Optional.ofNullable(tileToBeMerged))){
-                            pairsOfMergeableTiles.incrementAndGet();
-                        }
+                optionalTile(thisloc).ifPresent(t->{
+                    if(t.isMergeable(optionalTile(thisloc.offset(direction)))){
+                        pairsOfMergeableTiles.incrementAndGet();
                     }
                 });
                 return 0;
@@ -242,7 +241,7 @@ public class GameManager extends Group {
 
         Arrays.asList(tile0, tile1).stream().filter(Objects::nonNull)
                 .forEach(t -> gameGrid.put(t.getLocation(), t));
-
+        
         redrawTilesInGameGrid();
 
         board.startGame();

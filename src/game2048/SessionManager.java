@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import javafx.beans.property.StringProperty;
 
 /**
@@ -21,21 +20,20 @@ public class SessionManager {
 
     public final String SESSION_PROPERTIES_FILENAME;
     private final Properties props = new Properties();
-    private final int grid_size;
+    private final GridOperator gridOperator;
 
-    public SessionManager(int grid_size) {
-        this.grid_size = grid_size;
-        this.SESSION_PROPERTIES_FILENAME = "game2048_" + grid_size + ".properties";
+    public SessionManager(GridOperator gridOperator) {
+        this.gridOperator = gridOperator;
+        this.SESSION_PROPERTIES_FILENAME = "game2048_" + gridOperator.getGridSize() + ".properties";
     }
 
     public void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
         try {
-            IntStream.range(0, grid_size).boxed().forEach(t_x -> {
-                IntStream.range(0, grid_size).boxed().forEach(t_y -> {
-                    Tile t = gameGrid.get(new Location(t_x, t_y));
-                    props.setProperty("Location_" + t_x.toString() + "_" + t_y.toString(),
-                            t != null ? t.getValue().toString() : "0");
-                });
+            gridOperator.traverseGrid((x,y)->{
+                Tile t = gameGrid.get(new Location(x, y));
+                props.setProperty("Location_" + x + "_" + y,
+                        t!=null? t.getValue().toString() : "0");
+                return 0;
             });
             props.setProperty("score", score.toString());
             props.setProperty("time", time.toString());
@@ -64,16 +62,15 @@ public class SessionManager {
             }
         }
 
-        IntStream.range(0, grid_size).boxed().forEach(t_x -> {
-            IntStream.range(0, grid_size).boxed().forEach(t_y -> {
-                String val = props.getProperty("Location_" + t_x.toString() + "_" + t_y.toString());
-                if (!val.equals("0")) {
-                    Tile t = Tile.newTile(new Integer(val));
-                    Location l = new Location(t_x, t_y);
-                    t.setLocation(l);
-                    gameGrid.put(l, t);
-                }
-            });
+        gridOperator.traverseGrid((x,y)->{
+            String val = props.getProperty("Location_" + x + "_" + y);
+            if (!val.equals("0")) {
+                Tile t = Tile.newTile(new Integer(val));
+                Location l = new Location(x, y);
+                t.setLocation(l);
+                gameGrid.put(l, t);
+            }
+            return 0;
         });
 
         time.set(props.getProperty("time"));
