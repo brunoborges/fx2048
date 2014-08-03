@@ -369,6 +369,32 @@ public class Board extends Group {
         timeline.play();
     }
     
+    public void addTile(Tile tile){
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+        gridGroup.getChildren().add(tile);
+    }
+    
+    public Tile addRandomTile(Location randomLocation) {
+        Tile tile = Tile.newRandomTile();
+        tile.setLocation(randomLocation);
+
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+        tile.setScaleX(0);
+        tile.setScaleY(0);
+
+        gridGroup.getChildren().add(tile);
+        
+        return tile;
+    }
+    
     public Group getGridGroup() {
         return gridGroup;
     }

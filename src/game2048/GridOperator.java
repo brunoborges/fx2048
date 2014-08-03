@@ -47,4 +47,8 @@ public class GridOperator {
     
     public int getGridSize(){ return gridSize; }
     
+    public boolean isValidLocation(Location loc){
+        return loc.getX() >= 0 && loc.getX() < gridSize && loc.getY() >= 0 && loc.getY() < gridSize;
+    }
+    
 }
