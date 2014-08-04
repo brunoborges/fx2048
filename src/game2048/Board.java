@@ -1,11 +1,9 @@
 package game2048;
 
-import static game2048.GameManager.CELL_SIZE;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.stream.IntStream;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -26,6 +24,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -34,11 +33,11 @@ import javafx.util.Duration;
  * @author jpereda
  */
 public class Board extends Group {
+    public static final int CELL_SIZE = 128;
     private static final int BORDER_WIDTH = (14 + 2) / 2;
     private static final int TOP_HEIGHT = 92;
     private static final int GAP_HEIGHT = 50;
 
-    private final int gridSize;
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
@@ -76,10 +75,14 @@ public class Board extends Group {
     private Timeline timerPause;
     
     private final int gridWidth;
+    private final GridOperator gridOperator;
+    private final SessionManager sessionManager;
+
     
-    public Board(int gridSize){
-        this.gridSize=gridSize;
-        gridWidth = CELL_SIZE * gridSize + BORDER_WIDTH * 2;
+    public Board(GridOperator grid){
+        this.gridOperator=grid;
+        gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        sessionManager = new SessionManager(gridOperator);
         
         createScore();
         createGrid();
@@ -147,20 +150,24 @@ public class Board extends Group {
         getChildren().add(lblPoints);
     }
     
-    private void createGrid() {
+    private Rectangle createCell(int i, int j){
         final double arcSize = CELL_SIZE / 6d;
-
-        IntStream.range(0, gridSize)
-            .mapToObj(i -> IntStream.range(0, gridSize)
-                .mapToObj(j -> {
-                    Rectangle rect2 = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                    rect2.setArcHeight(arcSize);
-                    rect2.setArcWidth(arcSize);
-                    rect2.getStyleClass().add("game-grid-cell");
-                    return rect2;
-                }))
-            .flatMap(s -> s)
-            .forEach(gridGroup.getChildren()::add);
+        Rectangle cell = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        // provide default style in case css are not loaded
+        cell.setFill(Color.WHITE);
+        cell.setStroke(Color.GREY);
+        cell.setArcHeight(arcSize);
+        cell.setArcWidth(arcSize);
+        cell.getStyleClass().add("game-grid-cell");
+        return cell;
+    }
+    
+    private void createGrid() {
+        
+        gridOperator.traverseGrid((i,j)->{
+            gridGroup.getChildren().add(createCell(i, j));
+            return 0;
+        });
 
         gridGroup.getStyleClass().add("game-grid");
         gridGroup.setManaged(false);
@@ -362,6 +369,32 @@ public class Board extends Group {
         timeline.play();
     }
     
+    public void addTile(Tile tile){
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+        gridGroup.getChildren().add(tile);
+    }
+    
+    public Tile addRandomTile(Location randomLocation) {
+        Tile tile = Tile.newRandomTile();
+        tile.setLocation(randomLocation);
+
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+        tile.setScaleX(0);
+        tile.setScaleY(0);
+
+        gridGroup.getChildren().add(tile);
+        
+        return tile;
+    }
+    
     public Group getGridGroup() {
         return gridGroup;
     }
@@ -419,13 +452,10 @@ public class Board extends Group {
     }
     
     public void saveSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridSize);
         sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(), LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
     }
     
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        SessionManager sessionManager = new SessionManager(gridSize);
-
         doClearGame();
         timer.stop();
         StringProperty sTime=new SimpleStringProperty("");
@@ -453,12 +483,12 @@ public class Board extends Group {
     }
     
     public void saveRecord() {
-        RecordManager recordManager = new RecordManager(gridSize);
+        RecordManager recordManager = new RecordManager(gridOperator.getGridSize());
         recordManager.saveRecord(gameScoreProperty.getValue());
     }
     
     private void restoreRecord() {
-        RecordManager recordManager = new RecordManager(gridSize);
+        RecordManager recordManager = new RecordManager(gridOperator.getGridSize());
         gameBestProperty.set(recordManager.restoreRecord());
     }
     

@@ -24,7 +24,7 @@ public class Tile extends Label {
     }
 
     private Tile(Integer value) {
-        final int squareSize = GameManager.CELL_SIZE - 13;
+        final int squareSize = Board.CELL_SIZE - 13;
         setMinSize(squareSize, squareSize);
         setMaxSize(squareSize, squareSize);
         setPrefSize(squareSize, squareSize);
@@ -70,6 +70,6 @@ public class Tile extends Label {
     }
 
     public boolean isMergeable(Optional<Tile> anotherTile) {
-        return anotherTile.isPresent() ? getValue().equals(anotherTile.get().getValue()) : false;
+        return anotherTile.filter(t->t.getValue().equals(getValue())).isPresent();
     }
 }
