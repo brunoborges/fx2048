@@ -24,6 +24,20 @@ After you've built the project you can run this with a simple java command.
 java -jar dist/Game2048.jar
 ```
 
+Running 2048FX on Mobile/Tablet
+=====================
+
+Thanks to the JavaFXPorts [project](https://bitbucket.org/javafxports), you can play 2048FX on mobile too.
+
+For Android, go to Google Play: 
+
+https://play.google.com/store/apps/details?id=org.jpereda.game2048
+
+For iOS, go to the Apple Store:
+
+https://itunes.apple.com/us/app/2048fx/id989966696?mt=8
+
+
 License
 ===================
 

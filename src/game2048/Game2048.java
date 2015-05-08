@@ -4,11 +4,18 @@ import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
@@ -19,6 +26,8 @@ import javafx.stage.Stage;
  */
 public class Game2048 extends Application {
 
+    public static final String VERSION = "1.0.4";
+    
     private GameManager gameManager;
     private Bounds gameBounds;
     private final static int MARGIN = 36;
@@ -33,7 +42,9 @@ public class Game2048 extends Application {
     @Override
     public void start(Stage primaryStage) {
         gameManager = new GameManager();
+        gameManager.setToolBar(createToolBar());
         gameBounds = gameManager.getLayoutBounds();
+        gameManager.setHostServices(getHostServices());
 
         StackPane root = new StackPane(gameManager);
         root.getStyleClass().addAll("game-root");
@@ -69,6 +80,11 @@ public class Game2048 extends Application {
         primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
         primaryStage.setWidth((gameBounds.getWidth() + MARGIN) * factor);
         primaryStage.setHeight((gameBounds.getHeight() + MARGIN) * factor);
+        
+        primaryStage.setOnCloseRequest(t->{
+            t.consume();
+            gameManager.quitGame();
+        });
         primaryStage.show();
     }
 
@@ -97,18 +113,46 @@ public class Game2048 extends Application {
             }
             if (keyCode.isArrowKey()) {
                 Direction direction = Direction.valueFor(keyCode);
-                gameManager.move(direction);
+                move(direction);
             }
         });
     }
 
     private void addSwipeHandlers(Scene scene) {
-        scene.setOnSwipeUp(e -> gameManager.move(Direction.UP));
-        scene.setOnSwipeRight(e -> gameManager.move(Direction.RIGHT));
-        scene.setOnSwipeLeft(e -> gameManager.move(Direction.LEFT));
-        scene.setOnSwipeDown(e -> gameManager.move(Direction.DOWN));
+        scene.setOnSwipeUp(e -> move(Direction.UP));
+        scene.setOnSwipeRight(e -> move(Direction.RIGHT));
+        scene.setOnSwipeLeft(e -> move(Direction.LEFT));
+        scene.setOnSwipeDown(e -> move(Direction.DOWN));
+    }
+    
+    private void move(Direction direction){
+        gameManager.move(direction);    
     }
 
+    private HBox createToolBar(){
+        HBox toolbar=new HBox();    
+        toolbar.setAlignment(Pos.CENTER);
+        toolbar.setPadding(new Insets(10.0));
+        Button btItem1 = createButtonItem("mSave", "Save Session", t->gameManager.saveSession());
+        Button btItem2 = createButtonItem("mRestore", "Restore Session", t->gameManager.restoreSession());
+        Button btItem3 = createButtonItem("mPause", "Pause Game", t->gameManager.pauseGame());
+        Button btItem4 = createButtonItem("mReplay", "Try Again", t->gameManager.tryAgain());
+        Button btItem5 = createButtonItem("mInfo", "About the Game", t->gameManager.aboutGame());
+        toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
+        Button btItem6 = createButtonItem("mQuit", "Quit Game", t->gameManager.quitGame());
+        toolbar.getChildren().add(btItem6);
+        return toolbar;
+    }
+    
+    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t){
+        Button g=new Button();
+        g.setPrefSize(40, 40);
+        g.setId(symbol);
+        g.setOnAction(t);
+        g.setTooltip(new Tooltip(text));
+        return g;
+    }
+    
     @Override
     public void stop() {
         gameManager.saveRecord();
