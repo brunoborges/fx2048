@@ -22,8 +22,10 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
+import javafx.application.HostServices;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.Group;
+import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
 /**
@@ -77,7 +79,17 @@ public class GameManager extends Group {
                 startGame();
             }
         });
-
+        board.restoreGameProperty().addListener((ov, b, b1) -> {
+            if (b1) {
+                doRestoreSession();
+            }
+        });
+        board.saveGameProperty().addListener((ov, b, b1) -> {
+            if (b1) {
+                doSaveSession();
+            }
+        });
+        
         initializeGameGrid();
         startGame();
     }
@@ -411,17 +423,31 @@ public class GameManager extends Group {
         board.quitGame();
     }
 
-    /**
-     * Save the game to a properties file
+    /** 
+     * Ask to save the game from a properties file with confirmation
      */
     public void saveSession() {
+        board.saveSession();
+    }
+    /**
+     * Save the game to a properties file, without confirmation
+     */
+    private void doSaveSession() {
         board.saveSession(gameGrid);
     }
 
     /** 
-     * Restore the game from a properties file, without confirmation
+     * Ask to restore the game from a properties file with confirmation
      */
     public void restoreSession() {
+        board.restoreSession();
+    }
+    
+    /** 
+     * Restore the game from a properties file, without confirmation
+     */
+    private void doRestoreSession() {
+        initializeGameGrid();
         if (board.restoreSession(gameGrid)) {
             redrawTilesInGameGrid();
         }
@@ -434,4 +460,19 @@ public class GameManager extends Group {
         board.saveRecord();
     }
 
+    public void tryAgain() {
+        board.tryAgain();
+    }
+    
+    public void aboutGame() {
+        board.aboutGame();
+    }
+    
+    public void setToolBar(HBox toolbar){
+        board.setToolBar(toolbar);
+    }
+    
+    public void setHostServices(HostServices hostServices){
+        board.setHostServices(hostServices);
+    }
 }
