@@ -44,7 +44,6 @@ public class GameManager extends Group {
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
-    private final ParallelTransition parallelTransition = new ParallelTransition();
 
     private final Board board;
     private final GridOperator gridOperator;
@@ -158,7 +157,8 @@ public class GameManager extends Group {
         }
 
         board.setPoints(0);
-
+        mergedToBeRemoved.clear();
+        ParallelTransition parallelTransition = new ParallelTransition();
         gridOperator.sortGrid(direction);
         final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
             Location thisloc = new Location(x, y);
@@ -202,34 +202,30 @@ public class GameManager extends Group {
         });
 
         board.animateScore();
+        if(parallelTransition.getChildren().size()>0){
+            parallelTransition.setOnFinished(e -> {
+                board.getGridGroup().getChildren().removeAll(mergedToBeRemoved);
+                // reset merged after each movement
+                gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
 
-        parallelTransition.setOnFinished(e -> {
+                Location randomAvailableLocation = findRandomAvailableLocation();
+                if (randomAvailableLocation == null && mergeMovementsAvailable() == 0 ) {
+                    // game is over if there are no more moves available
+                    board.setGameOver(true);
+                } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
+                    synchronized (gameGrid) {
+                        movingTiles = false;
+                    }
+                    addAndAnimateRandomTile(randomAvailableLocation);
+                }
+            });
+
             synchronized (gameGrid) {
-                movingTiles = false;
+                movingTiles = true;
             }
 
-            board.getGridGroup().getChildren().removeAll(mergedToBeRemoved);
-
-            Location randomAvailableLocation = findRandomAvailableLocation();
-            if (randomAvailableLocation == null && mergeMovementsAvailable() == 0 ) {
-                // game is over if there are no more moves available
-                board.setGameOver(true);
-            } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
-                addAndAnimateRandomTile(randomAvailableLocation);
-            }
-
-            mergedToBeRemoved.clear();
-
-            // reset merged after each movement
-            gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
-        });
-
-        synchronized (gameGrid) {
-            movingTiles = true;
+            parallelTransition.play();
         }
-
-        parallelTransition.play();
-        parallelTransition.getChildren().clear();
     }
 
     /**
