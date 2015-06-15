@@ -297,8 +297,10 @@ public class Board extends Group {
                 if(btn2!=null){
                     buttonsOverlay.getChildren().add(btn2);
                 }
-                Board.this.getChildren().addAll(overlay,buttonsOverlay);
-                layerOnProperty.set(true);
+                if(!layerOnProperty.get()){
+                    Board.this.getChildren().addAll(overlay,buttonsOverlay);
+                    layerOnProperty.set(true);
+                }
             }
         }
     }
