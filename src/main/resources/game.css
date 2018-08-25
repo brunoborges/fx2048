@@ -258,87 +258,87 @@
 SVG ICONS https://icomoon.io/app/
 */
 
-#mSave { 
+#saveButton {
     -fx-shape: "M16 18l8-8h-6v-8h-4v8h-6zM23.273 14.727l-2.242 2.242 8.128 3.031-13.158 4.907-13.158-4.907 8.127-3.031-2.242-2.242-8.727 3.273v8l16 6 16-6v-8z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
     -fx-focus-traversable: true;
 }
-#mSave:hover {
+#saveButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mSave:pressed {
+#saveButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
-#mRestore { 
+#restoreButton {
     -fx-shape: "M0 28h32v2h-32zM32 24v2h-32v-2l4-8h8v4h8v-4h8zM7 10l9-9 9 9h-7v8h-4v-8z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
     -fx-focus-traversable: true;
 }
-#mRestore:hover {
+#restoreButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mRestore:pressed {
+#restoreButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
-#mPause { 
+#pauseButton {
     -fx-shape: "M16 0c-8.837 0-16 7.163-16 16s7.163 16 16 16 16-7.163 16-16-7.163-16-16-16zM16 29c-7.18 0-13-5.82-13-13s5.82-13 13-13 13 5.82 13 13-5.82 13-13 13zM10 10h4v12h-4zM18 10h4v12h-4z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.1;
     -fx-scale-y: 1.1;
     -fx-focus-traversable: true;
 }
-#mPause:hover {
+#pauseButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mPause:pressed {
+#pauseButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
-#mReplay { 
+#replayButton {
     -fx-shape: "M0 27.429v-8q0-0.464 0.339-0.804t0.804-0.339h8q0.464 0 0.804 0.339t0.339 0.804-0.339 0.804l-2.446 2.446q1.268 1.179 2.875 1.821t3.339 0.643q2.393 0 4.464-1.161t3.321-3.196q0.196-0.304 0.946-2.089 0.143-0.411 0.536-0.411h3.429q0.232 0 0.402 0.17t0.17 0.402q0 0.089-0.018 0.125-1.143 4.786-4.786 7.759t-8.536 2.973q-2.607 0-5.045-0.982t-4.348-2.804l-2.304 2.304q-0.339 0.339-0.804 0.339t-0.804-0.339-0.339-0.804zM0.321 13.143v-0.125q1.161-4.786 4.821-7.759t8.571-2.973q2.607 0 5.071 0.991t4.375 2.795l2.321-2.304q0.339-0.339 0.804-0.339t0.804 0.339 0.339 0.804v8q0 0.464-0.339 0.804t-0.804 0.339h-8q-0.464 0-0.804-0.339t-0.339-0.804 0.339-0.804l2.464-2.464q-2.643-2.446-6.232-2.446-2.393 0-4.464 1.161t-3.321 3.196q-0.196 0.304-0.946 2.089-0.143 0.411-0.536 0.411h-3.554q-0.232 0-0.402-0.17t-0.17-0.402z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
     -fx-focus-traversable: true;
 }
-#mReplay:hover {
+#replayButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mReplay:pressed {
+#replayButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
-#mInfo {
+#infoButton {
     -fx-shape: "M1344 1472v128q0 26-19 45t-45 19h-512q-26 0-45-19t-19-45v-128q0-26 19-45t45-19h64v-384h-64q-26 0-45-19t-19-45v-128q0-26 19-45t45-19h384q26 0 45 19t19 45v576h64q26 0 45 19t19 45zm-128-1152v192q0 26-19 45t-45 19h-256q-26 0-45-19t-19-45v-192q0-26 19-45t45-19h256q26 0 45 19t19 45z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 0.7;
     -fx-scale-y: 1.0;
     -fx-focus-traversable: true;
 }
-#mInfo:hover {
+#infoButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mInfo:pressed {
+#infoButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
-#mQuit {
+#quitButton {
     -fx-shape: "M20 4.581v4.249c1.131 0.494 2.172 1.2 3.071 2.099 1.889 1.889 2.929 4.4 2.929 7.071s-1.040 5.182-2.929 7.071c-1.889 1.889-4.4 2.929-7.071 2.929s-5.182-1.040-7.071-2.929c-1.889-1.889-2.929-4.4-2.929-7.071s1.040-5.182 2.929-7.071c0.899-0.899 1.94-1.606 3.071-2.099v-4.249c-5.783 1.721-10 7.077-10 13.419 0 7.732 6.268 14 14 14s14-6.268 14-14c0-6.342-4.217-11.698-10-13.419zM14 0h4v16h-4z";
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
     -fx-focus-traversable: true;
 }
-#mQuit:hover {
+#quitButton:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
-#mQuit:pressed {
+#quitButton:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }
