@@ -17,7 +17,7 @@ import javafx.scene.text.Font;
 /**
  * @author bruno.borges@oracle.com
  */
-public class GamePane extends StackPane {
+class GamePane extends StackPane {
 
     private GameManager gameManager;
     private Bounds gameBounds;
@@ -29,7 +29,7 @@ public class GamePane extends StackPane {
         Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
     }
 
-    public GamePane() {
+    GamePane() {
         gameManager = new GameManager();
         gameManager.setToolBar(createToolBar());
         gameBounds = gameManager.getLayoutBounds();
@@ -40,8 +40,8 @@ public class GamePane extends StackPane {
         ChangeListener<Number> resize = (ov, v, v1) -> {
             double scale = Math.min((getWidth() - MARGIN) / gameBounds.getWidth(), (getHeight() - MARGIN) / gameBounds.getHeight());
             gameManager.setScale(scale);
-            gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
-            gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
+            gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2.);
+            gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2.);
         };
         widthProperty().addListener(resize);
         heightProperty().addListener(resize);
@@ -90,34 +90,34 @@ public class GamePane extends StackPane {
     }
 
     private HBox createToolBar(){
-        HBox toolbar=new HBox();    
+        HBox toolbar = new HBox();
         toolbar.setAlignment(Pos.CENTER);
         toolbar.setPadding(new Insets(10.0));
-        Button btItem1 = createButtonItem("mSave", "Save Session", t->gameManager.saveSession());
-        Button btItem2 = createButtonItem("mRestore", "Restore Session", t->gameManager.restoreSession());
-        Button btItem3 = createButtonItem("mPause", "Pause Game", t->gameManager.pauseGame());
-        Button btItem4 = createButtonItem("mReplay", "Try Again", t->gameManager.tryAgain());
-        Button btItem5 = createButtonItem("mInfo", "About the Game", t->gameManager.aboutGame());
-        toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
-        Button btItem6 = createButtonItem("mQuit", "Quit Game", t->gameManager.quitGame());
+        Button saveButton = createButtonItem("saveButton", "Save Session", t -> gameManager.saveSession());
+        Button restoreButton = createButtonItem("restoreButton", "Restore Session", t -> gameManager.restoreSession());
+        Button pauseButton = createButtonItem("pauseButton", "Pause Game", t -> gameManager.pauseGame());
+        Button replayButton = createButtonItem("replayButton", "Try Again", t -> gameManager.tryAgain());
+        Button infoButton = createButtonItem("infoButton", "About the Game", t -> gameManager.aboutGame());
+        toolbar.getChildren().setAll(saveButton, restoreButton, pauseButton, replayButton, infoButton);
+        Button btItem6 = createButtonItem("quitButton", "Quit Game", t -> gameManager.quitGame());
         toolbar.getChildren().add(btItem6);
         return toolbar;
     }
     
     private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t){
-        Button g=new Button();
-        g.setPrefSize(40, 40);
-        g.setId(symbol);
-        g.setOnAction(t);
-        g.setTooltip(new Tooltip(text));
-        return g;
+        Button button = new Button();
+        button.setPrefSize(40, 40);
+        button.setId(symbol);
+        button.setOnAction(t);
+        button.setTooltip(new Tooltip(text));
+        return button;
     }
 
-    public GameManager getGameManager() {
+    GameManager getGameManager() {
         return gameManager;
     }
 
-    public static int getMargin() {
+    static int getMargin() {
         return MARGIN;
     }
 }

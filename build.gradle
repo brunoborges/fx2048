@@ -1,0 +1,12 @@
+version = 1.0
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.2'
+}

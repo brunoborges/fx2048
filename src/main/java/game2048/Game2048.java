@@ -15,7 +15,7 @@ import javafx.stage.Stage;
  */
 public class Game2048 extends Application {
 
-    public static final String VERSION = "1.0.4";
+    static final String VERSION = "1.0.4";
     
     private GamePane root;
 
@@ -24,12 +24,7 @@ public class Game2048 extends Application {
         root = new GamePane();
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add("game2048/game.css");
-
-        if (isARMDevice()) {
-            primaryStage.setFullScreen(true);
-            primaryStage.setFullScreenExitHint("");
-        }
+        scene.getStylesheets().add("game.css");
 
         if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
             scene.setCursor(Cursor.NONE);
@@ -42,20 +37,16 @@ public class Game2048 extends Application {
                 visualBounds.getHeight() / (gameBounds.getHeight() + MARGIN));
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(gameBounds.getWidth() / 2d);
-        primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
+        primaryStage.setMinWidth(gameBounds.getWidth() / 2.);
+        primaryStage.setMinHeight(gameBounds.getHeight() / 2.);
         primaryStage.setWidth((gameBounds.getWidth() + MARGIN) * factor);
         primaryStage.setHeight((gameBounds.getHeight() + MARGIN) * factor);
         
-        primaryStage.setOnCloseRequest(t->{
+        primaryStage.setOnCloseRequest(t -> {
             t.consume();
             root.getGameManager().quitGame();
         });
         primaryStage.show();
-    }
-
-    private boolean isARMDevice() {
-        return System.getProperty("os.arch").toUpperCase().contains("ARM");
     }
 
     @Override
