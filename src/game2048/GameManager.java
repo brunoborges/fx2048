@@ -399,7 +399,7 @@ public class GameManager extends Group {
 
     /**
      * Check if overlay covers the grid or not
-     * @return 
+     * @return boolean
      */
     public BooleanProperty isLayerOn() {
         return board.isLayerOn();

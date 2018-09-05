@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 /**
  *
  * @author José Pereda
- * @date 22-abr-2014 - 12:11:11
  */
 public class RecordManager {
 

@@ -14,7 +14,6 @@ import javafx.beans.property.StringProperty;
 /**
  *
  * @author José Pereda
- * @date 22-abr-2014 - 12:11:11
  */
 public class SessionManager {
 
