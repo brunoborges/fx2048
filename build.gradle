@@ -1,0 +1,59 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    jcenter()
+}
+
+mainClassName='game2048.Game2048'
+group 'game2048'
+version '1.0.0-SNAPSHOT'
+
+def currentOS = org.gradle.internal.os.OperatingSystem.current();
+def classifier
+if (currentOS.isWindows()) {
+    classifier = 'win'
+} else if (currentOS.isLinux()) {
+    classifier = 'linux'
+} else if (currentOS.isMacOsX()) {
+    classifier = 'mac'
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+            '--module-path', classpath.asPath,
+            '--add-modules', 'javafx.controls'
+        ]
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+run {
+    doFirst {
+        jvmArgs = [
+            '--module-path', classpath.filter{!it.name.startsWith("javafx-") || it.name.contains("-$classifier")}.asPath,
+            '--add-modules', 'javafx.controls'
+        ]
+        classpath = sourceSets.main.output 
+    }
+}
+
+dependencies {
+    compile "org.openjfx:javafx-controls:11-ea+25:$classifier"
+    compile "org.openjfx:javafx-graphics:11-ea+25:$classifier"
+    compile "org.openjfx:javafx-base:11-ea+25:$classifier"
+    compile 'com.google.guava:guava:23.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+        }
+    }
+}
