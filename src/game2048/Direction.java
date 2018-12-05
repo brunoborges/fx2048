@@ -3,7 +3,7 @@ package game2048;
 import javafx.scene.input.KeyCode;
 
 /**
- * @author bruno.borges@oracle.com
+ * @author Bruno Borges
  */
 public enum Direction {
 

@@ -15,7 +15,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 
 /**
- * @author bruno.borges@oracle.com
+ * @author Bruno Borges
  */
 public class GamePane extends StackPane {
 

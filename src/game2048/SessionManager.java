@@ -13,7 +13,7 @@ import javafx.beans.property.StringProperty;
 
 /**
  *
- * @author José Pereda
+ * @author Jose Pereda
  */
 public class SessionManager {
 

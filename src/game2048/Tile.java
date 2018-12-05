@@ -6,7 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 
 /**
- * @author bruno.borges@oracle.com
+ * @author Bruno Borges
  */
 public class Tile extends Label {
 

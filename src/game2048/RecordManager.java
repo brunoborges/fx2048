@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author José Pereda
+ * @author Jose Pereda
  */
 public class RecordManager {
 

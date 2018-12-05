@@ -30,7 +30,8 @@ import javafx.util.Duration;
 
 /**
  *
- * @author bruno
+ * @author Bruno Borges
+ * @author Jose Pereda
  */
 public class GameManager extends Group {
 

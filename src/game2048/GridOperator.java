@@ -9,7 +9,8 @@ import java.util.stream.IntStream;
 
 /**
  *
- * @author jpereda
+ * @author Jose Pereda
+ * @author Bruno Borges
  */
 public class GridOperator {
     

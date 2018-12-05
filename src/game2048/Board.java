@@ -39,9 +39,11 @@ import javafx.util.Duration;
 
 /**
  *
- * @author jpereda
+ * @author Jose Pereda
+ * @author Bruno Borges
  */
 public class Board extends Group {
+
     public static final int CELL_SIZE = 128;
     private static final int BORDER_WIDTH = (14 + 2) / 2;
     private static final int TOP_HEIGHT = 92;
