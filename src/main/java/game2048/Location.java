@@ -1,7 +1,7 @@
 package game2048;
 
 /**
- * @author bruno.borges@oracle.com
+ * @author Bruno Borges
  */
 public class Location {
 

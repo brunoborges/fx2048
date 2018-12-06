@@ -1,5 +1,7 @@
 package game2048;
 
+import javafx.beans.property.StringProperty;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -9,10 +11,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.StringProperty;
 
 /**
- *
  * @author Jose Pereda
  */
 public class SessionManager {
@@ -28,10 +28,10 @@ public class SessionManager {
 
     public void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
         try {
-            gridOperator.traverseGrid((x,y)->{
+            gridOperator.traverseGrid((x, y) -> {
                 Tile t = gameGrid.get(new Location(x, y));
                 props.setProperty("Location_" + x + "_" + y,
-                        t!=null? t.getValue().toString() : "0");
+                        t != null ? t.getValue().toString() : "0");
                 return 0;
             });
             props.setProperty("score", score.toString());
@@ -61,10 +61,10 @@ public class SessionManager {
             }
         }
 
-        gridOperator.traverseGrid((x,y)->{
+        gridOperator.traverseGrid((x, y) -> {
             String val = props.getProperty("Location_" + x + "_" + y);
             if (!val.equals("0")) {
-                Tile t = Tile.newTile(new Integer(val));
+                Tile t = Tile.newTile(Integer.parseInt(val));
                 Location l = new Location(x, y);
                 t.setLocation(l);
                 gameGrid.put(l, t);
@@ -76,7 +76,7 @@ public class SessionManager {
 
         String score = props.getProperty("score");
         if (score != null) {
-            return new Integer(score);
+            return Integer.parseInt(score);
         }
         return 0;
     }

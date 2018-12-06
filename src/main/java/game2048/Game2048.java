@@ -16,15 +16,34 @@ import javafx.stage.Stage;
 public class Game2048 extends Application {
 
     public static final String VERSION = "1.0.4";
-    
+
     private GamePane root;
+
+    private static Game2048 applicationInstance;
+
+    public Game2048() {
+        applicationInstance = this;
+    }
+
+    public synchronized static Application getInstance() {
+        if (applicationInstance == null) {
+            while (applicationInstance == null) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return applicationInstance;
+    }
 
     @Override
     public void start(Stage primaryStage) {
         root = new GamePane();
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add("game2048/game.css");
+        scene.getStylesheets().add(Game2048.class.getResource("game.css").toExternalForm());
 
         if (isARMDevice()) {
             primaryStage.setFullScreen(true);
@@ -46,8 +65,8 @@ public class Game2048 extends Application {
         primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
         primaryStage.setWidth((gameBounds.getWidth() + MARGIN) * factor);
         primaryStage.setHeight((gameBounds.getHeight() + MARGIN) * factor);
-        
-        primaryStage.setOnCloseRequest(t->{
+
+        primaryStage.setOnCloseRequest(t -> {
             t.consume();
             root.getGameManager().quitGame();
         });

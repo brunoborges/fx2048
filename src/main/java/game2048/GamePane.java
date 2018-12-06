@@ -1,5 +1,6 @@
 package game2048;
 
+import javafx.application.HostServices;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -25,7 +26,8 @@ public class GamePane extends StackPane {
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
-        // The font may be used and redistributed under the terms of the Apache License, Version 2.0.
+        // The font may be used and redistributed under the terms of the Apache License, Version
+        // 2.0.
         Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
     }
 
@@ -38,7 +40,8 @@ public class GamePane extends StackPane {
 
         getStyleClass().addAll("game-root");
         ChangeListener<Number> resize = (ov, v, v1) -> {
-            double scale = Math.min((getWidth() - MARGIN) / gameBounds.getWidth(), (getHeight() - MARGIN) / gameBounds.getHeight());
+            double scale = Math.min((getWidth() - MARGIN) / gameBounds.getWidth(),
+                    (getHeight() - MARGIN) / gameBounds.getHeight());
             gameManager.setScale(scale);
             gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
             gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
@@ -84,28 +87,29 @@ public class GamePane extends StackPane {
         node.setOnSwipeLeft(e -> move(Direction.LEFT));
         node.setOnSwipeDown(e -> move(Direction.DOWN));
     }
-    
-    private void move(Direction direction){
-        gameManager.move(direction);    
+
+    private void move(Direction direction) {
+        gameManager.move(direction);
     }
 
-    private HBox createToolBar(){
-        HBox toolbar=new HBox();    
+    private HBox createToolBar() {
+        HBox toolbar = new HBox();
         toolbar.setAlignment(Pos.CENTER);
         toolbar.setPadding(new Insets(10.0));
-        Button btItem1 = createButtonItem("mSave", "Save Session", t->gameManager.saveSession());
-        Button btItem2 = createButtonItem("mRestore", "Restore Session", t->gameManager.restoreSession());
-        Button btItem3 = createButtonItem("mPause", "Pause Game", t->gameManager.pauseGame());
-        Button btItem4 = createButtonItem("mReplay", "Try Again", t->gameManager.tryAgain());
-        Button btItem5 = createButtonItem("mInfo", "About the Game", t->gameManager.aboutGame());
+        Button btItem1 = createButtonItem("mSave", "Save Session", t -> gameManager.saveSession());
+        Button btItem2 =
+                createButtonItem("mRestore", "Restore Session", t -> gameManager.restoreSession());
+        Button btItem3 = createButtonItem("mPause", "Pause Game", t -> gameManager.pauseGame());
+        Button btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
+        Button btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
         toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
-        Button btItem6 = createButtonItem("mQuit", "Quit Game", t->gameManager.quitGame());
+        Button btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
         toolbar.getChildren().add(btItem6);
         return toolbar;
     }
-    
-    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t){
-        Button g=new Button();
+
+    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t) {
+        Button g = new Button();
         g.setPrefSize(40, 40);
         g.setId(symbol);
         g.setOnAction(t);
@@ -120,4 +124,5 @@ public class GamePane extends StackPane {
     public static int getMargin() {
         return MARGIN;
     }
+
 }

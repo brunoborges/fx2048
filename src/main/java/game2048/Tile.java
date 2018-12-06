@@ -1,9 +1,10 @@
 package game2048;
 
-import java.util.Optional;
-import java.util.Random;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+
+import java.util.Optional;
+import java.util.Random;
 
 /**
  * @author Bruno Borges
@@ -70,6 +71,6 @@ public class Tile extends Label {
     }
 
     public boolean isMergeable(Optional<Tile> anotherTile) {
-        return anotherTile.filter(t->t.getValue().equals(getValue())).isPresent();
+        return anotherTile.filter(t -> t.getValue().equals(getValue())).isPresent();
     }
 }

@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Jose Pereda
  */
 public class RecordManager {
@@ -54,7 +53,7 @@ public class RecordManager {
 
         String score = props.getProperty("record");
         if (score != null) {
-            return new Integer(score);
+            return Integer.parseInt(score);
         }
         return 0;
     }
