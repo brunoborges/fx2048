@@ -1,42 +1,24 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.0'
-        classpath 'org.kordamp.gradle:jdeps-gradle-plugin:0.5.0'
-        classpath 'org.kordamp.gradle:jdeprscan-gradle-plugin:0.4.0'
-        classpath 'gradle.plugin.gradle-java9-collision:plugin:0.2.3'
-        classpath 'org.javamodularity:moduleplugin:1.2.1'
-        classpath 'gradle.plugin.org.beryx:badass-jlink-plugin:2.1.6'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
-        classpath 'org.slf4j:slf4j-simple:1.8.0-beta2'
-    }
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin'      version '0.0.5'
+    id 'org.jonnyzzz.java9c'           version '0.2.3'
+    id 'org.beryx.jlink'               version '2.1.6'
+    id 'com.github.ben-manes.versions' version '0.20.0'
 }
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.google.osdetector'
-apply plugin: 'org.kordamp.gradle.jdeps'
-apply plugin: 'org.kordamp.gradle.jdeprscan'
-apply plugin: 'org.jonnyzzz.java9c'
-apply plugin: 'org.javamodularity.moduleplugin'
-apply plugin: 'org.beryx.jlink'
-apply plugin: 'com.github.ben-manes.versions'
 
 repositories {
     mavenCentral()
 }
 
-ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
+mainClassName = 'fxgame/game2048.Game2048'
 
-mainClassName = "fxgame/game2048.Game2048"
-
-dependencies {
-    compile "org.openjfx:javafx-base:11.0.1:$platform"
-    compile "org.openjfx:javafx-graphics:11.0.1:$platform"
-    compile "org.openjfx:javafx-controls:11.0.1:$platform"
+javafx {
+    modules = [
+       'javafx.base',
+       'javafx.graphics',
+       'javafx.controls'
+    ]
 }
 
 jlink {
@@ -45,4 +27,3 @@ jlink {
         name = 'game2048'
     }
 }
-
