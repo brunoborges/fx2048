@@ -30,5 +30,6 @@ jobs:
           versionSpec: '1.11'
           jdkArchitectureOption: x64
           jdkSourceOption: localDirectory
-          jdkFile: $(Agent.ToolsDirectory)\openjdk-11.0.1_windows-x64_bin.zip 
+          jdkFile: $(Agent.ToolsDirectory)\openjdk-11.0.1_windows-x64_bin.zip
+          jdkDestinationDirectory: $(Agent.ToolsDirectory)
       - template: gradle-steps.yml
