@@ -27,3 +27,8 @@ jlink {
         name = 'game2048'
     }
 }
+
+// Print the current JVM
+def currentJvm = org.gradle.internal.jvm.Jvm.current()
+println "JVM: " + currentJvm
+println "JVM Home: " + currentJvm.getJavaHome()
