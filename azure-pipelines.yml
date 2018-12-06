@@ -5,17 +5,17 @@ trigger:
   - master
 
 jobs:
-#  - job: Linux
-#    pool:
-#      vmImage: 'Ubuntu-16.04'
-#    steps:
-#      - template: gradle-steps.yml
+  - job: Linux
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    steps:
+      - template: gradle-steps.yml
 
-#  - job: Mac_OS
-#    pool:
-#      vmImage: 'macOS-10.13'
-#    steps:
-#      - template: gradle-steps.yml
+  - job: Mac_OS
+    pool:
+      vmImage: 'macOS-10.13'
+    steps:
+      - template: gradle-steps.yml
 
   - job: Windows
     pool:
