@@ -4,6 +4,8 @@
 trigger:
   - master
 
+parallel: 4
+
 jobs:
   - job: Linux
     pool:
@@ -21,15 +23,15 @@ jobs:
     pool:
       vmImage: 'vs2017-win2016'
     steps:
-#      - task: PowerShell@2
-#        inputs:
-#          targetType: filePath
-#          filePath: azure-jdk-install.ps1
+      - task: PowerShell@2
+        inputs:
+          targetType: filePath
+          filePath: azure-jdk-install.ps1
       - task: JavaToolInstaller@0
         inputs:
           versionSpec: '1.11'
           jdkArchitectureOption: x64
-#          jdkSourceOption: localDirectory
-#          jdkFile: $env:DOWNLOADSECUREFILE_SECUREFILEPATH
+          jdkSourceOption: localDirectory
+          jdkFile: $Env:AGENT_WORKFOLDER\openjdk-11.0.1_windows-x64_bin.zip 
 #          jdkDestinationDirectory: $env:JAVA_HOME
       - template: gradle-steps.yml
