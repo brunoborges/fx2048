@@ -4,8 +4,6 @@
 trigger:
   - master
 
-parallel: 4
-
 jobs:
   - job: Linux
     pool:
