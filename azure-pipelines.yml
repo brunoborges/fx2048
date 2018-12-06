@@ -1,23 +1,18 @@
 # Gradle
-# Build your Java project and run tests with Gradle using a Gradle wrapper script.
-# Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 trigger:
-- master
+  - master
 
-pool:
-  vmImage: 'Ubuntu-16.04'
+jobs:
+  - job: Linux
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    steps:
+      - template: gradle-steps.yml
 
-steps:
-- task: Gradle@2
-  inputs:
-    workingDirectory: ''
-    gradleWrapperFile: 'gradlew'
-    gradleOptions: '-Xmx512m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.11'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: false
-    testResultsFiles: '**/TEST-*.xml'
-    tasks: 'build'
+  - job: Mac OS
+    pool:
+      vmImage: 'macOS-10.13'
+    steps:
+      - template: gradle-steps.yml
