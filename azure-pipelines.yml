@@ -5,17 +5,17 @@ trigger:
   - master
 
 jobs:
-  - job: Linux
-    pool:
-      vmImage: 'Ubuntu-16.04'
-    steps:
-      - template: gradle-steps.yml
+#  - job: Linux
+#    pool:
+#      vmImage: 'Ubuntu-16.04'
+#    steps:
+#      - template: gradle-steps.yml
 
-  - job: Mac_OS
-    pool:
-      vmImage: 'macOS-10.13'
-    steps:
-      - template: gradle-steps.yml
+#  - job: Mac_OS
+#    pool:
+#      vmImage: 'macOS-10.13'
+#    steps:
+#      - template: gradle-steps.yml
 
   - job: Windows
     pool:
@@ -24,12 +24,12 @@ jobs:
       - task: PowerShell@2
         inputs:
           targetType: filePath
-          filePath: azure-jdk-install.ps1
+          filePath: azure-jdk-install.ps
       - task: JavaToolInstaller@0
         inputs:
           versionSpec: '1.11'
           jdkArchitectureOption: x64
           jdkSourceOption: localDirectory
           jdkFile: $Env:AGENT_WORKFOLDER\openjdk-11.0.1_windows-x64_bin.zip 
-#          jdkDestinationDirectory: $env:JAVA_HOME
+#          jdkDestinationDirectory: $env:JAVA_HOME_11_X86
       - template: gradle-steps.yml
