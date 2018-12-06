@@ -11,9 +11,8 @@ jobs:
     steps:
       - template: gradle-steps.yml
 
-  - job: Mac OS
+  - job: Mac_OS
     pool:
       vmImage: 'macOS-10.13'
     steps:
       - template: gradle-steps.yml
-
