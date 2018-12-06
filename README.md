@@ -9,8 +9,8 @@ Javascript version: https://github.com/gabrielecirulli/2048
 You will need [OpenJDK 11](http://jdk.java.net/11/) (or newer) and [Gradle](https://gradle.org/) installed to build and run the project:
 
 ```bash
-gradle build
-gradle run
+gradlew build
+gradlew run
 ```
 
 ## Running with Java 8
