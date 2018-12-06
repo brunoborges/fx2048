@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.5'
     id 'org.jonnyzzz.java9c'           version '0.2.3'
-    id 'org.beryx.jlink'               version '2.1.6'
+    id 'org.beryx.jlink'               version '2.1.6-gradle4'
     id 'com.github.ben-manes.versions' version '0.20.0'
 }
 
