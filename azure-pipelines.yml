@@ -37,6 +37,7 @@ jobs:
       - task: Gradle@2
         inputs:
           gradleWrapperFile: 'gradlew.bat'
+          options: '--full-stacktrace --debug'
           jdkVersionOption: 'default'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: false
