@@ -20,4 +20,4 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: false
     testResultsFiles: '**/TEST-*.xml'
-    tasks: 'build'
+    tasks: 'jlinkZip'
