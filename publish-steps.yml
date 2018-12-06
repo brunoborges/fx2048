@@ -1,0 +1,7 @@
+steps:
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build/*.zip'
+      includeRootFolder: false
+
+  - task: PublishBuildArtifacts@1

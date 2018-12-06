@@ -10,12 +10,14 @@ jobs:
       vmImage: 'Ubuntu-16.04'
     steps:
       - template: gradle-steps.yml
+      - template: publish-steps.yml
 
   - job: Mac_OS
     pool:
       vmImage: 'macOS-10.13'
     steps:
       - template: gradle-steps.yml
+      - template: publish-steps.yml
 
   - job: Windows
     pool:
@@ -39,3 +41,4 @@ jobs:
           jdkArchitectureOption: 'x64'
           publishJUnitResults: false
           tasks: 'jlinkZip'
+      - template: publish-steps.yml
