@@ -24,7 +24,7 @@ jobs:
       - task: PowerShell@2
         inputs:
           targetType: filePath
-          filePath: azure-jdk-install.ps
+          filePath: azure-jdk-install.ps1
       - task: JavaToolInstaller@0
         inputs:
           versionSpec: '1.11'
