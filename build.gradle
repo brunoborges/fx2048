@@ -21,13 +21,18 @@ javafx {
     ]
 }
 
+// we have to calculate this value explicitly because the javafx plugin does not expose it
+// see https://github.com/openjfx/javafx-gradle-plugin/issues/17
+ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
+
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'game2048'
     }
-}
 
+    imageZip = project.file("${buildDir}/distributions/game2018-${platform}.zip")
+}
 // Print the current JVM
 def currentJvm = org.gradle.internal.jvm.Jvm.current()
 println "JVM: " + currentJvm
