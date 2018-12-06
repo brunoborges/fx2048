@@ -1,7 +1,7 @@
 steps:
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build/distributions/game2018-*.zip'
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-*.zip'
       includeRootFolder: false
 
   - task: PublishBuildArtifacts@1
