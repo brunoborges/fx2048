@@ -1,8 +1,9 @@
 steps:
   - task: Gradle@2
     inputs:
-#      gradleWrapperFile: 'gradlew.bat'
+      gradleWrapperFile: 'gradlew.bat'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.11'
       jdkArchitectureOption: 'x64'
+      publishJUnitResults: false
       tasks: 'jlinkZip'
