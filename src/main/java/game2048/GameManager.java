@@ -169,7 +169,7 @@ public class GameManager extends Group {
             var nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
             optionalTile(nextLocation).filter(t -> t.isMergeable(opTile) && !t.isMerged())
                     .ifPresent(t -> {
-                        Tile tile = opTile.get();
+                        var tile = opTile.get();
                         t.merge(tile);
                         t.toFront();
                         gameGrid.put(nextLocation, t);
@@ -187,7 +187,7 @@ public class GameManager extends Group {
                         result.set(1);
                     });
             if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(thisloc)) {
-                Tile tile = opTile.get();
+                var tile = opTile.get();
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
 
                 gameGrid.put(farthestLocation, tile);
@@ -208,7 +208,7 @@ public class GameManager extends Group {
                 // reset merged after each movement
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
 
-                Location randomAvailableLocation = findRandomAvailableLocation();
+                var randomAvailableLocation = findRandomAvailableLocation();
                 if (randomAvailableLocation == null && mergeMovementsAvailable() == 0) {
                     // game is over if there are no more moves available
                     board.setGameOver(true);
@@ -272,7 +272,7 @@ public class GameManager extends Group {
 
         Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
             gridOperator.traverseGrid((x, y) -> {
-                Location thisloc = new Location(x, y);
+                var thisloc = new Location(x, y);
                 optionalTile(thisloc).ifPresent(t -> {
                     if (t.isMergeable(optionalTile(thisloc.offset(direction)))) {
                         pairsOfMergeableTiles.incrementAndGet();
@@ -370,12 +370,12 @@ public class GameManager extends Group {
      * @return a sequential transition
      */
     private SequentialTransition animateMergedTile(Tile tile) {
-        final ScaleTransition scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        final var scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
         scale0.setToX(1.2);
         scale0.setToY(1.2);
         scale0.setInterpolator(Interpolator.EASE_IN);
 
-        final ScaleTransition scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        final var scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
         scale1.setToX(1.0);
         scale1.setToY(1.0);
         scale1.setInterpolator(Interpolator.EASE_OUT);

@@ -1,6 +1,5 @@
 package game2048;
 
-import javafx.application.HostServices;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -57,7 +56,7 @@ public class GamePane extends StackPane {
 
     private void addKeyHandler(Node node) {
         node.setOnKeyPressed(ke -> {
-            KeyCode keyCode = ke.getCode();
+            var keyCode = ke.getCode();
             if (keyCode.equals(KeyCode.S)) {
                 gameManager.saveSession();
                 return;
@@ -75,7 +74,7 @@ public class GamePane extends StackPane {
                 return;
             }
             if (keyCode.isArrowKey()) {
-                Direction direction = Direction.valueFor(keyCode);
+                var direction = Direction.valueFor(keyCode);
                 move(direction);
             }
         });
@@ -93,23 +92,23 @@ public class GamePane extends StackPane {
     }
 
     private HBox createToolBar() {
-        HBox toolbar = new HBox();
+        var toolbar = new HBox();
         toolbar.setAlignment(Pos.CENTER);
         toolbar.setPadding(new Insets(10.0));
-        Button btItem1 = createButtonItem("mSave", "Save Session", t -> gameManager.saveSession());
-        Button btItem2 =
+        var btItem1 = createButtonItem("mSave", "Save Session", t -> gameManager.saveSession());
+        var btItem2 =
                 createButtonItem("mRestore", "Restore Session", t -> gameManager.restoreSession());
-        Button btItem3 = createButtonItem("mPause", "Pause Game", t -> gameManager.pauseGame());
-        Button btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
-        Button btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
+        var btItem3 = createButtonItem("mPause", "Pause Game", t -> gameManager.pauseGame());
+        var btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
+        var btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
         toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
-        Button btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
+        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
         toolbar.getChildren().add(btItem6);
         return toolbar;
     }
 
     private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t) {
-        Button g = new Button();
+        var g = new Button();
         g.setPrefSize(40, 40);
         g.setId(symbol);
         g.setOnAction(t);

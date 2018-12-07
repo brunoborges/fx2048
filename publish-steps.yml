@@ -1,10 +1,4 @@
 steps:
-#  - task: ArchiveFiles@2
-#    inputs:
-#      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-$(platform).zip'
-#      includeRootFolder: false
-#      replaceExistingArchive: false
-#
   - task: PublishBuildArtifacts@1
     inputs:
         pathToPublish: "$(System.DefaultWorkingDirectory)/build/distributions/game2048-$(platform).zip"

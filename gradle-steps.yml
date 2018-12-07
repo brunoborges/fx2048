@@ -2,9 +2,9 @@ steps:
   - task: Gradle@2
     inputs:
       gradleWrapperFile: 'gradlew'
-      options: '--full-stacktrace --debug'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.11'
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
       tasks: 'jlinkZip'
+  - template: publish-steps.yml

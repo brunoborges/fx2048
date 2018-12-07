@@ -12,7 +12,6 @@ jobs:
       platform: linux
     steps:
       - template: gradle-steps.yml
-      - template: publish-steps.yml
 
   - job: Mac_OS
     pool:
@@ -21,7 +20,6 @@ jobs:
       platform: mac
     steps:
       - template: gradle-steps.yml
-      - template: publish-steps.yml
 
   - job: Windows
     pool:
@@ -29,6 +27,9 @@ jobs:
     variables:
       platform: win
     steps:
+        # TODO: consider using Chocolatey to install OpenJDK
+        #  - Package: https://chocolatey.org/packages/openjdk
+        #  - VSTS Task: https://marketplace.visualstudio.com/items?itemName=jungeriusit.jungit-choco
       - task: PowerShell@2
         inputs:
           targetType: filePath
@@ -43,7 +44,6 @@ jobs:
       - task: Gradle@2
         inputs:
           gradleWrapperFile: 'gradlew.bat'
-          options: '--full-stacktrace --debug'
           jdkVersionOption: 'default'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: false

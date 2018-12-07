@@ -35,7 +35,7 @@ public class GridOperator {
     }
 
     public int traverseGrid(IntBinaryOperator func) {
-        AtomicInteger at = new AtomicInteger();
+        var at = new AtomicInteger();
         traversalX.forEach(t_x -> {
             traversalY.forEach(t_y -> {
                 at.addAndGet(func.applyAsInt(t_x, t_y));

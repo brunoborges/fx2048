@@ -119,8 +119,10 @@ public class Board extends Group {
     private void createScore() {
         var lblTitle = new Label("2048");
         lblTitle.getStyleClass().addAll("game-label", "game-title");
+        
         var lblSubtitle = new Label("FX");
         lblSubtitle.getStyleClass().addAll("game-label", "game-subtitle");
+        
         var hFill = new HBox();
         HBox.setHgrow(hFill, Priority.ALWAYS);
         hFill.setAlignment(Pos.CENTER);
@@ -131,29 +133,19 @@ public class Board extends Group {
         vScore.setAlignment(Pos.CENTER);
         vScore.getStyleClass().add("game-vbox");
 
-        var lblTit = new Label("SCORE") {
-            {
-                getStyleClass().addAll("game-label", "game-titScore");
-            }
-        };
+        var lblTit = new Label("SCORE");
+        lblTit.getStyleClass().addAll("game-label", "game-titScore");
+
         lblScore.getStyleClass().addAll("game-label", "game-score");
         lblScore.textProperty().bind(gameScoreProperty.asString());
         vScore.getChildren().addAll(lblTit, lblScore);
 
-        var vRecord = new VBox(-5) {
-            {
-                setAlignment(Pos.CENTER);
-                getStyleClass().add("game-vbox");
-            }
-        };
-        // vRecord.
-        // vRecord.
+        var vRecord = new VBox(-5);
+        vRecord.setAlignment(Pos.CENTER);
+        vRecord.getStyleClass().add("game-vbox");
 
-        var lblTitBest = new Label("BEST") {
-            {
-                getStyleClass().addAll("game-label", "game-titScore");
-            }
-        };
+        var lblTitBest = new Label("BEST");
+        lblTitBest.getStyleClass().addAll("game-label", "game-titScore");
         lblBest.getStyleClass().addAll("game-label", "game-score");
         lblBest.textProperty().bind(gameBestProperty.asString());
         vRecord.getChildren().addAll(lblTitBest, lblBest);
@@ -170,12 +162,9 @@ public class Board extends Group {
 
         vGame.getChildren().add(hTop);
 
-        var hTime = new HBox() {
-            {
-                setMinSize(gridWidth, GAP_HEIGHT);
-                setAlignment(Pos.BOTTOM_RIGHT);
-            }
-        };
+        var hTime = new HBox();
+        hTime.setMinSize(gridWidth, GAP_HEIGHT);
+        hTime.setAlignment(Pos.BOTTOM_RIGHT);
         lblTime.getStyleClass().addAll("game-label", "game-time");
         lblTime.textProperty().bind(clock);
         timer = new Timeline(new KeyFrame(Duration.ZERO, e -> {
@@ -291,7 +280,7 @@ public class Board extends Group {
         private final boolean pause;
 
         public Overlay(String message, String warning, Button btn1, Button btn2, String style1,
-                       String style2, boolean pause) {
+                String style2, boolean pause) {
             this.message = message;
             this.warning = warning;
             this.btn1 = btn1;
@@ -303,28 +292,31 @@ public class Board extends Group {
 
         @Override
         public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-                            Boolean newValue) {
-            if (newValue) {
-                timer.stop();
-                if (pause) {
-                    timerPause.play();
-                }
-                overlay.getStyleClass().setAll("game-overlay", style1);
-                lOvrText.setText(message);
-                lOvrText.getStyleClass().setAll("game-label", style2);
-                lOvrSubText.setText(warning);
-                lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-                txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-                buttonsOverlay.getChildren().setAll(btn1);
+                Boolean newValue) {
+            if (!newValue) {
+                return;
+            }
 
-                if (btn2 != null) {
-                    buttonsOverlay.getChildren().add(btn2);
-                }
+            timer.stop();
+            if (pause) {
+                timerPause.play();
+            }
 
-                if (!layerOnProperty.get()) {
-                    Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                    layerOnProperty.set(true);
-                }
+            overlay.getStyleClass().setAll("game-overlay", style1);
+            lOvrText.setText(message);
+            lOvrText.getStyleClass().setAll("game-label", style2);
+            lOvrSubText.setText(warning);
+            lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
+            txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
+            buttonsOverlay.getChildren().setAll(btn1);
+
+            if (btn2 != null) {
+                buttonsOverlay.getChildren().add(btn2);
+            }
+
+            if (!layerOnProperty.get()) {
+                Board.this.getChildren().addAll(overlay, buttonsOverlay);
+                layerOnProperty.set(true);
             }
         }
     }
@@ -426,54 +418,46 @@ public class Board extends Group {
                 flow.setMaxSize(gridWidth, gridWidth);
                 flow.setPrefSize(BASELINE_OFFSET_SAME_AS_HEIGHT, BASELINE_OFFSET_SAME_AS_HEIGHT);
 
-                Text t00 = new Text("2048");
+                var t00 = new Text("2048");
                 t00.getStyleClass().setAll("game-label", "game-lblAbout");
 
-                Text t01 = new Text("FX");
+                var t01 = new Text("FX");
                 t01.getStyleClass().setAll("game-label", "game-lblAbout2");
 
-                Text t02 = new Text(" Game\n");
+                var t02 = new Text(" Game\n");
                 t02.getStyleClass().setAll("game-label", "game-lblAbout");
 
-                Text t1 = new Text("JavaFX game - Desktop version\n\n");
+                var t1 = new Text("JavaFX game - Desktop version\n\n");
                 t1.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                Text t20 = new Text("Powered by ");
+                var t20 = new Text("Powered by ");
                 t20.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                Hyperlink link1 = new Hyperlink();
+                var link1 = new Hyperlink();
                 link1.setText("OpenJFX");
                 link1.setOnAction(e -> hostServices.showDocument("https://openjfx.io/"));
                 link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
-                Text t21 = new Text(" Project \n\n");
+                var t21 = new Text(" Project \n\n");
                 t21.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                Text t23 = new Text("\u00A9 ");
+                var t23 = new Text("\u00A9 ");
                 t23.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                Hyperlink link2 = new Hyperlink() {
-                    {
-                        setText("@JPeredaDnr");
-                        setOnAction(
-                                e -> hostServices.showDocument("https://twitter.com/JPeredaDnr"));
-                        getStyleClass().setAll("game-label", "game-lblAboutSub2");
+                var link2 = new Hyperlink();
+                link2.setText("@JPeredaDnr");
+                link2.setOnAction(e -> hostServices.showDocument("https://twitter.com/JPeredaDnr"));
+                link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
-                    }
-                };
+                var t22 = new Text(" & ");
+                t22.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                Text t22 = new Text(" & ") {
-                    {
-                        getStyleClass().setAll("game-label", "game-lblAboutSub");
-                    }
-                };
-
-                Hyperlink link3 = new Hyperlink();
+                var link3 = new Hyperlink();
                 link3.setText("@brunoborges");
                 link3.setOnAction(
                         e -> hostServices.showDocument("https://twitter.com/brunoborges"));
 
-                Text t32 = new Text(" & ");
+                var t32 = new Text(" & ");
                 t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
                 link3.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 

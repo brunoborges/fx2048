@@ -42,7 +42,7 @@ public class Game2048 extends Application {
     public void start(Stage primaryStage) {
         root = new GamePane();
 
-        Scene scene = new Scene(root);
+        var scene = new Scene(root);
         scene.getStylesheets().add(Game2048.class.getResource("game.css").toExternalForm());
 
         if (isARMDevice()) {
@@ -54,9 +54,9 @@ public class Game2048 extends Application {
             scene.setCursor(Cursor.NONE);
         }
 
-        Bounds gameBounds = root.getGameManager().getLayoutBounds();
+        var gameBounds = root.getGameManager().getLayoutBounds();
         int MARGIN = GamePane.getMargin();
-        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        var visualBounds = Screen.getPrimary().getVisualBounds();
         double factor = Math.min(visualBounds.getWidth() / (gameBounds.getWidth() + MARGIN),
                 visualBounds.getHeight() / (gameBounds.getHeight() + MARGIN));
         primaryStage.setTitle("2048FX");
