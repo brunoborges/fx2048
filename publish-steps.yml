@@ -6,4 +6,4 @@ steps:
 #      replaceExistingArchive: false
 #
   - task: PublishBuildArtifacts@1
-    pathtoPublish: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-$(platform).zip'
+    pathToPublish: "$(System.DefaultWorkingDirectory)/build/distributions/game2048-$(platform).zip"
