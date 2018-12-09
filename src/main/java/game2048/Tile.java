@@ -2,7 +2,6 @@ package game2048;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-
 import java.util.Optional;
 import java.util.Random;
 
@@ -21,6 +20,10 @@ public class Tile extends Label {
     }
 
     public static Tile newTile(int value) {
+        if (value % 2 != 0) {
+            throw new IllegalArgumentException("Tile value must be multiple of 2");
+        }
+
         return new Tile(value);
     }
 
