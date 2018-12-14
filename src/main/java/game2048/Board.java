@@ -36,6 +36,9 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 
+import static game2048.Localization.i18n;
+import static game2048.Localization.getLabel;
+
 /**
  * @author Jose Pereda
  * @author Bruno Borges
@@ -86,12 +89,13 @@ public class Board extends Group {
     private final Label lOvrText = new Label();
     private final Label lOvrSubText = new Label();
     private final HBox buttonsOverlay = new HBox();
-    private final Button bTry = new Button("Try again");
-    private final Button bContinue = new Button("Keep going");
-    private final Button bContinueNo = new Button("No, keep going");
-    private final Button bSave = new Button("Save");
-    private final Button bRestore = new Button("Restore");
-    private final Button bQuit = new Button("Quit");
+
+    private final Button bTry = i18n("try.again", Button.class);
+    private final Button bContinue = i18n("keep.going", Button.class);
+    private final Button bContinueNo = i18n("no.keep.going", Button.class);
+    private final Button bSave = i18n("save", Button.class);
+    private final Button bRestore = i18n("restore", Button.class);
+    private final Button bQuit = i18n("quit", Button.class);
 
     private final HBox hToolbar = new HBox();
     private HostServices hostServices;
@@ -133,7 +137,7 @@ public class Board extends Group {
         vScore.setAlignment(Pos.CENTER);
         vScore.getStyleClass().add("game-vbox");
 
-        var lblTit = new Label("SCORE");
+        var lblTit = i18n("score.score", new Label());
         lblTit.getStyleClass().addAll("game-label", "game-titScore");
 
         lblScore.getStyleClass().addAll("game-label", "game-score");
@@ -144,7 +148,7 @@ public class Board extends Group {
         vRecord.setAlignment(Pos.CENTER);
         vRecord.getStyleClass().add("game-vbox");
 
-        var lblTitBest = new Label("BEST");
+        var lblTitBest = i18n("best.score", new Label());
         lblTitBest.getStyleClass().addAll("game-label", "game-titScore");
         lblBest.getStyleClass().addAll("game-label", "game-score");
         lblBest.textProperty().bind(gameBestProperty.asString());
@@ -270,19 +274,19 @@ public class Board extends Group {
     }
 
     private final Overlay wonListener =
-            new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon", true);
+            new Overlay("you.win", "", bContinue, bTry, "game-overlay-won", "game-lblWon", true);
 
     private class Overlay implements ChangeListener<Boolean> {
 
         private final Button btn1, btn2;
-        private final String message, warning;
+        private final String messageKey, warningKey;
         private final String style1, style2;
         private final boolean pause;
 
-        public Overlay(String message, String warning, Button btn1, Button btn2, String style1,
+        public Overlay(String messageKey, String warningKey, Button btn1, Button btn2, String style1,
                 String style2, boolean pause) {
-            this.message = message;
-            this.warning = warning;
+            this.messageKey = messageKey;
+            this.warningKey = warningKey;
             this.btn1 = btn1;
             this.btn2 = btn2;
             this.style1 = style1;
@@ -303,9 +307,9 @@ public class Board extends Group {
             }
 
             overlay.getStyleClass().setAll("game-overlay", style1);
-            lOvrText.setText(message);
+            lOvrText.setText(getLabel(messageKey));
             lOvrText.getStyleClass().setAll("game-label", style2);
-            lOvrSubText.setText(warning);
+            lOvrSubText.setText(getLabel(warningKey));
             lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
             txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
             buttonsOverlay.getChildren().setAll(btn1);
@@ -322,7 +326,6 @@ public class Board extends Group {
     }
 
     private void initGameProperties() {
-
         overlay.setMinSize(gridWidth, gridWidth);
         overlay.setAlignment(Pos.CENTER);
         overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
@@ -394,15 +397,15 @@ public class Board extends Group {
         timerPause.setCycleCount(Animation.INDEFINITE);
 
         gameWonProperty.addListener(wonListener);
-        gameOverProperty.addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over",
+        gameOverProperty.addListener(new Overlay("game.over", "", bTry, null, "game-overlay-over",
                 "game-lblOver", false));
-        gamePauseProperty.addListener(new Overlay("Game Paused", "", bContinue, null,
+        gamePauseProperty.addListener(new Overlay("game.paused", "", bContinue, null,
                 "game-overlay-pause", "game-lblPause", true));
-        gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted",
+        gameTryAgainProperty.addListener(new Overlay("try.again.question", "current.game.will.be.deleted",
                 bTry, bContinueNo, "game-overlay-pause", "game-lblPause", true));
-        gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten",
+        gameSaveProperty.addListener(new Overlay("save.confirm", "previous.data.overwritten",
                 bSave, bContinueNo, "game-overlay-pause", "game-lblPause", true));
-        gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted",
+        gameRestoreProperty.addListener(new Overlay("restore.confirm", "current.game.will.be.deleted",
                 bRestore, bContinueNo, "game-overlay-pause", "game-lblPause", true));
         gameAboutProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -464,7 +467,7 @@ public class Board extends Group {
                 var t24 = new Text("\n\n");
                 t24.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                var t31 = new Text(" Version " + Game2048.VERSION + " - 2015\n\n");
+                var t31 = new Text(" Version " + Game2048.VERSION + " - 2014\n\n");
                 t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
                 flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22,
@@ -477,7 +480,7 @@ public class Board extends Group {
                 layerOnProperty.set(true);
             }
         });
-        gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit,
+        gameQuitProperty.addListener(new Overlay("quit.game", "non.saved.data.lost", bQuit,
                 bContinueNo, "game-overlay-quit", "game-lblQuit", true));
 
         restoreRecord();
