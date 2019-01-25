@@ -71,6 +71,8 @@ public class Game2048 extends Application {
             root.getGameManager().quitGame();
         });
         primaryStage.show();
+        
+        root.requestFocus();
     }
 
     private boolean isARMDevice() {
