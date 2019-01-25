@@ -3,6 +3,7 @@ package game2048;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Map;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -19,6 +20,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableBooleanValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -119,10 +121,10 @@ public class Board extends Group {
     private void createScore() {
         var lblTitle = new Label("2048");
         lblTitle.getStyleClass().addAll("game-label", "game-title");
-        
+
         var lblSubtitle = new Label("FX");
         lblSubtitle.getStyleClass().addAll("game-label", "game-subtitle");
-        
+
         var hFill = new HBox();
         HBox.setHgrow(hFill, Priority.ALWAYS);
         hFill.setAlignment(Pos.CENTER);
@@ -506,20 +508,12 @@ public class Board extends Group {
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
         getChildren().removeAll(overlay, buttonsOverlay);
 
-        clearGame.set(false);
-        resetGame.set(false);
-        restoreGame.set(false);
-        saveGame.set(false);
-        layerOnProperty.set(false);
+        Arrays.asList(clearGame, resetGame, restoreGame, saveGame, layerOnProperty, gameWonProperty,
+                gameOverProperty, gameAboutProperty, gamePauseProperty, gameTryAgainProperty,
+                gameSaveProperty, gameRestoreProperty, gameQuitProperty)
+                .forEach(a -> ((WritableBooleanValue) a).set(false));
+
         gameScoreProperty.set(0);
-        gameWonProperty.set(false);
-        gameOverProperty.set(false);
-        gameAboutProperty.set(false);
-        gamePauseProperty.set(false);
-        gameTryAgainProperty.set(false);
-        gameSaveProperty.set(false);
-        gameRestoreProperty.set(false);
-        gameQuitProperty.set(false);
 
         clearGame.set(true);
     }
