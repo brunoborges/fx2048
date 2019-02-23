@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.7'
     id 'org.jonnyzzz.java9c'           version '0.2.3'
-    id 'org.beryx.jlink'               version '2.2.1-gradle4'
+    id 'org.beryx.jlink'               version '2.6.4'
     id 'com.github.ben-manes.versions' version '0.20.0'
 }
 
@@ -21,15 +21,11 @@ javafx {
     ]
 }
 
-// we have to calculate this value explicitly because the javafx plugin does not expose it
-// see https://github.com/openjfx/javafx-gradle-plugin/issues/17
-// ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
-
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'game2048'
     }
 
-    imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform}.zip")
+    imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip")
 }
