@@ -1,30 +1,27 @@
-# Gradle
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
   - master
 
 jobs:
-  - job: Linux
-    pool:
-      vmImage: 'Ubuntu-16.04'
-    variables:
+  # Linux job
+  - template: build-job.yml
+    parameters:
+      name: Linux
       platform: linux
-    steps:
-      - template: gradle-steps.yml
+      pool:
+        vmImage: 'ubuntu-16.04'
 
-  - job: Mac_OS
-    pool:
-      vmImage: 'macOS-10.13'
-    variables:
+  # Mac OS job
+  - template: build-job.yml
+    parameters:
+      name: MacOS
       platform: mac
-    steps:
-      - template: gradle-steps.yml
+      pool:
+        vmImage: 'macOS-10.13'
 
-  - job: Windows
-    pool:
-      vmImage: 'windows-2019'
-    variables:
+  # Windows job
+  - template: build-job.yml
+    parameters:
+      name: Windows
       platform: win
-    steps:
-      - template: gradle-steps.yml
+      pool:
+        vmImage: 'windows-2019'

@@ -1,4 +1,0 @@
-steps:
-  - task: PublishBuildArtifacts@1
-    inputs:
-        pathToPublish: "$(System.DefaultWorkingDirectory)/build/distributions/game2048-$(platform).zip"
