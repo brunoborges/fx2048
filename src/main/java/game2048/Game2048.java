@@ -3,8 +3,6 @@ package game2048;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
-import javafx.geometry.Bounds;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.stage.Screen;
@@ -29,7 +27,7 @@ public class Game2048 extends Application {
         if (applicationInstance == null) {
             while (applicationInstance == null) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
