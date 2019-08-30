@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Java (Launch) - Game2048",
+            "request": "launch",
+            "modulePaths": [
+                "/Users/bruno/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-base/12.0.1/b995ca9beeb01fcddd062c54a24ff4f6aa3b2a37",
+                "/Users/bruno/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-controls/12.0.1/af23299415c0d594ea9f84b3dd3baf9b54618594",
+                "/Users/bruno/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-graphics/12.0.1/ed0b71c64a58482f659194ab087b7eeda0fc562d",
+                "${cwd}/bin/"],
+            "mainClass": "fxgame/game2048.Game2048",
+            "projectName": "fxgame"
+        }
+    ]
+}
