@@ -1,5 +1,7 @@
 package game2048;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -48,31 +50,51 @@ public class GamePane extends StackPane {
         widthProperty().addListener(resize);
         heightProperty().addListener(resize);
 
-        addKeyHandler(this);
+        addKeyHandlers(this);
         addSwipeHandlers(this);
         setFocusTraversable(true);
         this.setOnMouseClicked(e -> requestFocus());
     }
 
-    private void addKeyHandler(Node node) {
+    private BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
+
+    private void addKeyHandlers(Node node) {
+        node.setOnKeyReleased(ke -> {
+            var keyCode = ke.getCode();
+
+            if (keyCode.equals(KeyCode.CONTROL)) {
+                cmdCtrlKeyPressed.set(false);
+            }
+        });
+
         node.setOnKeyPressed(ke -> {
             var keyCode = ke.getCode();
+
+            if (keyCode.equals(KeyCode.CONTROL) || keyCode.equals(KeyCode.COMMAND)) {
+                cmdCtrlKeyPressed.set(true);
+                return;
+            }
+
             if (keyCode.equals(KeyCode.S)) {
                 gameManager.saveSession();
                 return;
             }
+
             if (keyCode.equals(KeyCode.R)) {
                 gameManager.restoreSession();
                 return;
             }
+
             if (keyCode.equals(KeyCode.P)) {
                 gameManager.pauseGame();
                 return;
             }
-            if (keyCode.equals(KeyCode.Q) || keyCode.equals(KeyCode.ESCAPE)) {
+
+            if (cmdCtrlKeyPressed.get() == false && (keyCode.equals(KeyCode.Q) || keyCode.equals(KeyCode.ESCAPE))) {
                 gameManager.quitGame();
                 return;
             }
+
             if (keyCode.isArrowKey()) {
                 var direction = Direction.valueFor(keyCode);
                 move(direction);
@@ -102,7 +124,9 @@ public class GamePane extends StackPane {
         var btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
         var btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
         toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
-        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
+        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> {
+            gameManager.quitGame();
+        });
         toolbar.getChildren().add(btItem6);
         return toolbar;
     }

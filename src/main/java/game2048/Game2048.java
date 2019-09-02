@@ -23,7 +23,7 @@ public class Game2048 extends Application {
         applicationInstance = this;
     }
 
-    public synchronized static Application getInstance() {
+    public synchronized static Game2048 getInstance() {
         if (applicationInstance == null) {
             while (applicationInstance == null) {
                 try {
@@ -33,6 +33,7 @@ public class Game2048 extends Application {
                 }
             }
         }
+
         return applicationInstance;
     }
 

@@ -266,7 +266,7 @@ public class Board extends Group {
         timer.play();
     }
 
-    private void quit() {
+    private void exitGame() {
         timerPause.stop();
         Platform.exit();
     }
@@ -383,11 +383,11 @@ public class Board extends Group {
         });
 
         bQuit.getStyleClass().add("game-button");
-        bQuit.setOnTouchPressed(e -> quit());
-        bQuit.setOnMouseClicked(e -> quit());
+        bQuit.setOnTouchPressed(e -> exitGame());
+        bQuit.setOnMouseClicked(e -> exitGame());
         bQuit.setOnKeyPressed(e -> {
             if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                quit();
+                exitGame();
             }
         });
 
@@ -623,7 +623,9 @@ public class Board extends Group {
     }
 
     public void quitGame() {
-        if (!gameQuitProperty.get()) {
+        if (gameQuitProperty.get()) {
+            exitGame();
+        } else {
             gameQuitProperty.set(true);
         }
     }
