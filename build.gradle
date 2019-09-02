@@ -3,7 +3,6 @@ plugins {
     id 'eclipse'
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.8'
-    id 'org.jonnyzzz.java9c'           version '0.2.3'
     id 'org.beryx.jlink'               version '2.15.1'
     id 'com.github.ben-manes.versions' version '0.23.0'
 }
@@ -31,6 +30,13 @@ jlink {
 
     imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip")
 }
+
+task dist {
+    dependsOn clean, jlinkZip
+    description "Calls clean and then jlinkZip [default]"
+}
+
+defaultTasks 'dist'
 
 eclipse {
     classpath {
