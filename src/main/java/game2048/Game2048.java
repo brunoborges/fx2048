@@ -5,7 +5,6 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -14,9 +13,9 @@ import javafx.stage.Stage;
  */
 public class Game2048 extends Application {
 
-    public static final String VERSION = "1.0.4";
+    public static final String VERSION = "1.1.0";
 
-    private GamePane root;
+    private GamePane gamePane;
 
     private static Game2048 applicationInstance;
 
@@ -40,9 +39,9 @@ public class Game2048 extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        root = new GamePane();
+        gamePane = new GamePane();
 
-        var scene = new Scene(root);
+        var scene = new Scene(gamePane);
         scene.getStylesheets().add(getClass().getResource("game.css").toExternalForm());
 
         setGameBounds(primaryStage, scene);
@@ -50,13 +49,13 @@ public class Game2048 extends Application {
         setQuitListener(primaryStage);
 
         primaryStage.show();
-        root.requestFocus();
+        gamePane.requestFocus();
     }
 
     private void setQuitListener(Stage primaryStage) {
         primaryStage.setOnCloseRequest(t -> {
             t.consume();
-            root.getGameManager().quitGame();
+            gamePane.getGameManager().quitGame();
         });
     }
 
@@ -65,12 +64,6 @@ public class Game2048 extends Application {
         if (isARM) {
             primaryStage.setFullScreen(true);
             primaryStage.setFullScreenExitHint("");
-        } else {
-            root.setOnKeyPressed(ke -> {
-                if (ke.getCode().equals(KeyCode.F)) {
-                    primaryStage.setFullScreen(true);
-                }
-            });
         }
 
         if (Platform.isSupported(ConditionalFeature.INPUT_TOUCH)) {
@@ -79,7 +72,7 @@ public class Game2048 extends Application {
     }
 
     private void setGameBounds(Stage primaryStage, Scene scene) {
-        var gameBounds = root.getGameManager().getLayoutBounds();
+        var gameBounds = gamePane.getGameManager().getLayoutBounds();
         int MARGIN = GamePane.getMargin();
         var visualBounds = Screen.getPrimary().getVisualBounds();
         double factor = Math.min(visualBounds.getWidth() / (gameBounds.getWidth() + MARGIN),
@@ -94,7 +87,7 @@ public class Game2048 extends Application {
 
     @Override
     public void stop() {
-        root.getGameManager().saveRecord();
+        gamePane.getGameManager().saveRecord();
     }
 
     /**

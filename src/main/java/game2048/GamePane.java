@@ -8,7 +8,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.stage.Stage;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
@@ -50,24 +50,16 @@ public class GamePane extends StackPane {
         widthProperty().addListener(resize);
         heightProperty().addListener(resize);
 
-        addKeyHandlers(this);
-        addSwipeHandlers(this);
+        addKeyHandlers();
+        addSwipeHandlers();
         setFocusTraversable(true);
-        this.setOnMouseClicked(e -> requestFocus());
+        setOnMouseClicked(e -> requestFocus());
     }
 
     private BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
 
-    private void addKeyHandlers(Node node) {
-        node.setOnKeyReleased(ke -> {
-            var keyCode = ke.getCode();
-
-            if (keyCode.equals(KeyCode.CONTROL)) {
-                cmdCtrlKeyPressed.set(false);
-            }
-        });
-
-        node.setOnKeyPressed(ke -> {
+    private void addKeyHandlers() {
+        setOnKeyPressed(ke -> {
             var keyCode = ke.getCode();
 
             if (keyCode.equals(KeyCode.CONTROL) || keyCode.equals(KeyCode.COMMAND)) {
@@ -90,23 +82,40 @@ public class GamePane extends StackPane {
                 return;
             }
 
-            if (cmdCtrlKeyPressed.get() == false && (keyCode.equals(KeyCode.Q) || keyCode.equals(KeyCode.ESCAPE))) {
+            if (cmdCtrlKeyPressed.get() == false && keyCode.equals(KeyCode.Q)) {
                 gameManager.quitGame();
+                return;
+            }
+
+            if (ke.getCode().equals(KeyCode.F)) {
+                var stage = ((Stage) getScene().getWindow());
+                stage.setFullScreen(!stage.isFullScreen());
                 return;
             }
 
             if (keyCode.isArrowKey()) {
                 var direction = Direction.valueFor(keyCode);
                 move(direction);
+                return;
             }
         });
+
+        setOnKeyReleased(ke -> {
+            var keyCode = ke.getCode();
+
+            if (keyCode.equals(KeyCode.CONTROL) || keyCode.equals(KeyCode.COMMAND)) {
+                cmdCtrlKeyPressed.set(false);
+                return;
+            }
+        });
+
     }
 
-    private void addSwipeHandlers(Node node) {
-        node.setOnSwipeUp(e -> move(Direction.UP));
-        node.setOnSwipeRight(e -> move(Direction.RIGHT));
-        node.setOnSwipeLeft(e -> move(Direction.LEFT));
-        node.setOnSwipeDown(e -> move(Direction.DOWN));
+    private void addSwipeHandlers() {
+        setOnSwipeUp(e -> move(Direction.UP));
+        setOnSwipeRight(e -> move(Direction.RIGHT));
+        setOnSwipeLeft(e -> move(Direction.LEFT));
+        setOnSwipeDown(e -> move(Direction.DOWN));
     }
 
     private void move(Direction direction) {
@@ -114,20 +123,16 @@ public class GamePane extends StackPane {
     }
 
     private HBox createToolBar() {
-        var toolbar = new HBox();
-        toolbar.setAlignment(Pos.CENTER);
-        toolbar.setPadding(new Insets(10.0));
         var btItem1 = createButtonItem("mSave", "Save Session", t -> gameManager.saveSession());
-        var btItem2 =
-                createButtonItem("mRestore", "Restore Session", t -> gameManager.restoreSession());
+        var btItem2 = createButtonItem("mRestore", "Restore Session", t -> gameManager.restoreSession());
         var btItem3 = createButtonItem("mPause", "Pause Game", t -> gameManager.pauseGame());
         var btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
         var btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
-        toolbar.getChildren().setAll(btItem1, btItem2, btItem3, btItem4, btItem5);
-        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> {
-            gameManager.quitGame();
-        });
-        toolbar.getChildren().add(btItem6);
+        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
+
+        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6);
+        toolbar.setAlignment(Pos.CENTER);
+        toolbar.setPadding(new Insets(10.0));
         return toolbar;
     }
 

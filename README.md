@@ -5,7 +5,7 @@ Javascript version: https://github.com/gabrielecirulli/2048
 
 ## Releases
 
-[![Build Status](https://dev.azure.com/brunoborges-github/fx2048/_apis/build/status/brunoborges.fx2048?branchName=master)](https://dev.azure.com/brunoborges-github/fx2048/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://dev.azure.com/brunocborges/fx2048/_apis/build/status/brunoborges.fx2048?branchName=master)](https://dev.azure.com/brunocborges/fx2048/_build/latest?definitionId=1&branchName=master)
 
 You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in (using Java 11 jlink custom images). The ZIP files come with a binary that will start the game with the bundled optimized/trimmed JVM with only the needed modules, making the binaries extremely small comparably with the normal JRE download size. 
 
@@ -18,11 +18,18 @@ Check below the list of releases, and download the corresponding binary to your 
 
 ## Building and running
 
-You will need [OpenJDK 11](http://jdk.java.net/11/) (or newer) and [Gradle](https://gradle.org/) installed to build and run the project:
+You will need [OpenJDK 11](http://jdk.java.net/11/) (or newer) installed to build and run the project:
 
 ```bash
-gradlew build
-gradlew run
+./gradlew run
+```
+
+### Create a distribution to your operating system (Windows, Linux, or Mac OS)
+
+Run
+
+```bash
+./gradle distro
 ```
 
 ## Feedback / Contributing / Comments
