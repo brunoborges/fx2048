@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 public class GridOperator {
 
     public static final int DEFAULT_GRID_SIZE = 4;
+    public static final int MAX_GRID_SIZE = 16;
 
     private final int gridSize;
     private final List<Integer> traversalX;
@@ -24,6 +25,10 @@ public class GridOperator {
     }
 
     public GridOperator(int gridSize) {
+        if (gridSize > MAX_GRID_SIZE) {
+            throw new IllegalArgumentException("Grid size cannot exceed " + MAX_GRID_SIZE);
+        }
+
         this.gridSize = gridSize;
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
         this.traversalY = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());
