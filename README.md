@@ -11,10 +11,10 @@ You may find binaries available for download, for Windows, Mac and Linux, with J
 
 Check below the list of releases, and download the corresponding binary to your operating system.
 
-- [game2048-20181207.2](https://github.com/brunoborges/fx2048/releases)
-  - [Linux](https://github.com/brunoborges/fx2048/releases/download/game2048-20181207.2/game2048-linux.zip)
-  - [Mac OS](https://github.com/brunoborges/fx2048/releases/download/game2048-20181207.2/game2048-mac.zip)
-  - [Windows](https://github.com/brunoborges/fx2048/releases/download/game2048-20181207.2/game2048-win.zip)
+- [game2048-20190903.1](https://github.com/brunoborges/fx2048/releases)
+  - [Linux](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-linux.zip)
+  - [Mac OS](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-mac.zip)
+  - [Windows](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-win.zip)
 
 ## Building and running
 
