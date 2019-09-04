@@ -22,7 +22,14 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
@@ -51,11 +58,11 @@ public class GameManager extends Group {
     }
 
     /**
-     * GameManager is a Group containing a Board that holds a grid and the score
-     * a Map holds the location of the tiles in the grid
+     * GameManager is a Group containing a Board that holds a grid and the score a
+     * Map holds the location of the tiles in the grid
      * <p>
-     * The purpose of the game is sum the value of the tiles up to 2048 points
-     * Based on the Javascript version: https://github.com/gabrielecirulli/2048
+     * The purpose of the game is sum the value of the tiles up to 2048 points Based
+     * on the Javascript version: https://github.com/gabrielecirulli/2048
      *
      * @param gridSize defines the size of the grid, default 4x4
      */
@@ -64,28 +71,15 @@ public class GameManager extends Group {
 
         gridOperator = new GridOperator(gridSize);
         board = new Board(gridOperator);
+        board.setToolBar(createToolBar());
         this.getChildren().add(board);
 
-        board.clearGameProperty().addListener((ov, b, b1) -> {
-            if (b1) {
-                initializeGameGrid();
-            }
-        });
-        board.resetGameProperty().addListener((ov, b, b1) -> {
-            if (b1) {
-                startGame();
-            }
-        });
-        board.restoreGameProperty().addListener((ov, b, b1) -> {
-            if (b1) {
-                doRestoreSession();
-            }
-        });
-        board.saveGameProperty().addListener((ov, b, b1) -> {
-            if (b1) {
-                doSaveSession();
-            }
-        });
+        var trueProperty = new SimpleBooleanProperty(true);
+        board.clearGameProperty().and(trueProperty).addListener((ov, b1, b2) -> initializeGameGrid());
+        board.resetGameProperty().and(trueProperty).addListener((ov, b1, b2) -> startGame());
+        board.restoreGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doRestoreSession());
+        board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
+        board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
 
         initializeGameGrid();
         startGame();
@@ -124,10 +118,7 @@ public class GameManager extends Group {
             tile1.setLocation(locs.next());
         }
 
-        Arrays.asList(tile0, tile1)
-                .stream()
-                .filter(Objects::nonNull)
-                .forEach(t -> gameGrid.put(t.getLocation(), t));
+        Arrays.asList(tile0, tile1).stream().filter(Objects::nonNull).forEach(t -> gameGrid.put(t.getLocation(), t));
 
         redrawTilesInGameGrid();
 
@@ -142,10 +133,9 @@ public class GameManager extends Group {
     }
 
     /**
-     * Moves the tiles according to given direction
-     * At any move, takes care of merge tiles, add a new one and perform the
-     * required animations
-     * It updates the score and checks if the user won the game or if the game is over
+     * Moves the tiles according to given direction At any move, takes care of merge
+     * tiles, add a new one and perform the required animations It updates the score
+     * and checks if the user won the game or if the game is over
      *
      * @param direction is the selected direction to move the tiles
      */
@@ -167,25 +157,24 @@ public class GameManager extends Group {
 
             var result = new AtomicInteger();
             var nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-            optionalTile(nextLocation).filter(t -> t.isMergeable(opTile) && !t.isMerged())
-                    .ifPresent(t -> {
-                        var tile = opTile.get();
-                        t.merge(tile);
-                        t.toFront();
-                        gameGrid.put(nextLocation, t);
-                        gameGrid.replace(thisloc, null);
+            optionalTile(nextLocation).filter(t -> t.isMergeable(opTile) && !t.isMerged()).ifPresent(t -> {
+                var tile = opTile.get();
+                t.merge(tile);
+                t.toFront();
+                gameGrid.put(nextLocation, t);
+                gameGrid.replace(thisloc, null);
 
-                        parallelTransition.getChildren().add(animateExistingTile(tile, t.getLocation()));
-                        parallelTransition.getChildren().add(animateMergedTile(t));
-                        mergedToBeRemoved.add(tile);
+                parallelTransition.getChildren().add(animateExistingTile(tile, t.getLocation()));
+                parallelTransition.getChildren().add(animateMergedTile(t));
+                mergedToBeRemoved.add(tile);
 
-                        board.addPoints(t.getValue());
+                board.addPoints(t.getValue());
 
-                        if (t.getValue() == FINAL_VALUE_TO_WIN) {
-                            board.setGameWin(true);
-                        }
-                        result.set(1);
-                    });
+                if (t.getValue() == FINAL_VALUE_TO_WIN) {
+                    board.setGameWin(true);
+                }
+                result.set(1);
+            });
             if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(thisloc)) {
                 var tile = opTile.get();
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
@@ -260,10 +249,10 @@ public class GameManager extends Group {
     /**
      * Finds the number of pairs of tiles that can be merged
      * <p>
-     * This method is called only when the grid is full of tiles,
-     * what makes the use of Optional unnecessary, but it could be used when the
-     * board is not full to find the number of pairs of mergeable tiles and provide a hint
-     * for the user, for instance
+     * This method is called only when the grid is full of tiles, what makes the use
+     * of Optional unnecessary, but it could be used when the board is not full to
+     * find the number of pairs of mergeable tiles and provide a hint for the user,
+     * for instance
      *
      * @return the number of pairs of tiles that can be merged
      */
@@ -287,14 +276,11 @@ public class GameManager extends Group {
     /**
      * Finds a random location or returns null if none exist
      *
-     * @return a random location or <code>null</code> if there are no more
-     * locations available
+     * @return a random location or <code>null</code> if there are no more locations
+     *         available
      */
     private Location findRandomAvailableLocation() {
-        var availableLocations = locations
-                .stream()
-                .filter(l -> gameGrid.get(l) == null)
-                .collect(Collectors.toList());
+        var availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
 
         if (availableLocations.isEmpty()) {
             return null;
@@ -319,8 +305,8 @@ public class GameManager extends Group {
     }
 
     /**
-     * Animation that creates a fade in effect when a tile is added to the game
-     * by increasing the tile scale from 0 to 100%
+     * Animation that creates a fade in effect when a tile is added to the game by
+     * increasing the tile scale from 0 to 100%
      *
      * @param tile to be animated
      * @return a scale transition
@@ -363,8 +349,8 @@ public class GameManager extends Group {
     }
 
     /**
-     * Animation that creates a pop effect when two tiles merge
-     * by increasing the tile scale to 120% at the middle, and then going back to 100%
+     * Animation that creates a pop effect when two tiles merge by increasing the
+     * tile scale to 120% at the middle, and then going back to 100%
      *
      * @param tile to be animated
      * @return a sequential transition
@@ -406,15 +392,6 @@ public class GameManager extends Group {
     public void setScale(double scale) {
         this.setScaleX(scale);
         this.setScaleY(scale);
-    }
-
-    /**
-     * Check if overlay covers the grid or not
-     *
-     * @return boolean
-     */
-    public BooleanProperty isLayerOn() {
-        return board.isLayerOn();
     }
 
     /**
@@ -469,16 +446,27 @@ public class GameManager extends Group {
         board.saveRecord();
     }
 
-    public void tryAgain() {
-        board.tryAgain();
+    private HBox createToolBar() {
+        var btItem1 = createButtonItem("mSave", "Save Session", t -> saveSession());
+        var btItem2 = createButtonItem("mRestore", "Restore Session", t -> restoreSession());
+        var btItem3 = createButtonItem("mPause", "Pause Game", t -> board.pauseGame());
+        var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.tryAgain());
+        var btItem5 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
+        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> quitGame());
+
+        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6);
+        toolbar.setAlignment(Pos.CENTER);
+        toolbar.setPadding(new Insets(10.0));
+        return toolbar;
     }
 
-    public void aboutGame() {
-        board.aboutGame();
-    }
-
-    public void setToolBar(HBox toolbar) {
-        board.setToolBar(toolbar);
+    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t) {
+        var g = new Button();
+        g.setPrefSize(40, 40);
+        g.setId(symbol);
+        g.setOnAction(t);
+        g.setTooltip(new Tooltip(text));
+        return g;
     }
 
 }

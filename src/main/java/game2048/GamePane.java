@@ -3,16 +3,9 @@ package game2048;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.stage.Stage;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 
@@ -27,14 +20,12 @@ public class GamePane extends StackPane {
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
-        // The font may be used and redistributed under the terms of the Apache License, Version
-        // 2.0.
+        // The font may be used and redistributed under the terms of the Apache License 2.0
         Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
     }
 
     public GamePane() {
         gameManager = new GameManager();
-        gameManager.setToolBar(createToolBar());
         gameBounds = gameManager.getLayoutBounds();
 
         getChildren().add(gameManager);
@@ -96,29 +87,6 @@ public class GamePane extends StackPane {
 
     private void move(Direction direction) {
         gameManager.move(direction);
-    }
-
-    private HBox createToolBar() {
-        var btItem1 = createButtonItem("mSave", "Save Session", t -> gameManager.saveSession());
-        var btItem2 = createButtonItem("mRestore", "Restore Session", t -> gameManager.restoreSession());
-        var btItem3 = createButtonItem("mPause", "Pause Game", t -> gameManager.pauseGame());
-        var btItem4 = createButtonItem("mReplay", "Try Again", t -> gameManager.tryAgain());
-        var btItem5 = createButtonItem("mInfo", "About the Game", t -> gameManager.aboutGame());
-        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> gameManager.quitGame());
-
-        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6);
-        toolbar.setAlignment(Pos.CENTER);
-        toolbar.setPadding(new Insets(10.0));
-        return toolbar;
-    }
-
-    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t) {
-        var g = new Button();
-        g.setPrefSize(40, 40);
-        g.setId(symbol);
-        g.setOnAction(t);
-        g.setTooltip(new Tooltip(text));
-        return g;
     }
 
     public GameManager getGameManager() {
