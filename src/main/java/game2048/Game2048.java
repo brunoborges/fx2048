@@ -72,17 +72,17 @@ public class Game2048 extends Application {
     }
 
     private void setGameBounds(Stage primaryStage, Scene scene) {
+        var margin = UserSettings.MARGIN;
         var gameBounds = gamePane.getGameManager().getLayoutBounds();
-        int MARGIN = GamePane.getMargin();
         var visualBounds = Screen.getPrimary().getVisualBounds();
-        double factor = Math.min(visualBounds.getWidth() / (gameBounds.getWidth() + MARGIN),
-                visualBounds.getHeight() / (gameBounds.getHeight() + MARGIN));
+        double factor = Math.min(visualBounds.getWidth() / (gameBounds.getWidth() + margin),
+                visualBounds.getHeight() / (gameBounds.getHeight() + margin));
         primaryStage.setTitle("2048FX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(gameBounds.getWidth() / 2d);
         primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
-        primaryStage.setWidth(((gameBounds.getWidth() + MARGIN) * factor) / 1.5d);
-        primaryStage.setHeight(((gameBounds.getHeight() + MARGIN) * factor) / 1.5d);
+        primaryStage.setWidth(((gameBounds.getWidth() + margin) * factor) / 1.5d);
+        primaryStage.setHeight(((gameBounds.getHeight() + margin) * factor) / 1.5d);
     }
 
     @Override

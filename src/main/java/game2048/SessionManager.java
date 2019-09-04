@@ -2,64 +2,36 @@ package game2048;
 
 import javafx.beans.property.StringProperty;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jose Pereda
  */
 public class SessionManager {
 
-    public final String SESSION_PROPERTIES_FILENAME;
+    public final String propertiesFilename;
     private final Properties props = new Properties();
     private final GridOperator gridOperator;
 
     public SessionManager(GridOperator gridOperator) {
         this.gridOperator = gridOperator;
-        this.SESSION_PROPERTIES_FILENAME = "game2048_" + gridOperator.getGridSize() + ".properties";
+        this.propertiesFilename = "game2048_" + gridOperator.getGridSize() + ".properties";
     }
 
-    public void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
-        try {
-            gridOperator.traverseGrid((x, y) -> {
-                Tile t = gameGrid.get(new Location(x, y));
-                props.setProperty("Location_" + x + "_" + y,
-                        t != null ? t.getValue().toString() : "0");
-                return 0;
-            });
-            props.setProperty("score", score.toString());
-            props.setProperty("time", time.toString());
-            props.store(new FileWriter(SESSION_PROPERTIES_FILENAME), SESSION_PROPERTIES_FILENAME);
-        } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        }
+    protected void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
+        gridOperator.traverseGrid((x, y) -> {
+            Tile t = gameGrid.get(new Location(x, y));
+            props.setProperty("Location_" + x + "_" + y, t != null ? t.getValue().toString() : "0");
+            return 0;
+        });
+        props.setProperty("score", score.toString());
+        props.setProperty("time", time.toString());
+        UserSettings.LOCAL.store(props, propertiesFilename);
     }
 
-    public int restoreSession(Map<Location, Tile> gameGrid, StringProperty time) {
-        Reader reader = null;
-        try {
-            reader = new FileReader(SESSION_PROPERTIES_FILENAME);
-            props.load(reader);
-        } catch (FileNotFoundException ignored) {
-            return -1;
-        } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+    protected int restoreSession(Map<Location, Tile> gameGrid, StringProperty time) {
+        UserSettings.LOCAL.restore(props, propertiesFilename);
 
         gridOperator.traverseGrid((x, y) -> {
             var val = props.getProperty("Location_" + x + "_" + y);

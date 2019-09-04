@@ -89,6 +89,8 @@ public class Board extends Pane {
     private final Label lOvrText = new Label();
     private final Label lOvrSubText = new Label();
     private final HBox buttonsOverlay = new HBox();
+
+    // Overlay Buttons
     private final Button bTry = new Button("Try again");
     private final Button bContinue = new Button("Keep going");
     private final Button bContinueNo = new Button("No, keep going");
@@ -239,13 +241,13 @@ public class Board extends Pane {
         vGame.getChildren().add(hToolbar);
     }
 
-    public void setToolBar(HBox toolbar) {
+    protected void setToolBar(HBox toolbar) {
         toolbar.disableProperty().bind(layerOnProperty);
         toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 10));
         hToolbar.getChildren().add(toolbar);
     }
 
-    public void tryAgain() {
+    protected void tryAgain() {
         if (!gameTryAgainProperty.get()) {
             gameTryAgainProperty.set(true);
         }
@@ -321,8 +323,9 @@ public class Board extends Pane {
             if (!layerOnProperty.get()) {
                 Board.this.getChildren().addAll(overlay, buttonsOverlay);
                 layerOnProperty.set(true);
-                btn2.requestFocus();
-                btn2.setDefaultButton(true);
+                var defaultBtn = btn2 == null ? btn1 : btn2;
+                defaultBtn.requestFocus();
+                defaultBtn.setDefaultButton(true);
             }
         }
     }
@@ -589,23 +592,23 @@ public class Board extends Pane {
         }
     }
 
-    public BooleanProperty isLayerOn() {
+    protected BooleanProperty isLayerOn() {
         return layerOnProperty;
     }
 
-    public BooleanProperty resetGameProperty() {
+    protected BooleanProperty resetGameProperty() {
         return resetGame;
     }
 
-    public BooleanProperty clearGameProperty() {
+    protected BooleanProperty clearGameProperty() {
         return clearGame;
     }
 
-    public BooleanProperty saveGameProperty() {
+    protected BooleanProperty saveGameProperty() {
         return saveGame;
     }
 
-    public BooleanProperty restoreGameProperty() {
+    protected BooleanProperty restoreGameProperty() {
         return restoreGame;
     }
 

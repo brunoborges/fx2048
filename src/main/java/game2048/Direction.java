@@ -30,7 +30,7 @@ public enum Direction {
         return "Direction{" + "y=" + y + ", x=" + x + '}' + name();
     }
 
-    public static Direction valueFor(KeyCode keyCode) {
+    protected static Direction valueFor(KeyCode keyCode) {
         return valueOf(keyCode.name());
     }
 }

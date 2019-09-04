@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 public class GridOperator {
 
     public static final int DEFAULT_GRID_SIZE = 4;
+    public static final int MIN_GRID_SIZE = 4;
     public static final int MAX_GRID_SIZE = 16;
 
     private final int gridSize;
@@ -25,8 +26,8 @@ public class GridOperator {
     }
 
     public GridOperator(int gridSize) {
-        if (gridSize > MAX_GRID_SIZE) {
-            throw new IllegalArgumentException("Grid size cannot exceed " + MAX_GRID_SIZE);
+        if (gridSize < MIN_GRID_SIZE || gridSize > MAX_GRID_SIZE) {
+            throw new IllegalArgumentException(String.format("Grid size must be of range %s and %s.", MIN_GRID_SIZE, MAX_GRID_SIZE));
         }
 
         this.gridSize = gridSize;

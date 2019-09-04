@@ -16,7 +16,6 @@ public class GamePane extends StackPane {
 
     private GameManager gameManager;
     private Bounds gameBounds;
-    private final static int MARGIN = 36;
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
@@ -25,15 +24,15 @@ public class GamePane extends StackPane {
     }
 
     public GamePane() {
-        gameManager = new GameManager();
+        gameManager = new GameManager(UserSettings.LOCAL.getGridSize());
         gameBounds = gameManager.getLayoutBounds();
 
         getChildren().add(gameManager);
 
         getStyleClass().addAll("game-root");
         ChangeListener<Number> resize = (ov, v, v1) -> {
-            double scale = Math.min((getWidth() - MARGIN) / gameBounds.getWidth(),
-                    (getHeight() - MARGIN) / gameBounds.getHeight());
+            double scale = Math.min((getWidth() - UserSettings.MARGIN) / gameBounds.getWidth(),
+                    (getHeight() - UserSettings.MARGIN) / gameBounds.getHeight());
             gameManager.setScale(scale);
             gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
             gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
@@ -57,7 +56,7 @@ public class GamePane extends StackPane {
                 case COMMAND: cmdCtrlKeyPressed.set(true); break;
                 case S: gameManager.saveSession(); break;
                 case R: gameManager.restoreSession(); break;
-                case P: gameManager.pauseGame();
+                case P: gameManager.pauseGame(); break;
                 case Q: if(!cmdCtrlKeyPressed.get()) gameManager.quitGame(); break;
                 case F: {
                     var stage = ((Stage) getScene().getWindow());
@@ -91,10 +90,6 @@ public class GamePane extends StackPane {
 
     public GameManager getGameManager() {
         return gameManager;
-    }
-
-    public static int getMargin() {
-        return MARGIN;
     }
 
 }

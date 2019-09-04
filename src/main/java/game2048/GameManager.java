@@ -21,7 +21,6 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -52,10 +51,6 @@ public class GameManager extends Group {
 
     private final Board board;
     private final GridOperator gridOperator;
-
-    public GameManager() {
-        this(GridOperator.DEFAULT_GRID_SIZE);
-    }
 
     /**
      * GameManager is a Group containing a Board that holds a grid and the score a
