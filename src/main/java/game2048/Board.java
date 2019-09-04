@@ -5,6 +5,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -27,8 +29,8 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -42,7 +44,7 @@ import javafx.util.Duration;
  * @author Jose Pereda
  * @author Bruno Borges
  */
-public class Board extends Group {
+public class Board extends Pane {
 
     public static final int CELL_SIZE = 128;
     private static final int BORDER_WIDTH = (14 + 2) / 2;
@@ -70,8 +72,7 @@ public class Board extends Group {
     private LocalTime time;
     private Timeline timer;
     private final StringProperty clock = new SimpleStringProperty("00:00:00");
-    private final DateTimeFormatter fmt =
-            DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     // User Interface controls
     private final VBox vGame = new VBox(0);
@@ -112,7 +113,7 @@ public class Board extends Group {
 
         createScore();
         createGrid();
-
+        createToolBar();
         initGameProperties();
 
         hostServices = Game2048.getInstance().getHostServices();
@@ -219,7 +220,9 @@ public class Board extends Group {
         hBottom.getChildren().add(gridGroup);
 
         vGame.getChildren().add(hBottom);
+    }
 
+    private void createToolBar() {
         // toolbar
         var hPadding = new HBox();
         hPadding.setMinSize(gridWidth, TOOLBAR_HEIGHT);
@@ -271,8 +274,8 @@ public class Board extends Group {
         Platform.exit();
     }
 
-    private final Overlay wonListener =
-            new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon", true);
+    private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon",
+            true);
 
     private class Overlay implements ChangeListener<Boolean> {
 
@@ -281,20 +284,19 @@ public class Board extends Group {
         private final String style1, style2;
         private final boolean pause;
 
-        public Overlay(String message, String warning, Button btn1, Button btn2, String style1,
-                String style2, boolean pause) {
+        public Overlay(String message, String warning, Button btn1, Button btn2, String style1, String style2,
+                boolean pause) {
             this.message = message;
             this.warning = warning;
-            this.btn1 = btn1;
-            this.btn2 = btn2;
+            this.btn1 = btn1; // left
+            this.btn2 = btn2; // right
             this.style1 = style1;
             this.style2 = style2;
             this.pause = pause;
         }
 
         @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-                Boolean newValue) {
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
             if (!newValue) {
                 return;
             }
@@ -319,12 +321,13 @@ public class Board extends Group {
             if (!layerOnProperty.get()) {
                 Board.this.getChildren().addAll(overlay, buttonsOverlay);
                 layerOnProperty.set(true);
+                btn2.requestFocus();
+                btn2.setDefaultButton(true);
             }
         }
     }
 
     private void initGameProperties() {
-
         overlay.setMinSize(gridWidth, gridWidth);
         overlay.setAlignment(Pos.CENTER);
         overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
@@ -338,74 +341,37 @@ public class Board extends Group {
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
-        bTry.setOnTouchPressed(e -> btnTryAgain());
         bTry.setOnAction(e -> btnTryAgain());
-        bTry.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                btnTryAgain();
-            }
-        });
 
         bContinue.getStyleClass().add("game-button");
-        bContinue.setOnTouchPressed(e -> keepGoing());
-        bContinue.setOnMouseClicked(e -> keepGoing());
-        bContinue.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                keepGoing();
-            }
-        });
+        bContinue.setOnAction(e -> keepGoing());
 
         bContinueNo.getStyleClass().add("game-button");
-        bContinueNo.setOnTouchPressed(e -> keepGoing());
-        bContinueNo.setOnMouseClicked(e -> keepGoing());
-        bContinueNo.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                keepGoing();
-            }
-        });
+        bContinueNo.setOnAction(e -> keepGoing());
 
         bSave.getStyleClass().add("game-button");
-        bSave.setOnTouchPressed(e -> saveGame.set(true));
-        bSave.setOnMouseClicked(e -> saveGame.set(true));
-        bSave.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                saveGame.set(true);
-            }
-        });
+        bSave.setOnAction(e -> saveGame.set(true));
 
         bRestore.getStyleClass().add("game-button");
-        bRestore.setOnTouchPressed(e -> restoreGame.set(true));
-        bRestore.setOnMouseClicked(e -> restoreGame.set(true));
-        bRestore.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                restoreGame.set(true);
-            }
-        });
+        bRestore.setOnAction(e -> restoreGame.set(true));
 
         bQuit.getStyleClass().add("game-button");
-        bQuit.setOnTouchPressed(e -> exitGame());
-        bQuit.setOnMouseClicked(e -> exitGame());
-        bQuit.setOnKeyPressed(e -> {
-            if (e.getCode().equals(KeyCode.ENTER) || e.getCode().equals(KeyCode.SPACE)) {
-                exitGame();
-            }
-        });
+        bQuit.setOnAction(e -> exitGame());
 
-        timerPause = new Timeline(
-                new KeyFrame(Duration.seconds(1), e -> time = time.plusNanos(1_000_000_000)));
+        timerPause = new Timeline(new KeyFrame(Duration.seconds(1), e -> time = time.plusNanos(1_000_000_000)));
         timerPause.setCycleCount(Animation.INDEFINITE);
 
         gameWonProperty.addListener(wonListener);
-        gameOverProperty.addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over",
-                "game-lblOver", false));
-        gamePauseProperty.addListener(new Overlay("Game Paused", "", bContinue, null,
+        gameOverProperty
+                .addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver", false));
+        gamePauseProperty.addListener(
+                new Overlay("Game Paused", "", bContinue, null, "game-overlay-pause", "game-lblPause", true));
+        gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted", bTry, bContinueNo,
                 "game-overlay-pause", "game-lblPause", true));
-        gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted",
-                bTry, bContinueNo, "game-overlay-pause", "game-lblPause", true));
-        gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten",
-                bSave, bContinueNo, "game-overlay-pause", "game-lblPause", true));
-        gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted",
-                bRestore, bContinueNo, "game-overlay-pause", "game-lblPause", true));
+        gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten", bSave, bContinueNo,
+                "game-overlay-pause", "game-lblPause", true));
+        gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
+                "game-overlay-pause", "game-lblPause", true));
         gameAboutProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 timer.stop();
@@ -456,8 +422,7 @@ public class Board extends Group {
 
                 var link3 = new Hyperlink();
                 link3.setText("@brunoborges");
-                link3.setOnAction(
-                        e -> hostServices.showDocument("https://twitter.com/brunoborges"));
+                link3.setOnAction(e -> hostServices.showDocument("https://twitter.com/brunoborges"));
 
                 var t32 = new Text(" & ");
                 t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
@@ -469,8 +434,7 @@ public class Board extends Group {
                 var t31 = new Text(" Version " + Game2048.VERSION + " - 2015\n\n");
                 t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22,
-                        link3);
+                flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22, link3);
                 flow.getChildren().addAll(t24, t31);
                 txtOverlay.getChildren().setAll(flow);
                 buttonsOverlay.getChildren().setAll(bContinue);
@@ -479,8 +443,8 @@ public class Board extends Group {
                 layerOnProperty.set(true);
             }
         });
-        gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit,
-                bContinueNo, "game-overlay-quit", "game-lblQuit", true));
+        gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
+                "game-overlay-quit", "game-lblQuit", true));
 
         restoreRecord();
 
@@ -508,10 +472,9 @@ public class Board extends Group {
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
         getChildren().removeAll(overlay, buttonsOverlay);
 
-        Arrays.asList(clearGame, resetGame, restoreGame, saveGame, layerOnProperty, gameWonProperty,
-                gameOverProperty, gameAboutProperty, gamePauseProperty, gameTryAgainProperty,
-                gameSaveProperty, gameRestoreProperty, gameQuitProperty)
-                .forEach(a -> ((WritableBooleanValue) a).set(false));
+        Arrays.asList(clearGame, resetGame, restoreGame, saveGame, layerOnProperty, gameWonProperty, gameOverProperty,
+                gameAboutProperty, gamePauseProperty, gameTryAgainProperty, gameSaveProperty, gameRestoreProperty,
+                gameQuitProperty).forEach(a -> ((WritableBooleanValue) a).set(false));
 
         gameScoreProperty.set(0);
 
@@ -574,10 +537,6 @@ public class Board extends Group {
         gridGroup.getChildren().add(tile);
 
         return tile;
-    }
-
-    public Group getGridGroup() {
-        return gridGroup;
     }
 
     public void startGame() {
@@ -714,6 +673,10 @@ public class Board extends Group {
     private void restoreRecord() {
         var recordManager = new RecordManager(gridOperator.getGridSize());
         gameBestProperty.set(recordManager.restoreRecord());
+    }
+
+    public void removeTiles(Set<Tile> mergedToBeRemoved) {
+        gridGroup.getChildren().removeAll(mergedToBeRemoved);
     }
 
 }

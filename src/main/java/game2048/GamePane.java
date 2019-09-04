@@ -61,42 +61,19 @@ public class GamePane extends StackPane {
     private void addKeyHandlers() {
         setOnKeyPressed(ke -> {
             var keyCode = ke.getCode();
-
-            if (keyCode.equals(KeyCode.CONTROL) || keyCode.equals(KeyCode.COMMAND)) {
-                cmdCtrlKeyPressed.set(true);
-                return;
-            }
-
-            if (keyCode.equals(KeyCode.S)) {
-                gameManager.saveSession();
-                return;
-            }
-
-            if (keyCode.equals(KeyCode.R)) {
-                gameManager.restoreSession();
-                return;
-            }
-
-            if (keyCode.equals(KeyCode.P)) {
-                gameManager.pauseGame();
-                return;
-            }
-
-            if (cmdCtrlKeyPressed.get() == false && keyCode.equals(KeyCode.Q)) {
-                gameManager.quitGame();
-                return;
-            }
-
-            if (ke.getCode().equals(KeyCode.F)) {
-                var stage = ((Stage) getScene().getWindow());
-                stage.setFullScreen(!stage.isFullScreen());
-                return;
-            }
-
-            if (keyCode.isArrowKey()) {
-                var direction = Direction.valueFor(keyCode);
-                move(direction);
-                return;
+            switch (keyCode) {
+                case CONTROL:
+                case COMMAND: cmdCtrlKeyPressed.set(true); break;
+                case S: gameManager.saveSession(); break;
+                case R: gameManager.restoreSession(); break;
+                case P: gameManager.pauseGame();
+                case Q: if(!cmdCtrlKeyPressed.get()) gameManager.quitGame(); break;
+                case F: {
+                    var stage = ((Stage) getScene().getWindow());
+                    stage.setFullScreen(!stage.isFullScreen()); 
+                    break;
+                }
+                default: if(keyCode.isArrowKey()) move(Direction.valueFor(keyCode)); break;
             }
         });
 
@@ -108,7 +85,6 @@ public class GamePane extends StackPane {
                 return;
             }
         });
-
     }
 
     private void addSwipeHandlers() {

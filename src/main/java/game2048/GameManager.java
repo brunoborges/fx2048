@@ -204,7 +204,7 @@ public class GameManager extends Group {
         board.animateScore();
         if (parallelTransition.getChildren().size() > 0) {
             parallelTransition.setOnFinished(e -> {
-                board.getGridGroup().getChildren().removeAll(mergedToBeRemoved);
+                board.removeTiles(mergedToBeRemoved);
                 // reset merged after each movement
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
 
