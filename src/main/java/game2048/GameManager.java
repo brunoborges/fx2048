@@ -74,7 +74,6 @@ public class GameManager extends Group {
         board.resetGameProperty().and(trueProperty).addListener((ov, b1, b2) -> startGame());
         board.restoreGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doRestoreSession());
         board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
-        board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
 
         initializeGameGrid();
         startGame();
