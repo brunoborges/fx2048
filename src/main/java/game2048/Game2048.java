@@ -14,27 +14,12 @@ import javafx.stage.Stage;
 public class Game2048 extends Application {
 
     public static final String VERSION = "1.1.0";
-
+    private static Game2048 applicationInstance;
     private GamePane gamePane;
 
-    private static Game2048 applicationInstance;
-
-    public Game2048() {
-        applicationInstance = this;
-    }
-
-    public synchronized static Game2048 getInstance() {
-        if (applicationInstance == null) {
-            while (applicationInstance == null) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return applicationInstance;
+    @Override
+    public void stop() {
+        gamePane.getGameManager().saveRecord();
     }
 
     @Override
@@ -85,9 +70,30 @@ public class Game2048 extends Application {
         primaryStage.setHeight(((gameBounds.getHeight() + margin) * factor) / 1.5d);
     }
 
-    @Override
-    public void stop() {
-        gamePane.getGameManager().saveRecord();
+    public static interface URLOpener {
+        public void open(String url);
+    }
+
+    public static URLOpener urlOpener() {
+        return (url) -> getInstance().getHostServices().showDocument(url);
+    }
+
+    private synchronized static Game2048 getInstance() {
+        if (applicationInstance == null) {
+            while (applicationInstance == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return applicationInstance;
+    }
+
+    public Game2048() {
+        applicationInstance = this;
     }
 
     /**

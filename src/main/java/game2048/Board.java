@@ -11,7 +11,6 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -99,10 +98,8 @@ public class Board extends Pane {
     private final Button bQuit = new Button("Quit");
 
     private final HBox hToolbar = new HBox();
-    private HostServices hostServices;
 
     private final Label lblTime = new Label();
-    private Timeline timerPause;
 
     private final int gridWidth;
     private final GridOperator gridOperator;
@@ -117,8 +114,6 @@ public class Board extends Pane {
         createGrid();
         createToolBar();
         initGameProperties();
-
-        hostServices = Game2048.getInstance().getHostServices();
     }
 
     private void createScore() {
@@ -254,13 +249,11 @@ public class Board extends Pane {
     }
 
     private void btnTryAgain() {
-        timerPause.stop();
         layerOnProperty.set(false);
         doResetGame();
     }
 
     private void keepGoing() {
-        timerPause.stop();
         layerOnProperty.set(false);
         gamePauseProperty.set(false);
         gameTryAgainProperty.set(false);
@@ -272,29 +265,24 @@ public class Board extends Pane {
     }
 
     private void exitGame() {
-        timerPause.stop();
         Platform.exit();
     }
 
-    private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon",
-            true);
+    private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
 
     private class Overlay implements ChangeListener<Boolean> {
 
         private final Button btn1, btn2;
         private final String message, warning;
         private final String style1, style2;
-        private final boolean pause;
 
-        public Overlay(String message, String warning, Button btn1, Button btn2, String style1, String style2,
-                boolean pause) {
+        public Overlay(String message, String warning, Button btn1, Button btn2, String style1, String style2) {
             this.message = message;
             this.warning = warning;
             this.btn1 = btn1; // left
             this.btn2 = btn2; // right
             this.style1 = style1;
             this.style2 = style2;
-            this.pause = pause;
         }
 
         @Override
@@ -304,9 +292,6 @@ public class Board extends Pane {
             }
 
             timer.stop();
-            if (pause) {
-                timerPause.play();
-            }
 
             overlay.getStyleClass().setAll("game-overlay", style1);
             lOvrText.setText(message);
@@ -321,11 +306,12 @@ public class Board extends Pane {
             }
 
             if (!layerOnProperty.get()) {
-                Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                layerOnProperty.set(true);
                 var defaultBtn = btn2 == null ? btn1 : btn2;
                 defaultBtn.requestFocus();
                 defaultBtn.setDefaultButton(true);
+
+                Board.this.getChildren().addAll(overlay, buttonsOverlay);
+                layerOnProperty.set(true);
             }
         }
     }
@@ -361,24 +347,20 @@ public class Board extends Pane {
         bQuit.getStyleClass().add("game-button");
         bQuit.setOnAction(e -> exitGame());
 
-        timerPause = new Timeline(new KeyFrame(Duration.seconds(1), e -> time = time.plusNanos(1_000_000_000)));
-        timerPause.setCycleCount(Animation.INDEFINITE);
-
         gameWonProperty.addListener(wonListener);
         gameOverProperty
-                .addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver", false));
+                .addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver"));
         gamePauseProperty.addListener(
-                new Overlay("Game Paused", "", bContinue, null, "game-overlay-pause", "game-lblPause", true));
+                new Overlay("Game Paused", "", bContinue, null, "game-overlay-pause", "game-lblPause"));
         gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted", bTry, bContinueNo,
-                "game-overlay-pause", "game-lblPause", true));
+                "game-overlay-pause", "game-lblPause"));
         gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten", bSave, bContinueNo,
-                "game-overlay-pause", "game-lblPause", true));
+                "game-overlay-pause", "game-lblPause"));
         gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
-                "game-overlay-pause", "game-lblPause", true));
+                "game-overlay-pause", "game-lblPause"));
         gameAboutProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 timer.stop();
-                timerPause.play();
                 overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
 
                 TextFlow flow = new TextFlow();
@@ -406,7 +388,7 @@ public class Board extends Pane {
 
                 var link1 = new Hyperlink();
                 link1.setText("OpenJFX");
-                link1.setOnAction(e -> hostServices.showDocument("https://openjfx.io/"));
+                link1.setOnAction(e -> Game2048.urlOpener().open("https://openjfx.io/"));
                 link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
                 var t21 = new Text(" Project \n\n");
@@ -417,7 +399,7 @@ public class Board extends Pane {
 
                 var link2 = new Hyperlink();
                 link2.setText("@JPeredaDnr");
-                link2.setOnAction(e -> hostServices.showDocument("https://twitter.com/JPeredaDnr"));
+                link2.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
                 link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
                 var t22 = new Text(" & ");
@@ -425,7 +407,7 @@ public class Board extends Pane {
 
                 var link3 = new Hyperlink();
                 link3.setText("@brunoborges");
-                link3.setOnAction(e -> hostServices.showDocument("https://twitter.com/brunoborges"));
+                link3.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
 
                 var t32 = new Text(" & ");
                 t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
@@ -447,7 +429,7 @@ public class Board extends Pane {
             }
         });
         gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
-                "game-overlay-quit", "game-lblQuit", true));
+                "game-overlay-quit", "game-lblQuit"));
 
         restoreRecord();
 
@@ -640,7 +622,6 @@ public class Board extends Pane {
      * Once we have confirmation
      */
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        timerPause.stop();
         restoreGame.set(false);
         doClearGame();
         timer.stop();
