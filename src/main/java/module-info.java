@@ -6,5 +6,5 @@ module fxgame {
     requires javafx.controls;
     requires javafx.graphics;
 
-    exports game2048;
+    exports io.game2048;
 }

@@ -1,4 +1,4 @@
-package game2048;
+package io.game2048;
 
 import java.util.ArrayList;
 import java.util.Arrays;
