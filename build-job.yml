@@ -10,7 +10,9 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   pool: ${{ parameters.pool }}
+
   steps:
+
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -19,6 +21,38 @@ jobs:
         jdkArchitectureOption: 'x64'
         publishJUnitResults: false
         tasks: 'dist'
+
+    - script: |
+        mkdir -p ~/jpackage
+        cd ~/jpackage
+        wget https://download.java.net/java/early_access/jpackage/1/openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz -O jpackage.tar.gz
+        tar -xjf jpackage.tar.gz
+        JAVA_HOME=~/jpackage/jdk-14.jdk/Contents/Home
+        JPACKAGE_HOME=~/jpackage/jdk-14.jdk/Contents/Home
+
+        echo "JAVA VERSION BEING RUN SHOULD BE 14-jpackage"
+        java -version
+        
+        # jpackage -version
+        mkdir ~/mac_installer
+        cd ~/build/image
+
+        $JPACKAGE_HOME/bin/jpackage
+          --type dmg \
+          --dest ~/build/installer \
+          --name fx2048 \
+          --module fxgame/game2048.Game2048 \
+          --runtime-image build/image \
+          --java-options -Xmx512m \
+          --app-version "1.0" \
+          --vendor "ACME Inc." \
+          --copyright "Copyright 2019 ACME Inc." \
+          --mac-package-identifier "game2048" \
+          --mac-package-name "ACME"
+
+      condition: eq(variables['Agent.OS'], 'Darwin')
+      displayName: 'JPackage for MacOS'
+
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-${{ parameters.platform }}.zip'

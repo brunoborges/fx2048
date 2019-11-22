@@ -3,12 +3,12 @@ trigger:
 
 jobs:
   # Linux job
-  - template: build-job.yml
-    parameters:
-      name: Linux
-      platform: linux
-      pool:
-        vmImage: 'ubuntu-16.04'
+  # - template: build-job.yml
+  #   parameters:
+  #     name: Linux
+  #     platform: linux
+  #     pool:
+  #       vmImage: 'ubuntu-16.04'
 
   # Mac OS job
   - template: build-job.yml
@@ -19,9 +19,9 @@ jobs:
         vmImage: 'macOS-10.13'
 
   # Windows job
-  - template: build-job.yml
-    parameters:
-      name: Windows
-      platform: win
-      pool:
-        vmImage: 'windows-2019'
+  # - template: build-job.yml
+  #   parameters:
+  #     name: Windows
+  #     platform: win
+  #     pool:
+  #       vmImage: 'windows-2019'
