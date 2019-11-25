@@ -45,7 +45,7 @@ jlink {
 
     jpackage {
         // can be set with BADASS_JLINK_JPACKAGE_HOME
-        jpackageHome = "/Users/bruno/fxderek/jdk-14.jdk/Contents/Home"
+        // jpackageHome = "/Users/bruno/fxderek/jdk-14.jdk/Contents/Home"
         outputDir = "installer"
         imageName = 'fx2048'
         skipInstaller = false
