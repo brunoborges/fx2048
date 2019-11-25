@@ -21,6 +21,15 @@ jobs:
         version: '0.0.1'
         extract: true
         downloadPath: '$(System.ArtifactsDirectory)'
+
+    - script: |
+        unzip '$(System.ArtifactsDirectory)/*.zip'
+      condition: eq (parameters.platform, 'win')  
+
+    - script: |
+        tar zxvf '$(System.ArtifactsDirectory)/*.tar.gz'
+      condition: ne (parameters.platform, 'win')  
+
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
