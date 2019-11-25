@@ -9,32 +9,41 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   pool: ${{ parameters.pool }}
+  variables:
+    jpkgdir: ${{ parameters.jpkgdir }}
   steps:
     - task: DownloadPackage@1
       inputs:
-        packageType: 'upack'
+        packageType: upack
         feed: brunocborges
-        definition: ${{ parameters.jpkgjdk }}
+        definition: $[parameters.jpkgjdk]
         version: '0.0.1'
         extract: false
-        downloadPath: '$(System.DefaultWorkingDirectory)'
+        downloadPath: $(System.DefaultWorkingDirectory)
     - task: ExtractFiles@1
       inputs:
-        archiveFilePatterns: '$(System.DefaultWorkingDirectory)/openjdk**'
-        destinationFolder: '$(System.DefaultWorkingDirectory)'
+        archiveFilePatterns: $(System.DefaultWorkingDirectory)/openjdk**
+        destinationFolder: $(System.DefaultWorkingDirectory)
         cleanDestinationFolder: false
+    - script: |
+        echo "1 ${{ parameters.jpkgdir }}"
+        echo "2 $( parameters.jpkgdir )"
+        echo "3 $[ parameters.jpkgdir ]"
+        echo "4 ${{ jpkgdir }}"
+        echo "5 $( jpkgdir )"
+        echo "6 $[ jpkgdir ]"
     - task: Gradle@2
       inputs:
-        gradleWrapperFile: 'gradlew'
-        javaHomeOption: 'JDKVersion'
+        gradleWrapperFile: gradlew
+        javaHomeOption: JDKVersion
         jdkVersionOption: '1.11'
         jdkArchitectureOption: 'x64'
         publishJUnitResults: false
-        tasks: 'dist jpackage'
-        gradleOptions: '-Dbadass.jlink.jpackage.home=$(System.DefaultWorkingDirectory)/${{ parameters.jpkgdir }}'
+        tasks: dist jpackage
+        gradleOptions: -Dbadass.jlink.jpackage.home=$(System.DefaultWorkingDirectory)/$(jpkgdir)
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/build/distributions/'
+        pathToPublish: $(System.DefaultWorkingDirectory)/build/distributions/
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/build/installer/'
+        pathToPublish: $(System.DefaultWorkingDirectory)/build/installer/
