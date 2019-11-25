@@ -11,7 +11,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = 'fxgame/io.game2048.Game2048'
+mainClassName = 'fxgame/io.fxgame.game2048.Game2048'
 
 javafx {
     version = '13'
@@ -22,6 +22,19 @@ javafx {
     ]
 }
 
+// set jpackage installerType based on OS
+def os = org.gradle.internal.os.OperatingSystem.current()
+def jPkgInstallerType = ''
+if (os.isLinux()) {
+    jPkgInstallerType = 'deb'
+} else if (os.isMacOsX()) {
+    jPkgInstallerType = 'pkg'
+} else if (os.isWindows()) {
+    jPkgInstallerType = 'msi'
+}
+
+print(jPkgInstallerType)
+
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip")
@@ -31,13 +44,13 @@ jlink {
     }
 
     jpackage {
+        // can be set with BADASS_JLINK_JPACKAGE_HOME
         jpackageHome = "/Users/bruno/fxderek/jdk-14.jdk/Contents/Home"
         outputDir = "installer"
-        // imageOutputDir = file("$buildDir/my-packaging-image")
-        // installerOutputDir = file("${buildDir}/my-packaging-installer")
-        imageName = 'fxgame'
+        imageName = 'fx2048'
         skipInstaller = false
-        installerName = 'MyApp'
+        installerName = 'fx2048'
+        installerType = "${jPkgInstallerType}"
     }
 }
 

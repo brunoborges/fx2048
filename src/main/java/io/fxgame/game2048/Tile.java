@@ -1,4 +1,4 @@
-package io.game2048;
+package io.fxgame.game2048;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
