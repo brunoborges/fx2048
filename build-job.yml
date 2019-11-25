@@ -21,6 +21,7 @@ jobs:
     - task: ExtractFiles@1
       inputs:
         archiveFilePatterns: '$(System.DefaultWorkingDirectory)/openjdk**'
+        destinationFolder: '$(System.DefaultWorkingDirectory)'
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
