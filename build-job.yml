@@ -22,6 +22,7 @@ jobs:
       inputs:
         archiveFilePatterns: '$(System.DefaultWorkingDirectory)/openjdk**'
         destinationFolder: '$(System.DefaultWorkingDirectory)'
+        cleanDestinationFolder: false
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
