@@ -16,12 +16,11 @@ jobs:
         feed: brunocborges
         definition: ${{ parameters.jpkgjdk }}
         version: '0.0.1'
-        extract: true
+        extract: false
         downloadPath: '$(System.ArtifactsDirectory)'
-    - script: unzip '$(System.ArtifactsDirectory)/*.zip'
-      condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    - script: tar zxvf '$(System.ArtifactsDirectory)/*.tar.gz'
-      condition: ne( variables['Agent.OS'], 'Windows_NT' )
+    - task: ExtractFiles@1
+      inputs:
+        archiveFilePatterns: '$(System.ArtifactsDirectory)/openjdk**'
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
