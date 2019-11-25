@@ -34,4 +34,7 @@ jobs:
         gradleOptions: '-Dbadass.jlink.jpackage.home=$(System.DefaultWorkingDirectory)/${{ parameters.jpkgdir }}'
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-${{ parameters.platform }}.zip'
+        pathToPublish: '$(System.DefaultWorkingDirectory)/build/distributions/'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(System.DefaultWorkingDirectory)/build/installer/'
