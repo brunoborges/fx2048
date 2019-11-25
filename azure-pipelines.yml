@@ -20,7 +20,7 @@ jobs:
       pool:
         vmImage: 'macOS-10.13'
       jpkgjdk: 'jdk14jpackagemac'
-      jpkgdir: 'jdk-14.jdk'
+      jpkgdir: 'jdk-14.jdk/Contents/Home'
 
   # Windows job
   - template: build-job.yml
