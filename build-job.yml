@@ -19,9 +19,9 @@ jobs:
         extract: true
         downloadPath: '$(System.ArtifactsDirectory)'
     - script: unzip '$(System.ArtifactsDirectory)/*.zip'
-      condition: eq(${{ parameters.platform }}, 'win')
+      condition: eq("${{ parameters.platform }}", 'win')
     - script: tar zxvf '$(System.ArtifactsDirectory)/*.tar.gz'
-      condition: ne(${{ parameters.platform }}, 'win')
+      condition: ne("${{ parameters.platform }}", 'win')
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
