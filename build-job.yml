@@ -28,7 +28,7 @@ jobs:
         jdkVersionOption: '1.11'
         jdkArchitectureOption: 'x64'
         publishJUnitResults: false
-        tasks: 'dist'
+        tasks: 'dist jpackage'
         gradleOptions: '-Dbadass.jlink.jpackage.home=$(System.ArtifactsDirectory)/${{ parameters.jpkgdir }}'
     - task: PublishBuildArtifacts@1
       inputs:
