@@ -9,6 +9,8 @@ jobs:
       platform: linux
       pool:
         vmImage: 'ubuntu-16.04'
+      jpkgjdk: 'jdk14jpackagelinux'
+      jpkgdir: 'jdk-14'
 
   # Mac OS job
   - template: build-job.yml
@@ -17,6 +19,8 @@ jobs:
       platform: mac
       pool:
         vmImage: 'macOS-10.13'
+      jpkgjdk: 'jdk14jpackagemac'
+      jpkgdir: 'jdk-14.jdk'
 
   # Windows job
   - template: build-job.yml
@@ -25,3 +29,5 @@ jobs:
       platform: win
       pool:
         vmImage: 'windows-2019'
+      jpkgjdk: 'jdk14jpackagewindows'
+      jpkgdir: 'jdk-14'

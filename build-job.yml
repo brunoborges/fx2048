@@ -6,11 +6,21 @@ parameters:
   pool: ''
   platform: ''
   sign: false
+  jpkgjdk: ''
+  jpkgdir: ''
 
 jobs:
 - job: ${{ parameters.name }}
   pool: ${{ parameters.pool }}
   steps:
+    - task: DownloadPackage@1
+      inputs:
+        packageType: 'upack'
+        feed: brunocborges
+        definition: ${{ parameters.jpkgjdk }}
+        version: '0.0.1'
+        extract: true
+        downloadPath: '$(System.ArtifactsDirectory)'
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -19,6 +29,7 @@ jobs:
         jdkArchitectureOption: 'x64'
         publishJUnitResults: false
         tasks: 'dist'
+        gradleOptions: '-Dbadass.jlink.jpackage.home=$(System.ArtifactsDirectory)/${{ parameters.jpkgdir }}'
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(System.DefaultWorkingDirectory)/build/distributions/game2048-${{ parameters.platform }}.zip'
