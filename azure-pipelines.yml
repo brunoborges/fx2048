@@ -10,7 +10,7 @@ jobs:
       pool:
         vmImage: ubuntu-16.04
       jpkgjdk: jdk14jpackagelinux
-      jpkgdir: jdk-14'
+      jpkgdir: jdk-14
 
   # Mac OS job
   - template: build-job.yml

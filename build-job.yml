@@ -9,8 +9,6 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   pool: ${{ parameters.pool }}
-  variables:
-    jpkgdir: ${{ parameters.jpkgdir }}
   steps:
     - task: DownloadPackage@1
       inputs:
@@ -33,7 +31,7 @@ jobs:
         jdkArchitectureOption: 'x64'
         publishJUnitResults: false
         tasks: dist jpackage
-        gradleOptions: -Dbadass.jlink.jpackage.home=$(System.DefaultWorkingDirectory)/$(jpkgdir)
+        gradleOptions: -Dbadass.jlink.jpackage.home=$(System.DefaultWorkingDirectory)/${{ parameters.jpkgdir }}
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: $(System.DefaultWorkingDirectory)/build/distributions/
