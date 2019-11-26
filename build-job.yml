@@ -16,7 +16,7 @@ jobs:
       inputs:
         packageType: upack
         feed: brunocborges
-        definition: $[parameters.jpkgjdk]
+        definition: ${{ parameters.jpkgjdk }}
         version: '0.0.1'
         extract: false
         downloadPath: $(System.DefaultWorkingDirectory)
@@ -31,6 +31,8 @@ jobs:
         echo "2 $( parameters.jpkgdir )"
     - script: |
         echo "3 $[ parameters.jpkgdir ]"
+#    - script: |
+#        echo "4 ${{ jpkgdir }}"
     - script: |
         echo "5 $( jpkgdir )"
     - script: |
