@@ -27,10 +27,15 @@ jobs:
         cleanDestinationFolder: false
     - script: |
         echo "1 ${{ parameters.jpkgdir }}"
+    - script: |
         echo "2 $( parameters.jpkgdir )"
+    - script: |
         echo "3 $[ parameters.jpkgdir ]"
+    - script: |
         echo "4 ${{ jpkgdir }}"
+    - script: |
         echo "5 $( jpkgdir )"
+    - script: |
         echo "6 $[ jpkgdir ]"
     - task: Gradle@2
       inputs:
