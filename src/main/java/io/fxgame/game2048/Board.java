@@ -1,4 +1,4 @@
-package game2048;
+package io.fxgame.game2048;
 
 import java.time.LocalTime;
 import java.time.ZoneId;

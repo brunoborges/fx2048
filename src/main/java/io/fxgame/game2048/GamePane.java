@@ -1,4 +1,4 @@
-package game2048;
+package io.fxgame.game2048;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
