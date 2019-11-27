@@ -45,12 +45,6 @@ import javafx.util.Duration;
  */
 public class Board extends Pane {
 
-    public static final int CELL_SIZE = 128;
-    private static final int BORDER_WIDTH = (14 + 2) / 2;
-    private static final int TOP_HEIGHT = 92;
-    private static final int GAP_HEIGHT = 50;
-    private static final int TOOLBAR_HEIGHT = 80;
-
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
@@ -71,7 +65,6 @@ public class Board extends Pane {
     private LocalTime time;
     private Timeline timer;
     private final StringProperty clock = new SimpleStringProperty("00:00:00");
-    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     // User Interface controls
     private final VBox vGame = new VBox(0);
@@ -83,19 +76,16 @@ public class Board extends Pane {
     private final Label lblBest = new Label("0");
     private final Label lblPoints = new Label();
 
-    private final HBox overlay = new HBox();
-    private final VBox txtOverlay = new VBox(10);
-    private final Label lOvrText = new Label();
-    private final Label lOvrSubText = new Label();
-    private final HBox buttonsOverlay = new HBox();
+    private final BoardOverlay overlay;
 
     // Overlay Buttons
     private final Button bTry = new Button("Try again");
     private final Button bContinue = new Button("Keep going");
-    private final Button bContinueNo = new Button("No, keep going");
     private final Button bSave = new Button("Save");
     private final Button bRestore = new Button("Restore");
     private final Button bQuit = new Button("Quit");
+
+    private final ChangeListener<Boolean> wonListener;
 
     private final HBox hToolbar = new HBox();
 
@@ -107,13 +97,17 @@ public class Board extends Pane {
 
     public Board(GridOperator grid) {
         this.gridOperator = grid;
-        gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        gridWidth = Constants.CELL_SIZE * grid.getGridSize() + Constants.BORDER_WIDTH * 2;
         sessionManager = new SessionManager(gridOperator);
 
         createScore();
         createGrid();
         createToolBar();
         initGameProperties();
+    }
+
+    public int getGridWidth() {
+        return gridWidth;
     }
 
     private void createScore() {
@@ -156,19 +150,19 @@ public class Board extends Pane {
         vScores.getChildren().addAll(hScores, vFill);
 
         hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScores);
-        hTop.setMinSize(gridWidth, TOP_HEIGHT);
-        hTop.setPrefSize(gridWidth, TOP_HEIGHT);
-        hTop.setMaxSize(gridWidth, TOP_HEIGHT);
+        hTop.setMinSize(gridWidth, Constants.TOP_HEIGHT);
+        hTop.setPrefSize(gridWidth, Constants.TOP_HEIGHT);
+        hTop.setMaxSize(gridWidth, Constants.TOP_HEIGHT);
 
         vGame.getChildren().add(hTop);
 
         var hTime = new HBox();
-        hTime.setMinSize(gridWidth, GAP_HEIGHT);
+        hTime.setMinSize(gridWidth, Constants.GAP_HEIGHT);
         hTime.setAlignment(Pos.BOTTOM_RIGHT);
         lblTime.getStyleClass().addAll("game-label", "game-time");
         lblTime.textProperty().bind(clock);
         timer = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-            clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt));
+            clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(Constants.TIMER_FORMATTER));
         }), new KeyFrame(Duration.seconds(1)));
         timer.setCycleCount(Animation.INDEFINITE);
         hTime.getChildren().add(lblTime);
@@ -183,8 +177,9 @@ public class Board extends Pane {
     }
 
     private Rectangle createCell(int i, int j) {
-        final double arcSize = CELL_SIZE / 6d;
-        var cell = new Rectangle(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        final double arcSize = Constants.CELL_SIZE / 6d;
+        var cell = new Rectangle(i * Constants.CELL_SIZE, j * Constants.CELL_SIZE, Constants.CELL_SIZE,
+                Constants.CELL_SIZE);
         // provide default style in case css are not loaded
         cell.setFill(Color.WHITE);
         cell.setStroke(Color.GREY);
@@ -202,8 +197,8 @@ public class Board extends Pane {
 
         gridGroup.getStyleClass().add("game-grid");
         gridGroup.setManaged(false);
-        gridGroup.setLayoutX(BORDER_WIDTH);
-        gridGroup.setLayoutY(BORDER_WIDTH);
+        gridGroup.setLayoutX(Constants.BORDER_WIDTH);
+        gridGroup.setLayoutY(Constants.BORDER_WIDTH);
 
         var hBottom = new HBox();
         hBottom.getStyleClass().add("game-backGrid");
@@ -222,15 +217,15 @@ public class Board extends Pane {
     private void createToolBar() {
         // toolbar
         var hPadding = new HBox();
-        hPadding.setMinSize(gridWidth, TOOLBAR_HEIGHT);
-        hPadding.setPrefSize(gridWidth, TOOLBAR_HEIGHT);
-        hPadding.setMaxSize(gridWidth, TOOLBAR_HEIGHT);
+        hPadding.setMinSize(gridWidth, Constants.TOOLBAR_HEIGHT);
+        hPadding.setPrefSize(gridWidth, Constants.TOOLBAR_HEIGHT);
+        hPadding.setMaxSize(gridWidth, Constants.TOOLBAR_HEIGHT);
 
         hToolbar.setAlignment(Pos.CENTER);
         hToolbar.getStyleClass().add("game-backGrid");
-        hToolbar.setMinSize(gridWidth, TOOLBAR_HEIGHT);
-        hToolbar.setPrefSize(gridWidth, TOOLBAR_HEIGHT);
-        hToolbar.setMaxSize(gridWidth, TOOLBAR_HEIGHT);
+        hToolbar.setMinSize(gridWidth, Constants.TOOLBAR_HEIGHT);
+        hToolbar.setPrefSize(gridWidth, Constants.TOOLBAR_HEIGHT);
+        hToolbar.setMaxSize(gridWidth, Constants.TOOLBAR_HEIGHT);
 
         vGame.getChildren().add(hPadding);
         vGame.getChildren().add(hToolbar);
@@ -268,75 +263,14 @@ public class Board extends Pane {
         Platform.exit();
     }
 
-    private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
-
-    private class Overlay implements ChangeListener<Boolean> {
-
-        private final Button btn1, btn2;
-        private final String message, warning;
-        private final String style1, style2;
-
-        public Overlay(String message, String warning, Button btn1, Button btn2, String style1, String style2) {
-            this.message = message;
-            this.warning = warning;
-            this.btn1 = btn1; // left
-            this.btn2 = btn2; // right
-            this.style1 = style1;
-            this.style2 = style2;
-        }
-
-        @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-            if (!newValue) {
-                return;
-            }
-
-            timer.stop();
-
-            overlay.getStyleClass().setAll("game-overlay", style1);
-            lOvrText.setText(message);
-            lOvrText.getStyleClass().setAll("game-label", style2);
-            lOvrSubText.setText(warning);
-            lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-            txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-            buttonsOverlay.getChildren().setAll(btn1);
-
-            if (btn2 != null) {
-                buttonsOverlay.getChildren().add(btn2);
-            }
-
-            if (!layerOnProperty.get()) {
-                var defaultBtn = btn2 == null ? btn1 : btn2;
-                defaultBtn.requestFocus();
-                defaultBtn.setDefaultButton(true);
-
-                Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                layerOnProperty.set(true);
-            }
-        }
-    }
-
     private void initGameProperties() {
-        overlay.setMinSize(gridWidth, gridWidth);
-        overlay.setAlignment(Pos.CENTER);
-        overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
-
-        overlay.getChildren().setAll(txtOverlay);
-        txtOverlay.setAlignment(Pos.CENTER);
-
-        buttonsOverlay.setAlignment(Pos.CENTER);
-        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridWidth / 2);
-        buttonsOverlay.setMinSize(gridWidth, gridWidth / 2);
-        buttonsOverlay.setSpacing(10);
+        overlay = new BoardOverlay(timer, layerOnProperty, this);
 
         bTry.getStyleClass().add("game-button");
         bTry.setOnAction(e -> btnTryAgain());
 
         bContinue.getStyleClass().add("game-button");
         bContinue.setOnAction(e -> keepGoing());
-
-        bContinueNo.getStyleClass().add("game-button");
-        bContinueNo.setOnAction(e -> keepGoing());
 
         bSave.getStyleClass().add("game-button");
         bSave.setOnAction(e -> saveGame.set(true));
@@ -347,89 +281,40 @@ public class Board extends Pane {
         bQuit.getStyleClass().add("game-button");
         bQuit.setOnAction(e -> exitGame());
 
+        // Game Won
+        wonListener = overlay.createChangeListener("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
         gameWonProperty.addListener(wonListener);
-        gameOverProperty
-                .addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver"));
-        gamePauseProperty.addListener(
-                new Overlay("Game Paused", "", bContinue, null, "game-overlay-pause", "game-lblPause"));
-        gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted", bTry, bContinueNo,
+
+        // Game Over
+        gameOverProperty.addListener(
+                overlay.createChangeListener("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver"));
+
+        // Game Pause
+        gamePauseProperty.addListener(overlay.createChangeListener("Game Paused", "", bContinue, null,
                 "game-overlay-pause", "game-lblPause"));
-        gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten", bSave, bContinueNo,
-                "game-overlay-pause", "game-lblPause"));
-        gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
-                "game-overlay-pause", "game-lblPause"));
+
+        // Game Try Again
+        gameTryAgainProperty.addListener(overlay.createChangeListener("Try Again?", "Current game will be deleted",
+                bTry, bContinue, "game-overlay-pause", "game-lblPause"));
+
+        // Game Save
+        gameSaveProperty.addListener(overlay.createChangeListener("Save?", "Previous saved data will be overwritten",
+                bSave, bContinue, "game-overlay-pause", "game-lblPause"));
+
+        // Game Restore
+        gameRestoreProperty.addListener(overlay.createChangeListener("Restore?", "Current game will be deleted",
+                bRestore, bContinue, "game-overlay-pause", "game-lblPause"));
+
+        // Game Quit
+        gameQuitProperty.addListener(overlay.createChangeListener("Quit Game?", "Non saved data will be lost", bQuit,
+                bContinue, "game-overlay-quit", "game-lblQuit"));
+
+        // About Overlay
         gameAboutProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                timer.stop();
-                overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
-
-                TextFlow flow = new TextFlow();
-                flow.setTextAlignment(TextAlignment.CENTER);
-                flow.setPadding(new Insets(10, 0, 0, 0));
-                flow.setMinSize(gridWidth, gridWidth);
-                flow.setPrefSize(gridWidth, gridWidth);
-                flow.setMaxSize(gridWidth, gridWidth);
-                flow.setPrefSize(BASELINE_OFFSET_SAME_AS_HEIGHT, BASELINE_OFFSET_SAME_AS_HEIGHT);
-
-                var t00 = new Text("2048");
-                t00.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t01 = new Text("FX");
-                t01.getStyleClass().setAll("game-label", "game-lblAbout2");
-
-                var t02 = new Text(" Game\n");
-                t02.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t1 = new Text("JavaFX game - Desktop version\n\n");
-                t1.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t20 = new Text("Powered by ");
-                t20.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link1 = new Hyperlink();
-                link1.setText("OpenJFX");
-                link1.setOnAction(e -> Game2048.urlOpener().open("https://openjfx.io/"));
-                link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t21 = new Text(" Project \n\n");
-                t21.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t23 = new Text("\u00A9 ");
-                t23.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link2 = new Hyperlink();
-                link2.setText("@JPeredaDnr");
-                link2.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
-                link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t22 = new Text(" & ");
-                t22.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link3 = new Hyperlink();
-                link3.setText("@brunoborges");
-                link3.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
-
-                var t32 = new Text(" & ");
-                t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
-                link3.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t24 = new Text("\n\n");
-                t24.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t31 = new Text(" Version " + Game2048.VERSION + " - 2015\n\n");
-                t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22, link3);
-                flow.getChildren().addAll(t24, t31);
-                txtOverlay.getChildren().setAll(flow);
-                buttonsOverlay.getChildren().setAll(bContinue);
-                this.getChildren().removeAll(overlay, buttonsOverlay);
-                this.getChildren().addAll(overlay, buttonsOverlay);
-                layerOnProperty.set(true);
+                overlay.displayAbout();
             }
         });
-        gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
-                "game-overlay-quit", "game-lblQuit"));
 
         restoreRecord();
 
@@ -499,8 +384,8 @@ public class Board extends Pane {
     }
 
     public void addTile(Tile tile) {
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+        double layoutX = tile.getLocation().getLayoutX(Constants.CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(Constants.CELL_SIZE) - (tile.getMinHeight() / 2);
 
         tile.setLayoutX(layoutX);
         tile.setLayoutY(layoutY);
@@ -511,8 +396,8 @@ public class Board extends Pane {
         var tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
 
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+        double layoutX = tile.getLocation().getLayoutX(Constants.CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(Constants.CELL_SIZE) - (tile.getMinHeight() / 2);
 
         tile.setLayoutX(layoutX);
         tile.setLayoutY(layoutY);
@@ -544,13 +429,13 @@ public class Board extends Pane {
         gameScoreProperty.set(gameScoreProperty.get() + points);
     }
 
-    public void setGameOver(boolean gameOver) {
-        gameOverProperty.set(gameOver);
+    public void gameOver() {
+        gameOverProperty.set(true);
     }
 
-    public void setGameWin(boolean won) {
+    public void gameWon() {
         if (!gameWonProperty.get()) {
-            gameWonProperty.set(won);
+            gameWonProperty.set(true);
         }
     }
 
@@ -632,7 +517,7 @@ public class Board extends Pane {
             // check tiles>=2048
             gameWonProperty.set(false);
             gameGrid.forEach((l, t) -> {
-                if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
+                if (t != null && t.getValue() >= Constants.FINAL_VALUE_TO_WIN) {
                     gameWonProperty.removeListener(wonListener);
                     gameWonProperty.set(true);
                     gameWonProperty.addListener(wonListener);

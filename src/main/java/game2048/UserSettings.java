@@ -57,7 +57,7 @@ public enum UserSettings {
 
 	public int getGridSize() {
         // @TODO save settings for grid size
-		return GridOperator.DEFAULT_GRID_SIZE;
+		return Constants.DEFAULT_GRID_SIZE;
 	}
 
 }

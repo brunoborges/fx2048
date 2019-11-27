@@ -1,0 +1,104 @@
+package game2048;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
+/**
+ * ScorePane
+ */
+public class ScorePane extends Group {
+
+    private final Label lblTime = new Label();
+    private final Label lblScore = new Label("0");
+    private final Label lblBest = new Label("0");
+    private final HBox hTop = new HBox(0);
+    private IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
+    private final StringProperty clock = new SimpleStringProperty("00:00:00");
+    private final DateTimeFormatter clockFormat =
+            DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+
+    public StringProperty getClock() {
+        return clock;
+    }
+
+    public ScorePane(Board board, IntegerProperty gameScoreProperty) {
+        this.gameScoreProperty = gameScoreProperty;
+        var lblTitle = new Label("2048");
+        lblTitle.getStyleClass().addAll("game-label", "game-title");
+
+        var lblSubtitle = new Label("FX");
+        lblSubtitle.getStyleClass().addAll("game-label", "game-subtitle");
+
+        var hFill = new HBox();
+        HBox.setHgrow(hFill, Priority.ALWAYS);
+        hFill.setAlignment(Pos.CENTER);
+
+        var vScores = new VBox();
+        var hScores = new HBox(5);
+
+        vScore.setAlignment(Pos.CENTER);
+        vScore.getStyleClass().add("game-vbox");
+
+        var lblTit = new Label("SCORE");
+        lblTit.getStyleClass().addAll("game-label", "game-titScore");
+
+        lblScore.getStyleClass().addAll("game-label", "game-score");
+        lblScore.textProperty().bind(gameScoreProperty.asString());
+        vScore.getChildren().addAll(lblTit, lblScore);
+
+        var vRecord = new VBox(-5);
+        vRecord.setAlignment(Pos.CENTER);
+        vRecord.getStyleClass().add("game-vbox");
+
+        var lblTitBest = new Label("BEST");
+        lblTitBest.getStyleClass().addAll("game-label", "game-titScore");
+        lblBest.getStyleClass().addAll("game-label", "game-score");
+        lblBest.textProperty().bind(gameBestProperty.asString());
+        vRecord.getChildren().addAll(lblTitBest, lblBest);
+        hScores.getChildren().addAll(vScore, vRecord);
+
+        var vFill = new VBox();
+        VBox.setVgrow(vFill, Priority.ALWAYS);
+        vScores.getChildren().addAll(hScores, vFill);
+
+        hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScores);
+        hTop.setMinSize(gridWidth, TOP_HEIGHT);
+        hTop.setPrefSize(gridWidth, TOP_HEIGHT);
+        hTop.setMaxSize(gridWidth, TOP_HEIGHT);
+
+        vGame.getChildren().add(hTop);
+
+        var hTime = new HBox();
+        hTime.setMinSize(gridWidth, GAP_HEIGHT);
+        hTime.setAlignment(Pos.BOTTOM_RIGHT);
+        lblTime.getStyleClass().addAll("game-label", "game-time");
+        lblTime.textProperty().bind(clock);
+        hTime.getChildren().add(lblTime);
+
+        vGame.getChildren().add(hTime);
+        getChildren().add(vGame);
+
+        lblPoints.getStyleClass().addAll("game-label", "game-points");
+        lblPoints.setAlignment(Pos.CENTER);
+        lblPoints.setMinWidth(100);
+        getChildren().add(lblPoints);
+    }
+
+    public void startTimer() {
+        time = LocalTime.now();
+        timer.playFromStart();
+    }
+    
+    public 
+}

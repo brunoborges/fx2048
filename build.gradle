@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    // eclipse plugin needed to fix project on vs code
     id 'eclipse'
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.8'
@@ -38,6 +39,7 @@ task dist {
 
 defaultTasks 'dist'
 
+// eclipse plugin needed to fix project on vs code
 eclipse {
     classpath {
         containers 'org.eclipse.buildship.core.gradleclasspathcontainer'

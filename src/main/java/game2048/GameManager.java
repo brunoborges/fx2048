@@ -21,7 +21,6 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -30,19 +29,12 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
-import javafx.util.Duration;
 
 /**
  * @author Bruno Borges
  * @author Jose Pereda
  */
 public class GameManager extends Group {
-
-    public static final int FINAL_VALUE_TO_WIN = 2048;
-
-    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
-    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
-    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     private volatile boolean movingTiles = false;
     private final List<Location> locations = new ArrayList<>();
@@ -69,11 +61,10 @@ public class GameManager extends Group {
         board.setToolBar(createToolBar());
         this.getChildren().add(board);
 
-        var trueProperty = new SimpleBooleanProperty(true);
-        board.clearGameProperty().and(trueProperty).addListener((ov, b1, b2) -> initializeGameGrid());
-        board.resetGameProperty().and(trueProperty).addListener((ov, b1, b2) -> startGame());
-        board.restoreGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doRestoreSession());
-        board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
+        board.clearGameProperty().addListener((ov, b1, b2) -> {if(b2) initializeGameGrid();});
+        board.resetGameProperty().addListener((ov, b1, b2) -> {if(b2)startGame();});
+        board.restoreGameProperty().addListener((ov, b1, b2) -> {if(b2)doRestoreSession();});
+        board.saveGameProperty().addListener((ov, b1, b2) -> {if(b2)doSaveSession();});
 
         initializeGameGrid();
         startGame();
@@ -164,8 +155,8 @@ public class GameManager extends Group {
 
                 board.addPoints(t.getValue());
 
-                if (t.getValue() == FINAL_VALUE_TO_WIN) {
-                    board.setGameWin(true);
+                if (t.getValue() == Constants.FINAL_VALUE_TO_WIN) {
+                    board.gameWon();
                 }
                 result.set(1);
             });
@@ -194,7 +185,7 @@ public class GameManager extends Group {
                 var randomAvailableLocation = findRandomAvailableLocation();
                 if (randomAvailableLocation == null && mergeMovementsAvailable() == 0) {
                     // game is over if there are no more moves available
-                    board.setGameOver(true);
+                    board.gameOver();
                 } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
                     synchronized (gameGrid) {
                         movingTiles = false;
@@ -306,14 +297,14 @@ public class GameManager extends Group {
      * @return a scale transition
      */
     private ScaleTransition animateNewlyAddedTile(Tile tile) {
-        final var scaleTransition = new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
+        final var scaleTransition = new ScaleTransition(Constants.ANIMATION_NEWLY_ADDED_TILE, tile);
         scaleTransition.setToX(1.0);
         scaleTransition.setToY(1.0);
         scaleTransition.setInterpolator(Interpolator.EASE_OUT);
         scaleTransition.setOnFinished(e -> {
             // after last movement on full grid, check if there are movements available
             if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && mergeMovementsAvailable() == 0) {
-                board.setGameOver(true);
+                board.gameOver();
             }
         });
         return scaleTransition;
@@ -329,12 +320,12 @@ public class GameManager extends Group {
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         var timeline = new Timeline();
         var kvX = new KeyValue(tile.layoutXProperty(),
-                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutX(Constants.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
         var kvY = new KeyValue(tile.layoutYProperty(),
-                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutY(Constants.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
-        var kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
-        var kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
+        var kfX = new KeyFrame(Constants.ANIMATION_EXISTING_TILE, kvX);
+        var kfY = new KeyFrame(Constants.ANIMATION_EXISTING_TILE, kvY);
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
@@ -350,12 +341,12 @@ public class GameManager extends Group {
      * @return a sequential transition
      */
     private SequentialTransition animateMergedTile(Tile tile) {
-        final var scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        final var scale0 = new ScaleTransition(Constants.ANIMATION_MERGED_TILE, tile);
         scale0.setToX(1.2);
         scale0.setToY(1.2);
         scale0.setInterpolator(Interpolator.EASE_IN);
 
-        final var scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        final var scale1 = new ScaleTransition(Constants.ANIMATION_MERGED_TILE, tile);
         scale1.setToX(1.0);
         scale1.setToY(1.0);
         scale1.setInterpolator(Interpolator.EASE_OUT);

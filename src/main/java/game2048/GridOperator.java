@@ -13,17 +13,12 @@ import java.util.stream.IntStream;
  */
 public class GridOperator {
 
-    public static final int DEFAULT_GRID_SIZE = 4;
     public static final int MIN_GRID_SIZE = 4;
     public static final int MAX_GRID_SIZE = 16;
 
     private final int gridSize;
     private final List<Integer> traversalX;
     private final List<Integer> traversalY;
-
-    public GridOperator() {
-        this(DEFAULT_GRID_SIZE);
-    }
 
     public GridOperator(int gridSize) {
         if (gridSize < MIN_GRID_SIZE || gridSize > MAX_GRID_SIZE) {
