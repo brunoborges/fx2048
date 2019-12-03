@@ -17,9 +17,9 @@ jobs:
       uses: brunoborges/justextract@master
       with:
         file: openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz
+    - name: Build with Gradle
       env:
         BADASS_JLINK_JPACKAGE_HOME: ${GITHUB_WORKSPACE}/jdk-14.jdk/Contents/Home
-    - name: Build with Gradle
       run: ./gradlew jpackage
     - name: Upload ZIP 
       uses: actions/upload-artifact@v1
