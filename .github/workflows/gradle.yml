@@ -24,10 +24,10 @@ jobs:
     - name: Upload ZIP 
       uses: actions/upload-artifact@v1
       with:
-        name: fxgamedist
+        name: fxgamezip
         path: build/distributions/game2048-mac.zip
     - name: Upload PKG
       uses: actions/upload-artifact@v1
       with:
-        name: fxgamedist
+        name: fxgameinstaller
         path: build/installer/fx2048-1.0.pkg
