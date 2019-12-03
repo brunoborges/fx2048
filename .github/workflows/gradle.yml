@@ -21,11 +21,11 @@ jobs:
       env:
         BADASS_JLINK_JPACKAGE_HOME: ./jdk-14.jdk/Contents/Home
       run: ./gradlew jpackage
-#    - name: Upload ZIP 
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: fxgamedist
-#        path: build/distributions/game2048-mac.zip
+    - name: Upload ZIP 
+      uses: actions/upload-artifact@v1
+      with:
+        name: fxgamedist
+        path: build/distributions/game2048-mac.zip
     - name: Upload PKG
       uses: actions/upload-artifact@v1
       with:
