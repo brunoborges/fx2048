@@ -1,0 +1,35 @@
+name: Java CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: [macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 13
+      uses: actions/setup-java@v1
+      with:
+        java-version: 13
+    - name: Download JDK 14
+      run: wget -q https://download.java.net/java/early_access/jpackage/1/openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz
+    - name: Extract JDK 14
+      uses: brunoborges/justextract@master
+      with:
+        file: openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz
+      env:
+        BADASS_JLINK_JPACKAGE_HOME: ./jdk-14.jdk/Contents/Home
+    - name: Build with Gradle
+      run: ./gradlew jpackage
+#    - name: Upload ZIP 
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: fxgamedist
+#        path: build/distributions/game2048-mac.zip
+    - name: Upload PKG
+      uses: actions/upload-artifact@v1
+      with:
+        name: fxgamedist
+        path: build/installer/fx2048-1.0.pkg
