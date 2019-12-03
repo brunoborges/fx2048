@@ -16,7 +16,7 @@ jobs:
     - name: Download JDK 14
       run: wget -q https://download.java.net/java/early_access/jpackage/1/openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz
     - name: Extract JDK 14
-      uses: brunoborges/justextract@v1
+      uses: brunoborges/justextract@master
       with:
         file: openjdk-14-jpackage+1-70_osx-x64_bin.tar.gz
       env:
