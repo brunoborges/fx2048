@@ -3,7 +3,7 @@
 The game 2048 built using JavaFX and Java 11. This is a Java port based on the
 Javascript version: https://github.com/gabrielecirulli/2048.
 
-
+Check down below for a screenshot.
 
 ## Releases
 
@@ -17,6 +17,10 @@ Check below the list of releases, and download the corresponding binary to your 
   - [Linux](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-linux.zip)
   - [Mac OS](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-mac.zip)
   - [Windows](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-win.zip)
+  
+## Screenshot
+
+![](screenshot.png)
 
 ## Building and running
 
@@ -28,11 +32,19 @@ You will need [OpenJDK 11](http://jdk.java.net/11/) (or newer) installed to buil
 
 ### Create a distribution to your operating system (Windows, Linux, or Mac OS)
 
-Run
+You can create a ZIP file that will bundle a small JRE and the game, or you can create a native OS installer (e.g. MSI, DMG, DEB).
+
+To create a ZIP bundle, run:
 
 ```bash
-./gradle distro
+./gradlew dist
 ```
+
+To create a native OS installer, follow these steps:
+
+1. Download JDK 14 with `jpackage` for your specific OS: https://jdk.java.net/jpackage/
+1. Configure the environment variable `BADASS_JLINK_JPACKAGE_HOME` to point to the extracted path of the JDK 14 with `jpackage`
+1. Run `./gradlew distro jpackage`
 
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
