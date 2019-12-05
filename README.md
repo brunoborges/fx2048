@@ -44,7 +44,7 @@ To create a native OS installer, follow these steps:
 
 1. Download JDK 14 with `jpackage` for your specific OS: https://jdk.java.net/jpackage/
 1. Configure the environment variable `BADASS_JLINK_JPACKAGE_HOME` to point to the extracted path of the JDK 14 with `jpackage`
-1. Run `./gradlew distro jpackage`
+1. Run `./gradlew dist jpackage`
 
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
