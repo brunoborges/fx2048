@@ -46,6 +46,12 @@ To create a native OS installer, follow these steps:
 1. Configure the environment variable `BADASS_JLINK_JPACKAGE_HOME` to point to the extracted path of the JDK 14 with `jpackage`
 1. Run `./gradlew dist jpackage`
 
+## Running using Docker
+You can build container image from source code using the Dockerfile and run the containerized game. 
+You have to share the X11 socket with the container. For that you need to install [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) for windows or [Xquartz](https://www.xquartz.org) if you're using macOS. Make sure to allow connections from network during setup.
+On macOS, you'll need to run `xhost +127.0.0.1` every time you re-open Xquartz.
+The final step is to run the container: `docker run -it --rm -e DISPLAY=host.docker.internal:0.0 image_name`
+
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
 
