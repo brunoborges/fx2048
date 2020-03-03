@@ -96,11 +96,4 @@ public class Game2048 extends Application {
         applicationInstance = this;
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(args);
-    }
-
 }
