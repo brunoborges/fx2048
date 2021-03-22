@@ -1,0 +1,51 @@
+name: build
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build (JDK-${{ matrix.java }}, ${{ matrix.os }})"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+        java: [ 16 ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 'Check out repository'
+        uses: actions/checkout@v2
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: 'Build with Bach'
+        shell: bash
+        run: |
+          PATH=$PATH:.bach/bin
+          bach build
+      - name: 'Upload custom runtime image'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.event.repository.name }}-image-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            .bach/workspace/image
+      - name: 'Package self-contained Java application'
+        shell: bash
+        run: |
+          jpackage \
+          --verbose \
+          --name fx2048 \
+          --description "The game 2048, built by Bach" \
+          --runtime-image .bach/workspace/image \
+          --module fxgame/io.fxgame.game2048.AppLauncher \
+          --dest .bach/workspace/package
+      - name: 'Upload packaged application'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.event.repository.name }}-package-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            .bach/workspace/package
