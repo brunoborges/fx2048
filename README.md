@@ -1,6 +1,6 @@
 # 2048FX
 
-This is project is forked from https://github.com/brunoborges/fx2048
+This project is forked from https://github.com/brunoborges/fx2048
 
 This fork uses [Bach](https://github.com/sormuras/bach) as its build tool.
 
@@ -15,4 +15,4 @@ This fork uses [Bach](https://github.com/sormuras/bach) as its build tool.
 
 ## License
 
-The project is licensed under GPL 3. See [LICENSE](https://raw.githubusercontent.com/brunoborges/fx2048/master/LICENSE) file for the full license.
+The project is licensed under GPL 3. See [LICENSE](LICENSE) file for the full license.

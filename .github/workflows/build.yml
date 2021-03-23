@@ -23,10 +23,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: 'Build with Bach'
-        shell: bash
-        run: |
-          PATH=$PATH:.bach/bin
-          bach build
+        uses: sormuras/bach-build@v1
       - name: 'Upload custom runtime image'
         uses: actions/upload-artifact@v2
         with:
