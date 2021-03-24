@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+if [[ $1 == 'boot' ]]; then
+  javac --module-path .bach/bin --add-modules com.github.sormuras.bach -d .bach/workspace/.bach .bach/bin/boot.java
+  jshell --module-path .bach/bin --add-modules com.github.sormuras.bach --class-path .bach/workspace/.bach .bach/bin/boot.jsh
+  exit $?
+fi
+
+if [[ $1 == 'init' ]]; then
+  if [[ -z $2 ]]; then
+    echo "Usage: bach init VERSION"
+    exit 1
+  fi
+  java .bach/bin/init.java $2
+  exit $?
+fi
+
+java --module-path .bach/bin --module com.github.sormuras.bach "$@"
+exit $?
