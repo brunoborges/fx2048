@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'eclipse'
     id 'application'
-    id 'org.openjfx.javafxplugin'      version '0.0.8'
+    id 'org.openjfx.javafxplugin'      version '0.0.10'
     id 'org.beryx.jlink'               version '2.17.2'
     id 'com.github.ben-manes.versions' version '0.28.0'
 }
@@ -11,14 +11,19 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    compile 'com.github.almasb:fxgl:11.16'
+}
+
 mainClassName = 'fxgame/io.fxgame.game2048.AppLauncher'
 
 javafx {
-    version = '13'
+    version = '16'
     modules = [
        'javafx.base',
        'javafx.graphics',
-       'javafx.controls'
+       'javafx.controls',
+       'javafx.fxml'
     ]
 }
 
