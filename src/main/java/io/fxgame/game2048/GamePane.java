@@ -99,7 +99,7 @@ public class GamePane extends StackPane {
     private void addEasterEggHandler() {
         setAlignment(Pos.CENTER);
 
-        var easterEggApp = new EasterEggApp(gameBounds);
+        var easterEggApp = new EasterEggApp();
         var fxglPane = GameApplication.embeddedLaunch(easterEggApp);
         fxglPane.renderWidthProperty().bind(widthProperty());
         fxglPane.renderHeightProperty().bind(heightProperty());
