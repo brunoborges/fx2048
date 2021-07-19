@@ -11,6 +11,10 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    compile 'com.github.almasb:fxgl:11.16'
+}
+
 mainClassName = 'fxgame/io.fxgame.game2048.AppLauncher'
 
 javafx {
@@ -18,7 +22,8 @@ javafx {
     modules = [
        'javafx.base',
        'javafx.graphics',
-       'javafx.controls'
+       'javafx.controls',
+       'javafx.fxml'
     ]
 }
 
