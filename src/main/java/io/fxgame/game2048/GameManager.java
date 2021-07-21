@@ -1,26 +1,6 @@
 package io.fxgame.game2048;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.SequentialTransition;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -31,6 +11,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Bruno Borges
@@ -51,6 +36,7 @@ public class GameManager extends Group {
 
     private final Board board;
     private final GridOperator gridOperator;
+    private Animation shakingAnimation;
 
     /**
      * GameManager is a Group containing a Board that holds a grid and the score a
@@ -112,7 +98,7 @@ public class GameManager extends Group {
             tile1.setLocation(locs.next());
         }
 
-        Arrays.asList(tile0, tile1).stream().filter(Objects::nonNull).forEach(t -> gameGrid.put(t.getLocation(), t));
+        Stream.of(tile0, tile1).filter(Objects::nonNull).forEach(t -> gameGrid.put(t.getLocation(), t));
 
         redrawTilesInGameGrid();
 
@@ -123,7 +109,7 @@ public class GameManager extends Group {
      * Redraws all tiles in the <code>gameGrid</code> object
      */
     private void redrawTilesInGameGrid() {
-        gameGrid.values().stream().filter(Objects::nonNull).forEach(t -> board.addTile(t));
+        gameGrid.values().stream().filter(Objects::nonNull).forEach(board::addTile);
     }
 
     /**
@@ -209,7 +195,23 @@ public class GameManager extends Group {
 
             parallelTransition.play();
         }
+
+        if (tilesWereMoved == 0) {
+            // no tiles got moved
+            // shake the game pane
+            if (shakingAnimation == null) {
+                shakingAnimation = createShakeGamePaneAnimation();
+            }
+
+            if (!shakingAnimationPlaying) {
+                shakingAnimation.play();
+                shakingAnimationPlaying = true;
+            }
+        }
     }
+
+    private boolean shakingAnimationPlaying = false;
+    private boolean shakingXYState = false;
 
     /**
      * optionalTile allows using tiles from the map at some location, whether they
@@ -271,7 +273,7 @@ public class GameManager extends Group {
      * Finds a random location or returns null if none exist
      *
      * @return a random location or <code>null</code> if there are no more locations
-     *         available
+     * available
      */
     private Location findRandomAvailableLocation() {
         var availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
@@ -319,6 +321,31 @@ public class GameManager extends Group {
         return scaleTransition;
     }
 
+    private Animation createShakeGamePaneAnimation() {
+        var shakingAnimation = new Timeline(new KeyFrame(Duration.seconds(0.05), (ae) -> {
+            var parent = getParent();
+
+            if (shakingXYState) {
+                parent.setLayoutX(parent.getLayoutX() + 5);
+                parent.setLayoutY(parent.getLayoutY() + 5);
+            } else {
+                parent.setLayoutX(parent.getLayoutX() - 5);
+                parent.setLayoutY(parent.getLayoutY() - 5);
+            }
+
+            shakingXYState = !shakingXYState;
+        }));
+
+        shakingAnimation.setCycleCount(6);
+        shakingAnimation.setAutoReverse(false);
+        shakingAnimation.setOnFinished(event -> {
+            shakingXYState = false;
+            shakingAnimationPlaying = false;
+        });
+
+        return shakingAnimation;
+    }
+
     /**
      * Animation that moves the tile from its previous location to a new location
      *
@@ -329,9 +356,9 @@ public class GameManager extends Group {
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         var timeline = new Timeline();
         var kvX = new KeyValue(tile.layoutXProperty(),
-                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+            newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
         var kvY = new KeyValue(tile.layoutYProperty(),
-                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+            newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
         var kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
         var kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
@@ -362,10 +389,6 @@ public class GameManager extends Group {
 
         return new SequentialTransition(scale0, scale1);
     }
-
-    /*************************************************************************/
-    /************************ Public methods *********************************/
-    /*************************************************************************/
 
     /**
      * Move the tiles according user input if overlay is not on
