@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +51,8 @@ public enum UserSettings {
     public void restore(Properties props, String fileName) {
         try (Reader reader = new FileReader(fileName)) {
             props.load(reader);
+        } catch (FileNotFoundException e) {
+            Logger.getLogger(UserSettings.class.getName()).log(Level.INFO, "Previous game record not found.");
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
