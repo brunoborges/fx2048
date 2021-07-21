@@ -51,7 +51,8 @@ public class GamePane extends StackPane {
         addSwipeHandlers();
         setFocusTraversable(true);
         setOnMouseClicked(e -> requestFocus());
-        addEasterEggHandler();
+        
+        // addEasterEggHandler();
     }
 
     private BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
