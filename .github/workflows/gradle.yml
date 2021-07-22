@@ -28,4 +28,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: fxgameinstaller
-        path: build/installers/fx2048-1.0.pkg
+        path: build/jpackage/fx2048-unspecified.pkg
