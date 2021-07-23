@@ -11,13 +11,8 @@ Check down below for a screenshot.
 
 You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in (using Java 11 jlink custom images). The ZIP files come with a binary that will start the game with the bundled optimized/trimmed JVM with only the needed modules, making the binaries extremely small comparably with the normal JRE download size. 
 
-Check below the list of releases, and download the corresponding binary to your operating system.
+Check successful builds for stable releases.
 
-- [game2048-20190903.1](https://github.com/brunoborges/fx2048/releases)
-  - [Linux](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-linux.zip)
-  - [Mac OS](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-mac.zip)
-  - [Windows](https://github.com/brunoborges/fx2048/releases/download/game2048-20190903.1/game2048-win.zip)
-  
 ## Screenshot
 
 ![](screenshot.png)
