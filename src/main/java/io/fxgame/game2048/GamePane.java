@@ -1,8 +1,5 @@
 package io.fxgame.game2048;
 
-import com.almasb.fxgl.app.GameApplication;
-import com.almasb.fxgl.dsl.FXGL;
-import io.fxgame.game2048.fxgl.EasterEggApp;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -51,8 +48,6 @@ public class GamePane extends StackPane {
         addSwipeHandlers();
         setFocusTraversable(true);
         setOnMouseClicked(e -> requestFocus());
-        
-        // addEasterEggHandler();
     }
 
     private BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
@@ -95,29 +90,6 @@ public class GamePane extends StackPane {
 
     private void move(Direction direction) {
         gameManager.move(direction);
-    }
-
-    private void addEasterEggHandler() {
-        setAlignment(Pos.CENTER);
-
-        var easterEggApp = new EasterEggApp();
-        var fxglPane = GameApplication.embeddedLaunch(easterEggApp);
-        fxglPane.renderWidthProperty().bind(widthProperty());
-        fxglPane.renderHeightProperty().bind(heightProperty());
-
-        addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if (event.isControlDown() && event.getCode().equals(KeyCode.DIGIT5)) {
-                var screenshot = snapshot(new SnapshotParameters(), null);
-                easterEggApp.playGlitchAnimation(screenshot);
-
-                getChildren().add(fxglPane);
-
-                FXGL.runOnce(() -> getChildren().remove(fxglPane), Duration.seconds(3));
-
-                // trigger internal layout
-                setWidth(getWidth() + 0.1);
-            }
-        });
     }
 
     public GameManager getGameManager() {

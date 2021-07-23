@@ -1,19 +1,15 @@
 plugins {
     id 'java'
-    id 'eclipse'
+//    id 'eclipse'
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.10'
     id 'org.beryx.jlink'               version '2.24.0'
-    id 'com.github.ben-manes.versions' version '0.39.0'
+    // id 'com.github.ben-manes.versions' version '0.39.0'
 }
 
 application {
     mainModule = 'fx2048'
     mainClass = 'io.fxgame.game2048.AppLauncher'
-}
-
-dependencies {
-    implementation 'com.github.almasb:fxgl:11.16'
 }
 
 java {
@@ -27,9 +23,7 @@ javafx {
     modules = [
        'javafx.base',
        'javafx.graphics',
-       'javafx.controls',
-       'javafx.media',
-       'javafx.fxml'
+       'javafx.controls'
     ]
 }
 
@@ -89,13 +83,18 @@ tasks.named("jpackageImage") {
 }
 */
 
+tasks.named("jpackageImage") {
+    dependsOn jlinkZip
+}
+
 task dist {
-    dependsOn clean, jlinkZip
-    description "Calls clean and then jlinkZip [default]"
+    dependsOn clean, jpackage
+    description "Calls clean and then jpackage [default]"
 }
 
 defaultTasks 'dist'
 
+/*
 eclipse {
     classpath {
         containers 'org.eclipse.buildship.core.gradleclasspathcontainer'
@@ -112,3 +111,4 @@ eclipse {
         }
     }
 }
+*/
