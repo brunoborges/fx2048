@@ -38,7 +38,7 @@ jobs:
     - name: Download the JDK
       shell: powershell
       run: |
-        Invoke-WebRequest -Uri ${{ env.windows_jdk }} -OutFile ${{ env.RUNNER_TEMP }}/jdk.zip
+        Invoke-WebRequest -Uri ${{ env.windows_jdk }} -OutFile $RUNNER_TEMP/jdk.zip
     - name: Set up JDK
       uses: actions/setup-java@v2
       with:

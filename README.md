@@ -7,7 +7,7 @@ Check down below for a screenshot.
 
 ## Releases
 
-[![Build Status](https://dev.azure.com/brunocborges/fx2048/_apis/build/status/brunoborges.fx2048?branchName=master)](https://dev.azure.com/brunocborges/fx2048/_build/latest?definitionId=1&branchName=master)
+[![JavaFX Build](https://github.com/brunoborges/fx2048/actions/workflows/gradle.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/gradle.yml)
 
 You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in (using Java 11 jlink custom images). The ZIP files come with a binary that will start the game with the bundled optimized/trimmed JVM with only the needed modules, making the binaries extremely small comparably with the normal JRE download size. 
 
