@@ -11,9 +11,10 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - run: |
-        wget -O $RUNNER_TEMP/jdk.tar.gz $macos_jdk
+    - name: Checkout the source code
+      uses: actions/checkout@v1
+    - name: Download the JDK
+      run: wget -O $RUNNER_TEMP/jdk.tar.gz $macos_jdk
     - name: Set up OpenJDK 17-EA
       uses: actions/setup-java@v2
       with:
@@ -31,10 +32,12 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
-    - run: |
-        wget -O $RUNNER_TEMP/jdk.zip $windows_jdk
-    - name: Set up OpenJDK 17-EA
+    - name: Checkout the source code
+      uses: actions/checkout@v1
+    - name: Download the JDK
+      shell: powershell
+      run: Invoke-WebRequest -Uri $windows_jdk -OutFile $RUNNER_TEMP/jdk.zip
+    - name: Set up JDK
       uses: actions/setup-java@v2
       with:
         distribution: 'jdkfile'
@@ -51,9 +54,10 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - run: |
-        wget -O $RUNNER_TEMP/jdk.tar.gz $linux_jdk
+    - name: Checkout the source code
+      uses: actions/checkout@v1
+    - name: Download the JDK
+      run: wget -O $RUNNER_TEMP/jdk.tar.gz $linux_jdk
     - name: Set up OpenJDK 17-EA
       uses: actions/setup-java@v2
       with:
