@@ -2,30 +2,69 @@ name: Java Build
 
 on: [push]
 
+env:
+  windows_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_windows-x64_bin.zip
+  macos_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_macos-x64_bin.tar.gz
+  linux_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_linux-x64_bin.tar.gz
+
 jobs:
-  build:
-    runs-on: [macOS-latest]
+  build-macos:
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
     - run: |
-        download_url="https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_macos-x64_bin.tar.gz"
-        wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+        wget -O $RUNNER_TEMP/jdk.tar.gz $macos_jdk
     - name: Set up OpenJDK 17-EA
       uses: actions/setup-java@v2
       with:
         distribution: 'jdkfile'
-        jdkFile: ${{ runner.temp }}/java_package.tar.gz
+        jdkFile: ${{ runner.temp }}/jdk.tar.gz
         java-version: '17'
         architecture: x64
     - name: Build with Gradle
-      run: ./gradlew compileJava jlink jlinkZip jpackage
-    - name: Upload ZIP 
-      uses: actions/upload-artifact@v1
-      with:
-        name: fxgamezip
-        path: build/distributions/game2048-mac.zip
+      run: ./gradlew dist jpackage
     - name: Upload PKG
       uses: actions/upload-artifact@v1
       with:
-        name: fxgameinstaller
-        path: build/jpackage/fx2048-1.0.dmg
+        name: fx2048-1.0.pkg
+        path: build/jpackage/fx2048-1.0.pkg
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: |
+        wget -O $RUNNER_TEMP/jdk.zip $windows_jdk
+    - name: Set up OpenJDK 17-EA
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'jdkfile'
+        jdkFile: ${{ runner.temp }}/jdk.zip
+        java-version: '17'
+        architecture: x64
+    - name: Build with Gradle
+      run: ./gradlew dist jpackage
+    - name: Upload PKG
+      uses: actions/upload-artifact@v1
+      with:
+        name: fx2048-1.0.msi
+        path: build/jpackage/fx2048-1.0.msi
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: |
+        wget -O $RUNNER_TEMP/jdk.tar.gz $linux_jdk
+    - name: Set up OpenJDK 17-EA
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'jdkfile'
+        jdkFile: ${{ runner.temp }}/jdk.tar.gz
+        java-version: '17'
+        architecture: x64
+    - name: Build with Gradle
+      run: ./gradlew dist jpackage
+    - name: Upload PKG
+      uses: actions/upload-artifact@v1
+      with:
+        name: fx2048-1.0.deb
+        path: build/jpackage/fx2048-1.0.deb
