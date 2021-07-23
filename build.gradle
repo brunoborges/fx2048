@@ -47,7 +47,7 @@ jlink {
         noConsole = true
     }
 
-    addExtraDependencies("javafx")
+    // addExtraDependencies("javafx")
 
     jpackage {
         imageName = 'fx2048'
