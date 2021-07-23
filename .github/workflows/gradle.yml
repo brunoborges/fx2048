@@ -76,4 +76,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: fx2048-1.0.deb
-        path: build/jpackage/fx2048-1.0.deb
+        path: build/jpackage/fx2048_1.0-1_amd64.deb
