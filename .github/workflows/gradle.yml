@@ -25,7 +25,7 @@ jobs:
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
-    - name: Upload PKG
+    - name: Upload Installer
       uses: actions/upload-artifact@v1
       with:
         name: fx2048-1.0.dmg
@@ -48,7 +48,7 @@ jobs:
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
-    - name: Upload PKG
+    - name: Upload Installer
       uses: actions/upload-artifact@v1
       with:
         name: fx2048-1.0.msi
@@ -70,7 +70,9 @@ jobs:
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
-    - name: Upload PKG
+    - name: List installers
+      run: ls -l build/jpackage/
+    - name: Upload Installer
       uses: actions/upload-artifact@v1
       with:
         name: fx2048-1.0.deb
