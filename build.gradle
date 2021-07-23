@@ -1,10 +1,8 @@
 plugins {
     id 'java'
-//    id 'eclipse'
     id 'application'
     id 'org.openjfx.javafxplugin'      version '0.0.10'
     id 'org.beryx.jlink'               version '2.24.0'
-    // id 'com.github.ben-manes.versions' version '0.39.0'
 }
 
 application {
@@ -29,7 +27,7 @@ javafx {
 
 // set jpackage installerType based on OS
 def os = org.gradle.internal.os.OperatingSystem.current()
-def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'dmg'
+def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'pkg'
 
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
@@ -40,8 +38,6 @@ jlink {
         name = 'fx2048'
         noConsole = true
     }
-
-    // addExtraDependencies("javafx")
 
     jpackage {
         imageName = 'fx2048'
@@ -93,22 +89,3 @@ task dist {
 }
 
 defaultTasks 'dist'
-
-/*
-eclipse {
-    classpath {
-        containers 'org.eclipse.buildship.core.gradleclasspathcontainer'
-        file {
-            whenMerged {
-                entries.findAll { it.properties.kind.equals('lib') && !it.properties.path.contains("junit") }.each {
-                    it.entryAttributes['module'] = 'true'
-                }
-                entries.findAll { it.properties.path.startsWith('org.eclipse.jdt.launching.JRE_CONTAINER') }.each {
-                    it.entryAttributes['module'] = 'true'
-                }
-
-            }
-        }
-    }
-}
-*/

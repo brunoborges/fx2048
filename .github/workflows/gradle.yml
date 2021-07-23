@@ -28,8 +28,8 @@ jobs:
     - name: Upload Installer
       uses: actions/upload-artifact@v1
       with:
-        name: fx2048-1.0.dmg
-        path: build/jpackage/fx2048-1.0.dmg
+        name: fx2048-1.0.pkg
+        path: build/jpackage/fx2048-1.0.pkg
   build-windows:
     runs-on: windows-latest
     steps:
