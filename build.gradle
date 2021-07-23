@@ -35,7 +35,7 @@ javafx {
 
 // set jpackage installerType based on OS
 def os = org.gradle.internal.os.OperatingSystem.current()
-def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'pkg'
+def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'dmg'
 
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
@@ -51,21 +51,43 @@ jlink {
 
     jpackage {
         imageName = 'fx2048'
-        imageOptions = ['--mac-package-identifier','fx2048']
+        imageOptions = []
+        if (os.macOsX) {
+            imageOptions += ['--mac-package-identifier','fx2048']
+        }
 
         installerName = 'fx2048'
         installerType = "${pkgType}"
-        installerOptions = ['--resource-dir', "src/main/resources", "--mac-package-name", "fx2048"]
+        installerOptions = ['--resource-dir', "src/main/resources"]
         installerOptions += [
                 '--vendor', 'Bruno Borges',
-                '--app-version', version
+                '--app-version', '1.0'
         ]
+
         if (os.windows) {
             installerOptions += ['--win-per-user-install', '--win-dir-chooser', '--win-menu']
         }
+
+        if (os.macOsX) {
+            installerOptions += ["--mac-package-name", "fx2048"]
+            // Code Signing
+            // installerOptions += ['--mac-sign', '--mac-signing-keychain', '/Users/bruno/certificates.p12', '--mac-signing-key-user-name', 'Bruno Borges']
+        }
         skipInstaller = false
     }
+
 }
+
+/*
+task deletePostInstall {
+    print("deltePostInstall")
+    // delete 'uglyFolder', 'uglyFile'
+}
+
+tasks.named("jpackageImage") { 
+    finalizedBy deletePostInstall
+}
+*/
 
 task dist {
     dependsOn clean, jlinkZip
