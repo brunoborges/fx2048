@@ -1,6 +1,6 @@
 # 2048FX
 
-The game 2048 built using JavaFX and Java 11. This is a Java port based on the
+The game 2048 built using JavaFX 16 and Java 17. This is a Java port based on the
 Javascript version: https://github.com/gabrielecirulli/2048.
 
 Check down below for a screenshot.
@@ -9,9 +9,7 @@ Check down below for a screenshot.
 
 [![JavaFX Build](https://github.com/brunoborges/fx2048/actions/workflows/gradle.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/gradle.yml)
 
-You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in (using Java 11 jlink custom images). The ZIP files come with a binary that will start the game with the bundled optimized/trimmed JVM with only the needed modules, making the binaries extremely small comparably with the normal JRE download size. 
-
-Check successful builds for stable releases.
+You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in. Check successful builds for stable releases.
 
 ## Screenshot
 
@@ -19,7 +17,7 @@ Check successful builds for stable releases.
 
 ## Building and running
 
-You will need [OpenJDK 11](http://jdk.java.net/11/) (or newer) installed to build and run the project:
+You will need [OpenJDK 17](http://jdk.java.net/) (or newer) installed to build and run the project:
 
 ```bash
 ./gradlew run
@@ -35,10 +33,8 @@ To create a ZIP bundle, run:
 ./gradlew dist
 ```
 
-To create a native OS installer, follow these steps:
+To create a native OS installer, run:
 
-1. Download JDK 14 with `jpackage` for your specific OS: https://jdk.java.net/jpackage/
-1. Configure the environment variable `BADASS_JLINK_JPACKAGE_HOME` to point to the extracted path of the JDK 14 with `jpackage`
 1. Run `./gradlew dist jpackage`
 
 ## Running using Docker
