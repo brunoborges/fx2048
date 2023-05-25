@@ -14,8 +14,10 @@ public class Tile extends Label {
     private Location location;
     private Boolean merged;
 
+    private static final Random random = new Random();
+
     public static Tile newRandomTile() {
-        int value = new Random().nextDouble() < 0.9 ? 2 : 4;
+        int value = random.nextDouble() < 0.9 ? 2 : 4;
         return new Tile(value);
     }
 

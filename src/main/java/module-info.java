@@ -1,4 +1,4 @@
-module fx2048 {
+module fxgame {
     requires java.base;
     requires java.logging;
 

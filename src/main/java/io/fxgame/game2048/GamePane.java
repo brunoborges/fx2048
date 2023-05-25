@@ -4,27 +4,26 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
-import javafx.geometry.Pos;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
-import javafx.util.Duration;
+
+import java.util.Objects;
+
+import static io.fxgame.game2048.Direction.*;
 
 /**
  * @author Bruno Borges
  */
 public class GamePane extends StackPane {
 
-    private GameManager gameManager;
-    private Bounds gameBounds;
+    private final GameManager gameManager;
+    private final Bounds gameBounds;
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
         // The font may be used and redistributed under the terms of the Apache License 2.0
-        Font.loadFont(Game2048.class.getResource("ClearSans-Bold.ttf").toExternalForm(), 10.0);
+        Font.loadFont(Objects.requireNonNull(Game2048.class.getResource("ClearSans-Bold.ttf")).toExternalForm(), 10.0);
     }
 
     public GamePane() {
@@ -50,42 +49,42 @@ public class GamePane extends StackPane {
         setOnMouseClicked(e -> requestFocus());
     }
 
-    private BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
+    private final BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
 
     private void addKeyHandlers() {
         setOnKeyPressed(ke -> {
             var keyCode = ke.getCode();
             switch (keyCode) {
-                case CONTROL:
-                case COMMAND: cmdCtrlKeyPressed.set(true); break;
-                case S: gameManager.saveSession(); break;
-                case R: gameManager.restoreSession(); break;
-                case P: gameManager.pauseGame(); break;
-                case Q: if(!cmdCtrlKeyPressed.get()) gameManager.quitGame(); break;
-                case F: {
-                    var stage = ((Stage) getScene().getWindow());
-                    stage.setFullScreen(!stage.isFullScreen()); 
-                    break;
+                case CONTROL, COMMAND -> cmdCtrlKeyPressed.set(true);
+                case S -> gameManager.saveSession();
+                case R -> gameManager.restoreSession();
+                case P -> gameManager.pauseGame();
+                case Q -> {
+                    if (!cmdCtrlKeyPressed.get()) gameManager.quitGame();
                 }
-                default: if(keyCode.isArrowKey()) move(Direction.valueFor(keyCode)); break;
+                case F -> {
+                    var stage = ((Stage) getScene().getWindow());
+                    stage.setFullScreen(!stage.isFullScreen());
+                }
+                default -> {
+                    if (keyCode.isArrowKey()) move(Direction.valueFor(keyCode));
+                }
             }
         });
 
         setOnKeyReleased(ke -> {
             var keyCode = ke.getCode();
-
-            if (keyCode.equals(KeyCode.CONTROL) || keyCode.equals(KeyCode.COMMAND)) {
-                cmdCtrlKeyPressed.set(false);
-                return;
+            switch (keyCode) {
+                case CONTROL, COMMAND -> cmdCtrlKeyPressed.set(false);
             }
         });
     }
 
     private void addSwipeHandlers() {
-        setOnSwipeUp(e -> move(Direction.UP));
-        setOnSwipeRight(e -> move(Direction.RIGHT));
-        setOnSwipeLeft(e -> move(Direction.LEFT));
-        setOnSwipeDown(e -> move(Direction.DOWN));
+        setOnSwipeUp(e -> move(UP));
+        setOnSwipeRight(e -> move(RIGHT));
+        setOnSwipeLeft(e -> move(LEFT));
+        setOnSwipeDown(e -> move(DOWN));
     }
 
     private void move(Direction direction) {

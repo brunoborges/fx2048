@@ -21,8 +21,8 @@ public class SessionManager {
 
     protected void saveSession(Map<Location, Tile> gameGrid, Integer score, Long time) {
         gridOperator.traverseGrid((x, y) -> {
-            Tile t = gameGrid.get(new Location(x, y));
-            props.setProperty("Location_" + x + "_" + y, t != null ? t.getValue().toString() : "0");
+            var tile = gameGrid.get(new Location(x, y));
+            props.setProperty("Location_" + x + "_" + y, tile != null ? tile.getValue().toString() : "0");
             return 0;
         });
         props.setProperty("score", score.toString());
@@ -36,10 +36,10 @@ public class SessionManager {
         gridOperator.traverseGrid((x, y) -> {
             var val = props.getProperty("Location_" + x + "_" + y);
             if (!val.equals("0")) {
-                Tile t = Tile.newTile(Integer.parseInt(val));
-                Location l = new Location(x, y);
-                t.setLocation(l);
-                gameGrid.put(l, t);
+                var tile = Tile.newTile(Integer.parseInt(val));
+                var location = new Location(x, y);
+                tile.setLocation(location);
+                gameGrid.put(location, tile);
             }
             return 0;
         });

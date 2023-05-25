@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainModule = 'fx2048'
+    mainModule = 'fxgame'
     mainClass = 'io.fxgame.game2048.AppLauncher'
 }
 

@@ -3,7 +3,6 @@ package io.fxgame.game2048;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,14 +13,10 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.value.WritableBooleanValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -51,22 +46,7 @@ public class Board extends Pane {
     private static final int GAP_HEIGHT = 50;
     private static final int TOOLBAR_HEIGHT = 80;
 
-    private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
-    private final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
-    private final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
-    private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameAboutProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gamePauseProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameTryAgainProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameSaveProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameRestoreProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty gameQuitProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty resetGame = new SimpleBooleanProperty(false);
-    private final BooleanProperty clearGame = new SimpleBooleanProperty(false);
-    private final BooleanProperty restoreGame = new SimpleBooleanProperty(false);
-    private final BooleanProperty saveGame = new SimpleBooleanProperty(false);
+    private final GameState state = new GameState();
 
     private LocalTime time;
     private Timeline timer;
@@ -101,13 +81,13 @@ public class Board extends Pane {
 
     private final Label lblTime = new Label();
 
-    private final int gridWidth;
+    private final int gridDimension;
     private final GridOperator gridOperator;
     private final SessionManager sessionManager;
 
     public Board(GridOperator grid) {
         this.gridOperator = grid;
-        gridWidth = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        gridDimension = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
         sessionManager = new SessionManager(gridOperator);
 
         createScore();
@@ -137,7 +117,7 @@ public class Board extends Pane {
         lblTit.getStyleClass().addAll("game-label", "game-titScore");
 
         lblScore.getStyleClass().addAll("game-label", "game-score");
-        lblScore.textProperty().bind(gameScoreProperty.asString());
+        lblScore.textProperty().bind(state.gameScoreProperty.asString());
         vScore.getChildren().addAll(lblTit, lblScore);
 
         var vRecord = new VBox(-5);
@@ -147,7 +127,7 @@ public class Board extends Pane {
         var lblTitBest = new Label("BEST");
         lblTitBest.getStyleClass().addAll("game-label", "game-titScore");
         lblBest.getStyleClass().addAll("game-label", "game-score");
-        lblBest.textProperty().bind(gameBestProperty.asString());
+        lblBest.textProperty().bind(state.gameBestProperty.asString());
         vRecord.getChildren().addAll(lblTitBest, lblBest);
         hScores.getChildren().addAll(vScore, vRecord);
 
@@ -156,20 +136,18 @@ public class Board extends Pane {
         vScores.getChildren().addAll(hScores, vFill);
 
         hTop.getChildren().addAll(lblTitle, lblSubtitle, hFill, vScores);
-        hTop.setMinSize(gridWidth, TOP_HEIGHT);
-        hTop.setPrefSize(gridWidth, TOP_HEIGHT);
-        hTop.setMaxSize(gridWidth, TOP_HEIGHT);
+        hTop.setMinSize(gridDimension, TOP_HEIGHT);
+        hTop.setPrefSize(gridDimension, TOP_HEIGHT);
+        hTop.setMaxSize(gridDimension, TOP_HEIGHT);
 
         vGame.getChildren().add(hTop);
 
         var hTime = new HBox();
-        hTime.setMinSize(gridWidth, GAP_HEIGHT);
+        hTime.setMinSize(gridDimension, GAP_HEIGHT);
         hTime.setAlignment(Pos.BOTTOM_RIGHT);
         lblTime.getStyleClass().addAll("game-label", "game-time");
         lblTime.textProperty().bind(clock);
-        timer = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-            clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt));
-        }), new KeyFrame(Duration.seconds(1)));
+        timer = new Timeline(new KeyFrame(Duration.ZERO, e -> clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt))), new KeyFrame(Duration.seconds(1)));
         timer.setCycleCount(Animation.INDEFINITE);
         hTime.getChildren().add(lblTime);
 
@@ -207,12 +185,12 @@ public class Board extends Pane {
 
         var hBottom = new HBox();
         hBottom.getStyleClass().add("game-backGrid");
-        hBottom.setMinSize(gridWidth, gridWidth);
-        hBottom.setPrefSize(gridWidth, gridWidth);
-        hBottom.setMaxSize(gridWidth, gridWidth);
+        hBottom.setMinSize(gridDimension, gridDimension);
+        hBottom.setPrefSize(gridDimension, gridDimension);
+        hBottom.setMaxSize(gridDimension, gridDimension);
 
-        // Clip hBottom to keep the dropshadow effects within the hBottom
-        var rect = new Rectangle(gridWidth, gridWidth);
+        // Clip hBottom to keep the drop-shadow effects within the hBottom
+        var rect = new Rectangle(gridDimension, gridDimension);
         hBottom.setClip(rect);
         hBottom.getChildren().add(gridGroup);
 
@@ -222,45 +200,39 @@ public class Board extends Pane {
     private void createToolBar() {
         // toolbar
         var hPadding = new HBox();
-        hPadding.setMinSize(gridWidth, TOOLBAR_HEIGHT);
-        hPadding.setPrefSize(gridWidth, TOOLBAR_HEIGHT);
-        hPadding.setMaxSize(gridWidth, TOOLBAR_HEIGHT);
+        hPadding.setMinSize(gridDimension, TOOLBAR_HEIGHT);
+        hPadding.setPrefSize(gridDimension, TOOLBAR_HEIGHT);
+        hPadding.setMaxSize(gridDimension, TOOLBAR_HEIGHT);
 
         hToolbar.setAlignment(Pos.CENTER);
         hToolbar.getStyleClass().add("game-backGrid");
-        hToolbar.setMinSize(gridWidth, TOOLBAR_HEIGHT);
-        hToolbar.setPrefSize(gridWidth, TOOLBAR_HEIGHT);
-        hToolbar.setMaxSize(gridWidth, TOOLBAR_HEIGHT);
+        hToolbar.setMinSize(gridDimension, TOOLBAR_HEIGHT);
+        hToolbar.setPrefSize(gridDimension, TOOLBAR_HEIGHT);
+        hToolbar.setMaxSize(gridDimension, TOOLBAR_HEIGHT);
 
         vGame.getChildren().add(hPadding);
         vGame.getChildren().add(hToolbar);
     }
 
     protected void setToolBar(HBox toolbar) {
-        toolbar.disableProperty().bind(layerOnProperty);
+        toolbar.disableProperty().bind(state.layerOnProperty);
         toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 10));
         hToolbar.getChildren().add(toolbar);
     }
 
     protected void tryAgain() {
-        if (!gameTryAgainProperty.get()) {
-            gameTryAgainProperty.set(true);
+        if (!state.gameTryAgainProperty.get()) {
+            state.gameTryAgainProperty.set(true);
         }
     }
 
     private void btnTryAgain() {
-        layerOnProperty.set(false);
+        state.layerOnProperty.set(false);
         doResetGame();
     }
 
     private void keepGoing() {
-        layerOnProperty.set(false);
-        gamePauseProperty.set(false);
-        gameTryAgainProperty.set(false);
-        gameSaveProperty.set(false);
-        gameRestoreProperty.set(false);
-        gameAboutProperty.set(false);
-        gameQuitProperty.set(false);
+        state.keepGoing();
         timer.play();
     }
 
@@ -305,19 +277,19 @@ public class Board extends Pane {
                 buttonsOverlay.getChildren().add(btn2);
             }
 
-            if (!layerOnProperty.get()) {
+            if (!state.layerOnProperty.get()) {
                 var defaultBtn = btn2 == null ? btn1 : btn2;
                 defaultBtn.requestFocus();
                 defaultBtn.setDefaultButton(true);
 
                 Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                layerOnProperty.set(true);
+                state.layerOnProperty.set(true);
             }
         }
     }
 
     private void initGameProperties() {
-        overlay.setMinSize(gridWidth, gridWidth);
+        overlay.setMinSize(gridDimension, gridDimension);
         overlay.setAlignment(Pos.CENTER);
         overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
 
@@ -325,8 +297,8 @@ public class Board extends Pane {
         txtOverlay.setAlignment(Pos.CENTER);
 
         buttonsOverlay.setAlignment(Pos.CENTER);
-        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridWidth / 2);
-        buttonsOverlay.setMinSize(gridWidth, gridWidth / 2);
+        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridDimension / 2);
+        buttonsOverlay.setMinSize(gridDimension, gridDimension / 2);
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
@@ -339,26 +311,26 @@ public class Board extends Pane {
         bContinueNo.setOnAction(e -> keepGoing());
 
         bSave.getStyleClass().add("game-button");
-        bSave.setOnAction(e -> saveGame.set(true));
+        bSave.setOnAction(e -> state.saveGame.set(true));
 
         bRestore.getStyleClass().add("game-button");
-        bRestore.setOnAction(e -> restoreGame.set(true));
+        bRestore.setOnAction(e -> state.restoreGame.set(true));
 
         bQuit.getStyleClass().add("game-button");
         bQuit.setOnAction(e -> exitGame());
 
-        gameWonProperty.addListener(wonListener);
-        gameOverProperty
+        state.gameWonProperty.addListener(wonListener);
+        state.gameOverProperty
                 .addListener(new Overlay("Game over!", "", bTry, null, "game-overlay-over", "game-lblOver"));
-        gamePauseProperty.addListener(
+        state.gamePauseProperty.addListener(
                 new Overlay("Game Paused", "", bContinue, null, "game-overlay-pause", "game-lblPause"));
-        gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted", bTry, bContinueNo,
+        state.gameTryAgainProperty.addListener(new Overlay("Try Again?", "Current game will be deleted", bTry, bContinueNo,
                 "game-overlay-pause", "game-lblPause"));
-        gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten", bSave, bContinueNo,
+        state.gameSaveProperty.addListener(new Overlay("Save?", "Previous saved data will be overwritten", bSave, bContinueNo,
                 "game-overlay-pause", "game-lblPause"));
-        gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
+        state.gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
                 "game-overlay-pause", "game-lblPause"));
-        gameAboutProperty.addListener((observable, oldValue, newValue) -> {
+        state.gameAboutProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 timer.stop();
                 overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
@@ -366,10 +338,10 @@ public class Board extends Pane {
                 TextFlow flow = new TextFlow();
                 flow.setTextAlignment(TextAlignment.CENTER);
                 flow.setPadding(new Insets(10, 0, 0, 0));
-                flow.setMinSize(gridWidth, gridWidth);
-                flow.setPrefSize(gridWidth, gridWidth);
-                flow.setMaxSize(gridWidth, gridWidth);
-                flow.setPrefSize(BASELINE_OFFSET_SAME_AS_HEIGHT, BASELINE_OFFSET_SAME_AS_HEIGHT);
+                flow.setMinSize(gridDimension, gridDimension);
+                flow.setPrefSize(gridDimension, gridDimension);
+                flow.setMaxSize(gridDimension, gridDimension);
+                flow.setPrefSize(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
 
                 var t00 = new Text("2048");
                 t00.getStyleClass().setAll("game-label", "game-lblAbout");
@@ -394,7 +366,7 @@ public class Board extends Pane {
                 var t21 = new Text(" Project \n\n");
                 t21.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                var t23 = new Text("\u00A9 ");
+                var t23 = new Text("© ");
                 t23.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
                 var link2 = new Hyperlink();
@@ -425,26 +397,26 @@ public class Board extends Pane {
                 buttonsOverlay.getChildren().setAll(bContinue);
                 this.getChildren().removeAll(overlay, buttonsOverlay);
                 this.getChildren().addAll(overlay, buttonsOverlay);
-                layerOnProperty.set(true);
+                state.layerOnProperty.set(true);
             }
         });
-        gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
+        state.gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
                 "game-overlay-quit", "game-lblQuit"));
 
         restoreRecord();
 
-        gameScoreProperty.addListener((ov, i, i1) -> {
-            if (i1.intValue() > gameBestProperty.get()) {
-                gameBestProperty.set(i1.intValue());
+        state.gameScoreProperty.addListener((ov, i, i1) -> {
+            if (i1.intValue() > state.gameBestProperty.get()) {
+                state.gameBestProperty.set(i1.intValue());
             }
         });
 
-        layerOnProperty.addListener((ov, b, b1) -> {
+        state.layerOnProperty.addListener((ov, b, b1) -> {
             if (!b1) {
                 getChildren().removeAll(overlay, buttonsOverlay);
                 // Keep the focus on the game when the layer is removed:
                 getParent().requestFocus();
-            } else if (b1) {
+            } else {
                 // Set focus on the first button
                 buttonsOverlay.getChildren().get(0).requestFocus();
             }
@@ -457,27 +429,21 @@ public class Board extends Pane {
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
         getChildren().removeAll(overlay, buttonsOverlay);
 
-        Arrays.asList(clearGame, resetGame, restoreGame, saveGame, layerOnProperty, gameWonProperty, gameOverProperty,
-                gameAboutProperty, gamePauseProperty, gameTryAgainProperty, gameSaveProperty, gameRestoreProperty,
-                gameQuitProperty).forEach(a -> ((WritableBooleanValue) a).set(false));
-
-        gameScoreProperty.set(0);
-
-        clearGame.set(true);
+        state.clearState();
     }
 
     private void doResetGame() {
         doClearGame();
-        resetGame.set(true);
+        state.resetGame();
     }
 
     public void animateScore() {
-        if (gameMovePoints.get() == 0) {
+        if (state.gameMovePoints.get() == 0) {
             return;
         }
 
         final var timeline = new Timeline();
-        lblPoints.setText("+" + gameMovePoints.getValue().toString());
+        lblPoints.setText("+" + state.gameMovePoints.getValue().toString());
         lblPoints.setOpacity(1);
 
         double posX = vScore.localToScene(vScore.getWidth() / 2d, 0).getX();
@@ -532,110 +498,104 @@ public class Board extends Pane {
     }
 
     public void setPoints(int points) {
-        gameMovePoints.set(points);
-    }
-
-    public int getPoints() {
-        return gameMovePoints.get();
+        state.gameMovePoints.set(points);
     }
 
     public void addPoints(int points) {
-        gameMovePoints.set(gameMovePoints.get() + points);
-        gameScoreProperty.set(gameScoreProperty.get() + points);
+        state.gameMovePoints.set(state.gameMovePoints.get() + points);
+        state.gameScoreProperty.set(state.gameScoreProperty.get() + points);
     }
 
     public void setGameOver(boolean gameOver) {
-        gameOverProperty.set(gameOver);
+        state.gameOverProperty.set(gameOver);
     }
 
     public void setGameWin(boolean won) {
-        if (!gameWonProperty.get()) {
-            gameWonProperty.set(won);
+        if (!state.gameWonProperty.get()) {
+            state.gameWonProperty.set(won);
         }
     }
 
     public void pauseGame() {
-        if (!gamePauseProperty.get()) {
-            gamePauseProperty.set(true);
+        if (!state.gamePauseProperty.get()) {
+            state.gamePauseProperty.set(true);
         }
     }
 
     public void aboutGame() {
-        if (!gameAboutProperty.get()) {
-            gameAboutProperty.set(true);
+        if (!state.gameAboutProperty.get()) {
+            state.gameAboutProperty.set(true);
         }
     }
 
     public void quitGame() {
-        if (gameQuitProperty.get()) {
+        if (state.gameQuitProperty.get()) {
             exitGame();
         } else {
-            gameQuitProperty.set(true);
+            state.gameQuitProperty.set(true);
         }
     }
 
     protected BooleanProperty isLayerOn() {
-        return layerOnProperty;
+        return state.layerOnProperty;
     }
 
     protected BooleanProperty resetGameProperty() {
-        return resetGame;
+        return state.resetGame;
     }
 
     protected BooleanProperty clearGameProperty() {
-        return clearGame;
+        return state.clearGame;
     }
 
     protected BooleanProperty saveGameProperty() {
-        return saveGame;
+        return state.saveGame;
     }
 
     protected BooleanProperty restoreGameProperty() {
-        return restoreGame;
+        return state.restoreGame;
     }
 
-    public boolean saveSession() {
-        if (!gameSaveProperty.get()) {
-            gameSaveProperty.set(true);
+    public void saveSession() {
+        if (!state.gameSaveProperty.get()) {
+            state.gameSaveProperty.set(true);
         }
-        return true;
     }
 
     /*
      * Once we have confirmation
      */
     public void saveSession(Map<Location, Tile> gameGrid) {
-        saveGame.set(false);
-        sessionManager.saveSession(gameGrid, gameScoreProperty.getValue(),
+        state.saveGame.set(false);
+        sessionManager.saveSession(gameGrid, state.gameScoreProperty.getValue(),
                 LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
         keepGoing();
     }
 
-    public boolean restoreSession() {
-        if (!gameRestoreProperty.get()) {
-            gameRestoreProperty.set(true);
+    public void restoreSession() {
+        if (!state.gameRestoreProperty.get()) {
+            state.gameRestoreProperty.set(true);
         }
-        return true;
     }
 
     /*
      * Once we have confirmation
      */
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
-        restoreGame.set(false);
+        state.restoreGame.set(false);
         doClearGame();
         timer.stop();
         var sTime = new SimpleStringProperty("");
         int score = sessionManager.restoreSession(gameGrid, sTime);
         if (score >= 0) {
-            gameScoreProperty.set(score);
+            state.gameScoreProperty.set(score);
             // check tiles>=2048
-            gameWonProperty.set(false);
+            state.gameWonProperty.set(false);
             gameGrid.forEach((l, t) -> {
                 if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
-                    gameWonProperty.removeListener(wonListener);
-                    gameWonProperty.set(true);
-                    gameWonProperty.addListener(wonListener);
+                    state.gameWonProperty.removeListener(wonListener);
+                    state.gameWonProperty.set(true);
+                    state.gameWonProperty.addListener(wonListener);
                 }
             });
             if (!sTime.get().isEmpty()) {
@@ -651,12 +611,12 @@ public class Board extends Pane {
 
     public void saveRecord() {
         var recordManager = new RecordManager(gridOperator.getGridSize());
-        recordManager.saveRecord(gameScoreProperty.getValue());
+        recordManager.saveRecord(state.gameScoreProperty.getValue());
     }
 
     private void restoreRecord() {
         var recordManager = new RecordManager(gridOperator.getGridSize());
-        gameBestProperty.set(recordManager.restoreRecord());
+        state.gameBestProperty.set(recordManager.restoreRecord());
     }
 
     public void removeTiles(Set<Tile> mergedToBeRemoved) {

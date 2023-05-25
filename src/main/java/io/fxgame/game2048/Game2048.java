@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 /**
  * @author Bruno Borges
  */
@@ -27,7 +29,7 @@ public class Game2048 extends Application {
         gamePane = new GamePane();
 
         var scene = new Scene(gamePane);
-        scene.getStylesheets().add(getClass().getResource("game.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("game.css")).toExternalForm());
 
         setGameBounds(primaryStage, scene);
         setEnhancedDeviceSettings(primaryStage, scene);
@@ -70,8 +72,8 @@ public class Game2048 extends Application {
         primaryStage.setHeight(((gameBounds.getHeight() + margin) * factor) / 1.5d);
     }
 
-    public static interface URLOpener {
-        public void open(String url);
+    public interface URLOpener {
+        void open(String url);
     }
 
     public static URLOpener urlOpener() {

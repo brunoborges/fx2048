@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
  */
 public class GridOperator {
 
-    public static final int DEFAULT_GRID_SIZE = 6;
+    public static final int DEFAULT_GRID_SIZE = 6; // 6x6
     public static final int MIN_GRID_SIZE = 4;
     public static final int MAX_GRID_SIZE = 16;
 
@@ -36,17 +36,13 @@ public class GridOperator {
     }
 
     public void sortGrid(Direction direction) {
-        Collections.sort(traversalX, direction.equals(Direction.RIGHT) ? Collections.reverseOrder() : Integer::compareTo);
-        Collections.sort(traversalY, direction.equals(Direction.DOWN) ? Collections.reverseOrder() : Integer::compareTo);
+        traversalX.sort(direction.equals(Direction.RIGHT) ? Collections.reverseOrder() : Integer::compareTo);
+        traversalY.sort(direction.equals(Direction.DOWN) ? Collections.reverseOrder() : Integer::compareTo);
     }
 
     public int traverseGrid(IntBinaryOperator func) {
         var at = new AtomicInteger();
-        traversalX.forEach(t_x -> {
-            traversalY.forEach(t_y -> {
-                at.addAndGet(func.applyAsInt(t_x, t_y));
-            });
-        });
+        traversalX.forEach(t_x -> traversalY.forEach(t_y -> at.addAndGet(func.applyAsInt(t_x, t_y))));
 
         return at.get();
     }
@@ -56,7 +52,7 @@ public class GridOperator {
     }
 
     public boolean isValidLocation(Location loc) {
-        return loc.getX() >= 0 && loc.getX() < gridSize && loc.getY() >= 0 && loc.getY() < gridSize;
+        return loc.isValidFor(gridSize);
     }
 
 }

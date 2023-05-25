@@ -30,7 +30,7 @@ public class GameManager extends Group {
     private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     private volatile boolean movingTiles = false;
-    private final List<Location> locations = new ArrayList<>();
+    private final List<Location> locations = new ArrayList<>(36);
     private final Map<Location, Tile> gameGrid;
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
 
@@ -38,14 +38,18 @@ public class GameManager extends Group {
     private final GridOperator gridOperator;
     private Animation shakingAnimation;
 
+    public GameManager() {
+        this(UserSettings.LOCAL.getGridSize());
+    }
+
     /**
      * GameManager is a Group containing a Board that holds a grid and the score a
      * Map holds the location of the tiles in the grid
      * <p>
      * The purpose of the game is sum the value of the tiles up to 2048 points Based
-     * on the Javascript version: https://github.com/gabrielecirulli/2048
+     * on the Javascript version: <a href="https://github.com/gabrielecirulli/2048">...</a>
      *
-     * @param gridSize defines the size of the grid, default 4x4
+     * @param gridSize defines the size of the grid, default 6x6
      */
     public GameManager(int gridSize) {
         this.gameGrid = new HashMap<>();
@@ -72,9 +76,9 @@ public class GameManager extends Group {
         gameGrid.clear();
         locations.clear();
         gridOperator.traverseGrid((x, y) -> {
-            var thisloc = new Location(x, y);
-            locations.add(thisloc);
-            gameGrid.put(thisloc, null);
+            var location = new Location(x, y);
+            locations.add(location);
+            gameGrid.put(location, null);
             return 0;
         });
     }
@@ -131,18 +135,19 @@ public class GameManager extends Group {
         var parallelTransition = new ParallelTransition();
         gridOperator.sortGrid(direction);
         final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
-            var thisloc = new Location(x, y);
-            var farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
-            var opTile = optionalTile(thisloc);
+            var currentLocation = new Location(x, y);
+            var farthestLocation = findFarthestLocation(currentLocation, direction); // farthest available location
+            var opTile = optionalTile(currentLocation);
 
             var result = new AtomicInteger();
             var nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
+
             optionalTile(nextLocation).filter(t -> t.isMergeable(opTile) && !t.isMerged()).ifPresent(t -> {
                 var tile = opTile.get();
                 t.merge(tile);
                 t.toFront();
                 gameGrid.put(nextLocation, t);
-                gameGrid.replace(thisloc, null);
+                gameGrid.replace(currentLocation, null);
 
                 parallelTransition.getChildren().add(animateExistingTile(tile, t.getLocation()));
                 parallelTransition.getChildren().add(animateMergedTile(t));
@@ -155,12 +160,13 @@ public class GameManager extends Group {
                 }
                 result.set(1);
             });
-            if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(thisloc)) {
+
+            if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(currentLocation)) {
                 var tile = opTile.get();
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
 
                 gameGrid.put(farthestLocation, tile);
-                gameGrid.replace(thisloc, null);
+                gameGrid.replace(currentLocation, null);
 
                 tile.setLocation(farthestLocation);
 
@@ -225,7 +231,7 @@ public class GameManager extends Group {
     }
 
     /**
-     * Searchs for the farthest empty location where the current tile could go
+     * Searches for the farthest empty location where the current tile could go
      *
      * @param location  of the tile
      * @param direction of movement
@@ -237,7 +243,7 @@ public class GameManager extends Group {
         do {
             farthest = location;
             location = farthest.offset(direction);
-        } while (gridOperator.isValidLocation(location) && !optionalTile(location).isPresent());
+        } while (gridOperator.isValidLocation(location) && optionalTile(location).isEmpty());
 
         return farthest;
     }
@@ -247,7 +253,7 @@ public class GameManager extends Group {
      * <p>
      * This method is called only when the grid is full of tiles, what makes the use
      * of Optional unnecessary, but it could be used when the board is not full to
-     * find the number of pairs of mergeable tiles and provide a hint for the user,
+     * find the number of pairs of merge-able tiles and provide a hint for the user,
      * for instance
      *
      * @return the number of pairs of tiles that can be merged
@@ -255,17 +261,15 @@ public class GameManager extends Group {
     private int mergeMovementsAvailable() {
         final var pairsOfMergeableTiles = new AtomicInteger();
 
-        Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> {
-            gridOperator.traverseGrid((x, y) -> {
-                var thisloc = new Location(x, y);
-                optionalTile(thisloc).ifPresent(t -> {
-                    if (t.isMergeable(optionalTile(thisloc.offset(direction)))) {
-                        pairsOfMergeableTiles.incrementAndGet();
-                    }
-                });
-                return 0;
+        Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> gridOperator.traverseGrid((x, y) -> {
+            var thisLocation = new Location(x, y);
+            optionalTile(thisLocation).ifPresent(t -> {
+                if (t.isMergeable(optionalTile(thisLocation.offset(direction)))) {
+                    pairsOfMergeableTiles.incrementAndGet();
+                }
             });
-        });
+            return 0;
+        }));
         return pairsOfMergeableTiles.get();
     }
 
@@ -291,7 +295,6 @@ public class GameManager extends Group {
     /**
      * Adds a tile of random value to a random location with a proper animation
      *
-     * @param randomLocation
      */
     private void addAndAnimateRandomTile(Location randomLocation) {
         var tile = board.addRandomTile(randomLocation);
@@ -393,7 +396,6 @@ public class GameManager extends Group {
     /**
      * Move the tiles according user input if overlay is not on
      *
-     * @param direction
      */
     public void move(Direction direction) {
         if (!board.isLayerOn().get()) {
@@ -404,7 +406,6 @@ public class GameManager extends Group {
     /**
      * Set gameManager scale to adjust overall game size
      *
-     * @param scale
      */
     public void setScale(double scale) {
         this.setScaleX(scale);

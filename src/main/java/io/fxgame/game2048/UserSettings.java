@@ -49,12 +49,12 @@ public enum UserSettings {
     }
 
     public void restore(Properties props, String fileName) {
-        try (Reader reader = new FileReader(fileName)) {
+        try (var reader = new FileReader(fileName)) {
             props.load(reader);
         } catch (FileNotFoundException e) {
             Logger.getLogger(UserSettings.class.getName()).log(Level.INFO, "Previous game record not found.");
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UserSettings.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
