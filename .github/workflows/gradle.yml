@@ -2,25 +2,16 @@ name: Java Build
 
 on: [push]
 
-env:
-  windows_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_windows-x64_bin.zip
-  macos_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_macos-x64_bin.tar.gz
-  linux_jdk: https://download.java.net/java/early_access/jdk17/31/GPL/openjdk-17-ea+31_linux-x64_bin.tar.gz
-
 jobs:
   build-macos:
     runs-on: macos-latest
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v1
-    - name: Download the JDK
-      run: |
-        wget -O $RUNNER_TEMP/jdk.tar.gz $macos_jdk
-    - name: Set up OpenJDK 17-EA
-      uses: actions/setup-java@v2
+    - name: Set up OpenJDK 17
+      uses: actions/setup-java@v3
       with:
-        distribution: 'jdkfile'
-        jdkFile: ${{ runner.temp }}/jdk.tar.gz
+        distribution: 'microsoft'
         java-version: '17'
         architecture: x64
     - name: Build with Gradle
@@ -35,15 +26,10 @@ jobs:
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v1
-    - name: Download the JDK
-      shell: powershell
-      run: |
-        Invoke-WebRequest -Uri ${{ env.windows_jdk }} -OutFile ${{ runner.temp }}/jdk.zip
-    - name: Set up JDK
-      uses: actions/setup-java@v2
+    - name: Set up OpenJDK 17
+      uses: actions/setup-java@v3
       with:
-        distribution: 'jdkfile'
-        jdkFile: ${{ runner.temp }}/jdk.zip
+        distribution: 'microsoft'
         java-version: '17'
         architecture: x64
     - name: Build with Gradle
@@ -58,14 +44,10 @@ jobs:
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v1
-    - name: Download the JDK
-      run: |
-        wget -O $RUNNER_TEMP/jdk.tar.gz $linux_jdk
-    - name: Set up OpenJDK 17-EA
-      uses: actions/setup-java@v2
+    - name: Set up OpenJDK 17
+      uses: actions/setup-java@v3
       with:
-        distribution: 'jdkfile'
-        jdkFile: ${{ runner.temp }}/jdk.tar.gz
+        distribution: 'microsoft'
         java-version: '17'
         architecture: x64
     - name: Build with Gradle
