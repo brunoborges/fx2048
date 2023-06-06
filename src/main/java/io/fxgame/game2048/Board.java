@@ -220,13 +220,13 @@ public class Board extends Pane {
         hToolbar.getChildren().add(toolbar);
     }
 
-    protected void tryAgain() {
+    protected void showTryAgainOverlay() {
         if (!state.gameTryAgainProperty.get()) {
             state.gameTryAgainProperty.set(true);
         }
     }
 
-    private void btnTryAgain() {
+    private void tryAgain() {
         state.layerOnProperty.set(false);
         doResetGame();
     }
@@ -244,15 +244,15 @@ public class Board extends Pane {
 
     private class Overlay implements ChangeListener<Boolean> {
 
-        private final Button btn1, btn2;
+        private final Button leftButton, rightButton;
         private final String message, warning;
         private final String style1, style2;
 
-        public Overlay(String message, String warning, Button btn1, Button btn2, String style1, String style2) {
+        public Overlay(String message, String warning, Button leftButton, Button rightButton, String style1, String style2) {
             this.message = message;
             this.warning = warning;
-            this.btn1 = btn1; // left
-            this.btn2 = btn2; // right
+            this.leftButton = leftButton;
+            this.rightButton = rightButton;
             this.style1 = style1;
             this.style2 = style2;
         }
@@ -271,14 +271,14 @@ public class Board extends Pane {
             lOvrSubText.setText(warning);
             lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
             txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-            buttonsOverlay.getChildren().setAll(btn1);
+            buttonsOverlay.getChildren().setAll(leftButton);
 
-            if (btn2 != null) {
-                buttonsOverlay.getChildren().add(btn2);
+            if (rightButton != null) {
+                buttonsOverlay.getChildren().add(rightButton);
             }
 
             if (!state.layerOnProperty.get()) {
-                var defaultBtn = btn2 == null ? btn1 : btn2;
+                var defaultBtn = rightButton == null ? leftButton : rightButton;
                 defaultBtn.requestFocus();
                 defaultBtn.setDefaultButton(true);
 
@@ -302,7 +302,7 @@ public class Board extends Pane {
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
-        bTry.setOnAction(e -> btnTryAgain());
+        bTry.setOnAction(e -> tryAgain());
 
         bContinue.getStyleClass().add("game-button");
         bContinue.setOnAction(e -> keepGoing());
@@ -424,17 +424,17 @@ public class Board extends Pane {
 
     }
 
+    private void doResetGame() {
+        doClearGame();
+        state.resetGame();
+    }
+
     private void doClearGame() {
         saveRecord();
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
         getChildren().removeAll(overlay, buttonsOverlay);
 
         state.clearState();
-    }
-
-    private void doResetGame() {
-        doClearGame();
-        state.resetGame();
     }
 
     public void animateScore() {

@@ -184,7 +184,7 @@ public class GameManager extends Group {
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
 
                 var randomAvailableLocation = findRandomAvailableLocation();
-                if (!randomAvailableLocation.isPresent() && mergeMovementsAvailable() == 0) {
+                if (randomAvailableLocation.isEmpty() && mergeMovementsAvailable() == 0) {
                     // game is over if there are no more moves available
                     board.setGameOver(true);
                 } else if (randomAvailableLocation.isPresent() && tilesWereMoved > 0) {
@@ -283,7 +283,7 @@ public class GameManager extends Group {
         var availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
 
         if (availableLocations.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
 
         Collections.shuffle(availableLocations);
@@ -468,7 +468,7 @@ public class GameManager extends Group {
         var btItem1 = createButtonItem("mSave", "Save Session", t -> saveSession());
         var btItem2 = createButtonItem("mRestore", "Restore Session", t -> restoreSession());
         var btItem3 = createButtonItem("mPause", "Pause Game", t -> board.pauseGame());
-        var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.tryAgain());
+        var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.showTryAgainOverlay());
         var btItem5 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
         var btItem6 = createButtonItem("mQuit", "Quit Game", t -> quitGame());
 
