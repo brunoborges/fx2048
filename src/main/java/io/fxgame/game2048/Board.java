@@ -297,8 +297,8 @@ public class Board extends Pane {
         txtOverlay.setAlignment(Pos.CENTER);
 
         buttonsOverlay.setAlignment(Pos.CENTER);
-        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + gridDimension / 2);
-        buttonsOverlay.setMinSize(gridDimension, gridDimension / 2);
+        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + (double) gridDimension / 2);
+        buttonsOverlay.setMinSize(gridDimension, (double) gridDimension / 2);
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
@@ -335,7 +335,7 @@ public class Board extends Pane {
                 timer.stop();
                 overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
 
-                TextFlow flow = new TextFlow();
+                var flow = new TextFlow();
                 flow.setTextAlignment(TextAlignment.CENTER);
                 flow.setPadding(new Insets(10, 0, 0, 0));
                 flow.setMinSize(gridDimension, gridDimension);

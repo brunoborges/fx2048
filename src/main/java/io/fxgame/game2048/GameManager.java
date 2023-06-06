@@ -184,14 +184,14 @@ public class GameManager extends Group {
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
 
                 var randomAvailableLocation = findRandomAvailableLocation();
-                if (randomAvailableLocation == null && mergeMovementsAvailable() == 0) {
+                if (!randomAvailableLocation.isPresent() && mergeMovementsAvailable() == 0) {
                     // game is over if there are no more moves available
                     board.setGameOver(true);
-                } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
+                } else if (randomAvailableLocation.isPresent() && tilesWereMoved > 0) {
                     synchronized (gameGrid) {
                         movingTiles = false;
                     }
-                    addAndAnimateRandomTile(randomAvailableLocation);
+                    addAndAnimateRandomTile(randomAvailableLocation.get());
                 }
             });
 
@@ -279,7 +279,7 @@ public class GameManager extends Group {
      * @return a random location or <code>null</code> if there are no more locations
      * available
      */
-    private Location findRandomAvailableLocation() {
+    private Optional<Location> findRandomAvailableLocation() {
         var availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
 
         if (availableLocations.isEmpty()) {
@@ -289,7 +289,7 @@ public class GameManager extends Group {
         Collections.shuffle(availableLocations);
 
         // returns a random location
-        return availableLocations.get(new Random().nextInt(availableLocations.size()));
+        return Optional.of(availableLocations.get(new Random().nextInt(availableLocations.size())));
     }
 
     /**
