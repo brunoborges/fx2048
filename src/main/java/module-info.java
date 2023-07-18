@@ -1,5 +1,4 @@
 module fxgame {
-    requires java.base;
     requires java.logging;
 
     requires javafx.base;
