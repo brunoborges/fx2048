@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin'      version '0.0.14'
-    id 'org.beryx.jlink'               version '2.26.0'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+    id 'org.beryx.jlink' version '2.26.0'
 }
 
 application {
@@ -19,9 +19,9 @@ java {
 javafx {
     version = '17'
     modules = [
-       'javafx.base',
-       'javafx.graphics',
-       'javafx.controls'
+            'javafx.base',
+            'javafx.graphics',
+            'javafx.controls'
     ]
 }
 
@@ -30,9 +30,9 @@ def os = org.gradle.internal.os.OperatingSystem.current()
 def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'pkg'
 
 jlink {
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-
-    imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip")
+    options.addAll('--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages')
+    imageName = "game2048-${javafx.platform.classifier}"
+    // imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip") as RegularFileProperty
 
     launcher {
         name = 'fx2048'
@@ -43,7 +43,7 @@ jlink {
         imageName = 'fx2048'
         imageOptions = []
         if (os.macOsX) {
-            imageOptions += ['--mac-package-identifier','fx2048']
+            imageOptions += ['--mac-package-identifier', 'fx2048']
         }
 
         installerName = 'fx2048'
