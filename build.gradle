@@ -83,7 +83,7 @@ tasks.named("jpackageImage") {
     dependsOn jlinkZip
 }
 
-task dist {
+tasks.register('dist') {
     dependsOn clean, jpackage
     description "Calls clean and then jpackage [default]"
 }
