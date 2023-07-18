@@ -1,11 +1,6 @@
 package io.fxgame.game2048;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.Reader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -22,9 +17,9 @@ public enum UserSettings {
     LOCAL;
 
     public final static int MARGIN = 36;
-    private File userGameFolder;
+    private final File userGameFolder;
 
-    private UserSettings() {
+    UserSettings() {
         var userHome = System.getProperty("user.home");
         var gamePath = Path.of(userHome, ".fx2048");
         gamePath.toFile().mkdir();
