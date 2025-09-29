@@ -31,8 +31,7 @@ def pkgType = os.windows ? 'msi' : os.linux ? 'deb' : 'pkg'
 
 jlink {
     options.addAll('--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages')
-    imageName = "game2048-${javafx.platform.classifier}"
-    // imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip") as RegularFileProperty
+    imageZip = project.file("${buildDir}/distributions/game2048-${javafx.platform.classifier}.zip")
 
     launcher {
         name = 'fx2048'
