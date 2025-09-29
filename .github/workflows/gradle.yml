@@ -7,17 +7,17 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout the source code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v5
     - name: Set up OpenJDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v5
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: Upload Installer
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.pkg
         path: build/jpackage/fx2048-1.0.pkg
@@ -25,17 +25,17 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout the source code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v5
     - name: Set up OpenJDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v5
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: Upload Installer
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.msi
         path: build/jpackage/fx2048-1.0.msi
@@ -43,19 +43,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the source code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v5
     - name: Set up OpenJDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v5
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: List installers
       run: ls -l build/jpackage/
     - name: Upload Installer
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.deb
         path: build/jpackage/fx2048_1.0-1_amd64.deb

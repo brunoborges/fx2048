@@ -12,12 +12,12 @@ application {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of('17')
+        languageVersion = JavaLanguageVersion.of('21')
     }
 }
 
 javafx {
-    version = '17'
+    version = '21'
     modules = [
             'javafx.base',
             'javafx.graphics',
