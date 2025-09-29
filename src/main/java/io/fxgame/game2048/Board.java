@@ -418,7 +418,7 @@ public class Board extends Pane {
                 getParent().requestFocus();
             } else {
                 // Set focus on the first button
-                buttonsOverlay.getChildren().get(0).requestFocus();
+                buttonsOverlay.getChildren().getFirst().requestFocus();
             }
         });
 
