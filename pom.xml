@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.fxgame</groupId>
+    <artifactId>fx2048</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>fx2048</name>
+    <description>JavaFX 2048 Game</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <javafx.version>21</javafx.version>
+        <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <main.class>io.fxgame.game2048.AppLauncher</main.class>
+    </properties>
+
+    <dependencies>
+        <!-- JavaFX Dependencies -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+
+            <!-- JavaFX Maven Plugin -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>${javafx.maven.plugin.version}</version>
+                <configuration>
+                    <mainClass>fxgame/${main.class}</mainClass>
+                    <launcher>fx2048</launcher>
+                    <compress>2</compress>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <noManPages>true</noManPages>
+                    <stripDebug>true</stripDebug>
+                    <jlinkImageName>fx2048</jlinkImageName>
+                    <jlinkZipName>game2048</jlinkZipName>
+                </configuration>
+            </plugin>
+
+            <!-- Maven JAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- JPackage Plugin -->
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <name>fx2048</name>
+                    <appVersion>1.0</appVersion>
+                    <vendor>Bruno Borges</vendor>
+                    <destination>target/dist</destination>
+                    <module>fxgame/${main.class}</module>
+                    <runtimeImage>target/fx2048</runtimeImage>
+                    <javaOptions>
+                        <option>-Dfile.encoding=UTF-8</option>
+                    </javaOptions>
+                    <linuxShortcut>true</linuxShortcut>
+                    <linuxMenuGroup>Games</linuxMenuGroup>
+                    <macPackageIdentifier>fx2048</macPackageIdentifier>
+                    <macPackageName>fx2048</macPackageName>
+                    <winDirChooser>true</winDirChooser>
+                    <winMenu>true</winMenu>
+                    <winPerUserInstall>true</winPerUserInstall>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Resources Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+
+            <!-- Maven Clean Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Profile for macOS -->
+        <profile>
+            <id>mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <type>PKG</type>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile for Windows -->
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <type>MSI</type>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile for Linux -->
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>Linux</name>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <type>DEB</type>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
