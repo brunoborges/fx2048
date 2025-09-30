@@ -2,18 +2,23 @@ name: Java Build
 
 on: [push]
 
+env:
+  JAVA_VERSION: '25'
+  JAVA_DISTRIBUTION: 'microsoft'
+  JAVA_ARCHITECTURE: 'x64'
+
 jobs:
   build-macos:
     runs-on: macos-latest
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v5
-    - name: Set up OpenJDK 17
+    - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v5
       with:
-        distribution: 'microsoft'
-        java-version: '21'
-        architecture: x64
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+        java-version: ${{ env.JAVA_VERSION }}
+        architecture: ${{ env.JAVA_ARCHITECTURE }}
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: Upload Installer
@@ -26,12 +31,12 @@ jobs:
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v5
-    - name: Set up OpenJDK 17
+    - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v5
       with:
-        distribution: 'microsoft'
-        java-version: '21'
-        architecture: x64
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+        java-version: ${{ env.JAVA_VERSION }}
+        architecture: ${{ env.JAVA_ARCHITECTURE }}
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: Upload Installer
@@ -44,12 +49,12 @@ jobs:
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v5
-    - name: Set up OpenJDK 17
+    - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v5
       with:
-        distribution: 'microsoft'
-        java-version: '21'
-        architecture: x64
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+        java-version: ${{ env.JAVA_VERSION }}
+        architecture: ${{ env.JAVA_ARCHITECTURE }}
     - name: Build with Gradle
       run: ./gradlew dist --info
     - name: List installers
