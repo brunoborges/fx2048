@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.14'
-    id 'org.beryx.jlink' version '2.26.0'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.beryx.jlink' version '3.1.4-rc'
 }
 
 application {
@@ -12,12 +12,12 @@ application {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of('21')
+        languageVersion = JavaLanguageVersion.of('25')
     }
 }
 
 javafx {
-    version = '21'
+    version = '25'
     modules = [
             'javafx.base',
             'javafx.graphics',
