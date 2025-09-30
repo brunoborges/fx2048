@@ -75,7 +75,8 @@ public class GamePane extends StackPane {
         setOnKeyReleased(ke -> {
             var keyCode = ke.getCode();
             switch (keyCode) {
-                case CONTROL, COMMAND -> cmdCtrlKeyPressed.set(false);
+                case CONTROL, COMMAND -> { cmdCtrlKeyPressed.set(false); }
+                default -> {}
             }
         });
     }

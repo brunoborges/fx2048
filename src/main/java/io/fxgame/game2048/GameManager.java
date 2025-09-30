@@ -60,10 +60,10 @@ public class GameManager extends Group {
         this.getChildren().add(board);
 
         var trueProperty = new SimpleBooleanProperty(true);
-        board.clearGameProperty().and(trueProperty).addListener((ov, b1, b2) -> initializeGameGrid());
-        board.resetGameProperty().and(trueProperty).addListener((ov, b1, b2) -> startGame());
-        board.restoreGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doRestoreSession());
-        board.saveGameProperty().and(trueProperty).addListener((ov, b1, b2) -> doSaveSession());
+        board.clearGameProperty().and(trueProperty).addListener((_, _, _) -> initializeGameGrid());
+        board.resetGameProperty().and(trueProperty).addListener((_, _, _) -> startGame());
+        board.restoreGameProperty().and(trueProperty).addListener((_, _, _) -> doRestoreSession());
+        board.saveGameProperty().and(trueProperty).addListener((_, _, _) -> doSaveSession());
 
         initializeGameGrid();
         startGame();
@@ -178,7 +178,7 @@ public class GameManager extends Group {
 
         board.animateScore();
         if (parallelTransition.getChildren().size() > 0) {
-            parallelTransition.setOnFinished(e -> {
+            parallelTransition.setOnFinished(_ -> {
                 board.removeTiles(mergedToBeRemoved);
                 // reset merged after each movement
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
@@ -315,7 +315,7 @@ public class GameManager extends Group {
         scaleTransition.setToX(1.0);
         scaleTransition.setToY(1.0);
         scaleTransition.setInterpolator(Interpolator.EASE_OUT);
-        scaleTransition.setOnFinished(e -> {
+        scaleTransition.setOnFinished(_ -> {
             // after last movement on full grid, check if there are movements available
             if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && mergeMovementsAvailable() == 0) {
                 board.setGameOver(true);
@@ -325,7 +325,7 @@ public class GameManager extends Group {
     }
 
     private Animation createShakeGamePaneAnimation() {
-        var shakingAnimation = new Timeline(new KeyFrame(Duration.seconds(0.05), (ae) -> {
+        var shakingAnimation = new Timeline(new KeyFrame(Duration.seconds(0.05), _ -> {
             var parent = getParent();
 
             if (shakingXYState) {
@@ -341,7 +341,7 @@ public class GameManager extends Group {
 
         shakingAnimation.setCycleCount(6);
         shakingAnimation.setAutoReverse(false);
-        shakingAnimation.setOnFinished(event -> {
+        shakingAnimation.setOnFinished(_ -> {
             shakingXYState = false;
             shakingAnimationPlaying = false;
         });
@@ -466,7 +466,7 @@ public class GameManager extends Group {
 
     private HBox createToolBar() {
         var btItem1 = createButtonItem("mSave", "Save Session", t -> saveSession());
-        var btItem2 = createButtonItem("mRestore", "Restore Session", t -> restoreSession());
+        var btItem2 = createButtonItem("mRestore", "Restore Session", _ -> restoreSession());
         var btItem3 = createButtonItem("mPause", "Pause Game", t -> board.pauseGame());
         var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.showTryAgainOverlay());
         var btItem5 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
