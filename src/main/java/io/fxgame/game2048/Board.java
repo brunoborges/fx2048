@@ -147,7 +147,7 @@ public class Board extends Pane {
         hTime.setAlignment(Pos.BOTTOM_RIGHT);
         lblTime.getStyleClass().addAll("game-label", "game-time");
         lblTime.textProperty().bind(clock);
-        timer = new Timeline(new KeyFrame(Duration.ZERO, e -> clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt))), new KeyFrame(Duration.seconds(1)));
+        timer = new Timeline(new KeyFrame(Duration.ZERO, _ -> clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt))), new KeyFrame(Duration.seconds(1)));
         timer.setCycleCount(Animation.INDEFINITE);
         hTime.getChildren().add(lblTime);
 
@@ -302,22 +302,22 @@ public class Board extends Pane {
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
-        bTry.setOnAction(e -> tryAgain());
+        bTry.setOnAction(_ -> tryAgain());
 
         bContinue.getStyleClass().add("game-button");
-        bContinue.setOnAction(e -> keepGoing());
+        bContinue.setOnAction(_ -> keepGoing());
 
         bContinueNo.getStyleClass().add("game-button");
-        bContinueNo.setOnAction(e -> keepGoing());
+        bContinueNo.setOnAction(_ -> keepGoing());
 
         bSave.getStyleClass().add("game-button");
-        bSave.setOnAction(e -> state.saveGame.set(true));
+        bSave.setOnAction(_ -> state.saveGame.set(true));
 
         bRestore.getStyleClass().add("game-button");
-        bRestore.setOnAction(e -> state.restoreGame.set(true));
+        bRestore.setOnAction(_ -> state.restoreGame.set(true));
 
         bQuit.getStyleClass().add("game-button");
-        bQuit.setOnAction(e -> exitGame());
+        bQuit.setOnAction(_ -> exitGame());
 
         state.gameWonProperty.addListener(wonListener);
         state.gameOverProperty
@@ -330,7 +330,7 @@ public class Board extends Pane {
                 "game-overlay-pause", "game-lblPause"));
         state.gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
                 "game-overlay-pause", "game-lblPause"));
-        state.gameAboutProperty.addListener((observable, oldValue, newValue) -> {
+        state.gameAboutProperty.addListener((_, _, newValue) -> {
             if (newValue) {
                 timer.stop();
                 overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
@@ -360,7 +360,7 @@ public class Board extends Pane {
 
                 var link1 = new Hyperlink();
                 link1.setText("OpenJFX");
-                link1.setOnAction(e -> Game2048.urlOpener().open("https://openjfx.io/"));
+                link1.setOnAction(_ -> Game2048.urlOpener().open("https://openjfx.io/"));
                 link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
                 var t21 = new Text(" Project \n\n");
@@ -371,7 +371,7 @@ public class Board extends Pane {
 
                 var link2 = new Hyperlink();
                 link2.setText("@JPeredaDnr");
-                link2.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
+                link2.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
                 link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
 
                 var t22 = new Text(" & ");
@@ -379,7 +379,7 @@ public class Board extends Pane {
 
                 var link3 = new Hyperlink();
                 link3.setText("@brunoborges");
-                link3.setOnAction(e -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
+                link3.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
 
                 var t32 = new Text(" & ");
                 t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
@@ -405,13 +405,13 @@ public class Board extends Pane {
 
         restoreRecord();
 
-        state.gameScoreProperty.addListener((ov, i, i1) -> {
+        state.gameScoreProperty.addListener((_, _, i1) -> {
             if (i1.intValue() > state.gameBestProperty.get()) {
                 state.gameBestProperty.set(i1.intValue());
             }
         });
 
-        state.layerOnProperty.addListener((ov, b, b1) -> {
+        state.layerOnProperty.addListener((_, _, b1) -> {
             if (!b1) {
                 getChildren().removeAll(overlay, buttonsOverlay);
                 // Keep the focus on the game when the layer is removed:
@@ -591,7 +591,7 @@ public class Board extends Pane {
             state.gameScoreProperty.set(score);
             // check tiles>=2048
             state.gameWonProperty.set(false);
-            gameGrid.forEach((l, t) -> {
+            gameGrid.forEach((_, t) -> {
                 if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
                     state.gameWonProperty.removeListener(wonListener);
                     state.gameWonProperty.set(true);
