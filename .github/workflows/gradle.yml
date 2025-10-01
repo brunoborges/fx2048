@@ -12,7 +12,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
@@ -30,7 +30,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
@@ -48,7 +48,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'microsoft'
-        java-version: '17'
+        java-version: '21'
         architecture: x64
     - name: Build with Gradle
       run: ./gradlew dist --info
