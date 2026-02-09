@@ -21,5 +21,5 @@ safe-outputs:
 
 Create an issue in this repository assigned to Copilot. The issue should have:
 
-- **Title:** `Sample issue for copilot`
+- **Title:** `Sample issue for Copilot`
 - **Body:** `This is a sample issue created by the create-sample-issue workflow to demonstrate GitHub Agentic Workflows.`
