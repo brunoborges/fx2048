@@ -1,5 +1,5 @@
 ---
-description: Creates a sample test issue and assigns it to Copilot.
+description: Creates a sample issue and assigns it to Copilot.
 
 on:
   workflow_dispatch:
@@ -15,15 +15,11 @@ tools:
 
 safe-outputs:
   create-issue:
-    title-prefix: "[test] "
     assignees: [copilot]
-    labels: [test]
 ---
 # Create Sample Issue
 
-Create a test issue in this repository assigned to Copilot. The issue should contain:
+Create an issue in this repository assigned to Copilot. The issue should have:
 
-- **Title:** `Sample test issue`
-- **Body:** `This is an automated test issue created by the create-sample-issue workflow. Feel free to close it.`
-
-| `.github/scripts/upstream-sync/` | Helper scripts used by the merge prompt |
+- **Title:** `Sample issue for copilot`
+- **Body:** `This is a sample issue created by the create-sample-issue workflow to demonstrate GitHub Agentic Workflows.`
