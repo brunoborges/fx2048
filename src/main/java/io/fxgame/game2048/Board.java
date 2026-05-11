@@ -19,12 +19,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -32,9 +30,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 
 /**
@@ -66,12 +61,7 @@ public class Board extends Pane {
     private final Label lblBest = new Label("0");
     private final Label lblMoves = new Label("0");
     private final Label lblPoints = new Label();
-
-    private final HBox overlay = new HBox();
-    private final VBox txtOverlay = new VBox(10);
-    private final Label lOvrText = new Label();
-    private final Label lOvrSubText = new Label();
-    private final HBox buttonsOverlay = new HBox();
+    private final OverlayPanel overlayPanel;
 
     // Overlay Buttons
     private final Button bTry = new Button("Try again");
@@ -101,6 +91,7 @@ public class Board extends Pane {
         this.gridOperator = grid;
         this.gridSizeChangeHandler = gridSizeChangeHandler;
         gridDimension = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
 
         createScore();
@@ -276,17 +267,7 @@ public class Board extends Pane {
     }
 
     private void showMessageOverlay(String message, String warning) {
-        timer.stop();
-        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
-        lOvrText.setText(message);
-        lOvrText.getStyleClass().setAll("game-label", "game-lblPause");
-        lOvrSubText.setText(warning);
-        lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-        txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-        buttonsOverlay.getChildren().setAll(bContinue);
-        getChildren().removeAll(overlay, buttonsOverlay);
-        getChildren().addAll(overlay, buttonsOverlay);
-        state.layerOnProperty.set(true);
+        showMessageOverlay(message, warning, "game-overlay-pause", "game-lblPause", bContinue, null);
     }
 
     private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
@@ -313,44 +294,30 @@ public class Board extends Pane {
             }
 
             timer.stop();
-
-            overlay.getStyleClass().setAll("game-overlay", style1);
-            lOvrText.setText(message);
-            lOvrText.getStyleClass().setAll("game-label", style2);
-            lOvrSubText.setText(warning);
-            lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-            txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-            buttonsOverlay.getChildren().setAll(leftButton);
-
-            if (rightButton != null) {
-                buttonsOverlay.getChildren().add(rightButton);
-            }
+            overlayPanel.showMessage(style1, message, warning, style2, leftButton, rightButton);
 
             if (!state.layerOnProperty.get()) {
                 var defaultBtn = rightButton == null ? leftButton : rightButton;
-                defaultBtn.requestFocus();
-                defaultBtn.setDefaultButton(true);
-
-                Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                state.layerOnProperty.set(true);
+                showOverlay(defaultBtn);
             }
         }
     }
 
+    private void showMessageOverlay(String message, String warning, String overlayStyle, String messageStyle,
+            Button leftButton, Button rightButton) {
+        timer.stop();
+        overlayPanel.showMessage(overlayStyle, message, warning, messageStyle, leftButton, rightButton);
+        showOverlay(leftButton);
+    }
+
+    private void showOverlay(Button defaultButton) {
+        getChildren().remove(overlayPanel);
+        getChildren().add(overlayPanel);
+        overlayPanel.setDefaultButton(defaultButton);
+        state.layerOnProperty.set(true);
+    }
+
     private void initGameProperties() {
-        overlay.setMinSize(gridDimension, gridDimension);
-        overlay.setAlignment(Pos.CENTER);
-        overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
-
-        overlay.getChildren().setAll(txtOverlay);
-        txtOverlay.setAlignment(Pos.CENTER);
-
-        buttonsOverlay.setAlignment(Pos.CENTER);
-        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + (double) gridDimension / 2);
-        buttonsOverlay.setMinSize(gridDimension, (double) gridDimension / 2);
-        buttonsOverlay.setPickOnBounds(false);
-        buttonsOverlay.setSpacing(10);
-
         bTry.getStyleClass().add("game-button");
         bTry.setOnAction(_ -> tryAgain());
 
@@ -397,72 +364,7 @@ public class Board extends Pane {
         });
         state.gameAboutProperty.addListener((_, _, newValue) -> {
             if (newValue) {
-                timer.stop();
-                overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
-
-                var flow = new TextFlow();
-                flow.setTextAlignment(TextAlignment.CENTER);
-                flow.setPadding(new Insets(10, 0, 0, 0));
-                flow.setMinSize(gridDimension, gridDimension);
-                flow.setPrefSize(gridDimension, gridDimension);
-                flow.setMaxSize(gridDimension, gridDimension);
-                flow.setPrefSize(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
-
-                var t00 = new Text("2048");
-                t00.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t01 = new Text("FX");
-                t01.getStyleClass().setAll("game-label", "game-lblAbout2");
-
-                var t02 = new Text(" Game\n");
-                t02.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t1 = new Text("JavaFX game - Desktop version\n\n");
-                t1.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t20 = new Text("Powered by ");
-                t20.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link1 = new Hyperlink();
-                link1.setText("OpenJFX");
-                link1.setOnAction(_ -> Game2048.urlOpener().open("https://openjfx.io/"));
-                link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t21 = new Text(" Project \n\n");
-                t21.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t23 = new Text("© ");
-                t23.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link2 = new Hyperlink();
-                link2.setText("@JPeredaDnr");
-                link2.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
-                link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t22 = new Text(" & ");
-                t22.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link3 = new Hyperlink();
-                link3.setText("@brunoborges");
-                link3.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
-
-                var t32 = new Text(" & ");
-                t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
-                link3.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t24 = new Text("\n\n");
-                t24.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t31 = new Text("Version " + Game2048.VERSION + "\n\n");
-                t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22, link3);
-                flow.getChildren().addAll(t24, t31);
-                txtOverlay.getChildren().setAll(flow);
-                buttonsOverlay.getChildren().setAll(bContinue);
-                this.getChildren().removeAll(overlay, buttonsOverlay);
-                this.getChildren().addAll(overlay, buttonsOverlay);
-                state.layerOnProperty.set(true);
+                showAboutOverlay();
             }
         });
         state.gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
@@ -478,12 +380,12 @@ public class Board extends Pane {
 
         state.layerOnProperty.addListener((_, _, b1) -> {
             if (!b1) {
-                getChildren().removeAll(overlay, buttonsOverlay);
+                getChildren().remove(overlayPanel);
                 // Keep the focus on the game when the layer is removed:
                 getParent().requestFocus();
             } else {
                 // Set focus on the first button
-                buttonsOverlay.getChildren().getFirst().requestFocus();
+                overlayPanel.focusFirstButton();
             }
         });
 
@@ -497,9 +399,15 @@ public class Board extends Pane {
     private void doClearGame() {
         saveRecord();
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
-        getChildren().removeAll(overlay, buttonsOverlay);
+        getChildren().remove(overlayPanel);
 
         state.clearState();
+    }
+
+    private void showAboutOverlay() {
+        timer.stop();
+        overlayPanel.showContent("game-overlay-quit", bContinue, null, new AboutContent(gridDimension));
+        showOverlay(bContinue);
     }
 
     public void animateScore() {
@@ -530,11 +438,7 @@ public class Board extends Pane {
     }
 
     public void addTile(Tile tile) {
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
-
-        tile.setLayoutX(layoutX);
-        tile.setLayoutY(layoutY);
+        positionTile(tile);
         gridGroup.getChildren().add(tile);
     }
 
@@ -542,15 +446,10 @@ public class Board extends Pane {
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
     }
 
-    public Tile addRandomTile(Location randomLocation) {
-        var tile = Tile.newRandomTile();
-        tile.setLocation(randomLocation);
-
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
-
-        tile.setLayoutX(layoutX);
-        tile.setLayoutY(layoutY);
+    public Tile addAnimatedTile(Location location, int value) {
+        var tile = Tile.newTile(value);
+        tile.setLocation(location);
+        positionTile(tile);
         tile.setScaleX(0);
         tile.setScaleY(0);
 
@@ -590,6 +489,14 @@ public class Board extends Pane {
         state.gameMoveCountProperty.set(state.gameMoveCountProperty.get() + 1);
     }
 
+    private void positionTile(Tile tile) {
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+    }
+
     public void addPoints(int points) {
         state.gameMovePoints.set(state.gameMovePoints.get() + points);
         state.gameScoreProperty.set(state.gameScoreProperty.get() + points);
@@ -625,7 +532,6 @@ public class Board extends Pane {
 
     private void showSettingsOverlay() {
         timer.stop();
-        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
 
         var title = new Label("Settings");
         title.getStyleClass().setAll("game-label", "game-lblPause");
@@ -641,11 +547,8 @@ public class Board extends Pane {
         gridSizeRow.setAlignment(Pos.CENTER);
         gridSizeRow.getStyleClass().add("game-settings-row");
 
-        txtOverlay.getChildren().setAll(title, warning, gridSizeRow);
-        buttonsOverlay.getChildren().setAll(bApplySettings, bContinueNo);
-        this.getChildren().removeAll(overlay, buttonsOverlay);
-        this.getChildren().addAll(overlay, buttonsOverlay);
-        state.layerOnProperty.set(true);
+        overlayPanel.showContent("game-overlay-pause", bApplySettings, bContinueNo, title, warning, gridSizeRow);
+        showOverlay(bApplySettings);
     }
 
     public void quitGame() {

@@ -1,21 +1,22 @@
 package io.fxgame.game2048;
 
-import javafx.animation.*;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.IntConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Bruno Borges
@@ -23,21 +24,22 @@ import java.util.stream.Stream;
  */
 public class GameManager extends Group {
 
-    public static final int FINAL_VALUE_TO_WIN = 2048;
+    public static final int FINAL_VALUE_TO_WIN = GameModel.FINAL_VALUE_TO_WIN;
 
     private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
     private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
     private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     private volatile boolean movingTiles = false;
-    private final List<Location> locations = new ArrayList<>(36);
-    private final Map<Location, Tile> gameGrid;
+    private final Map<Location, Tile> gameGrid = new HashMap<>();
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
 
     private final Board board;
-    private final GridOperator gridOperator;
+    private final GameModel model;
     private Animation shakingAnimation;
     private MoveSnapshot undoSnapshot;
+    private boolean shakingAnimationPlaying = false;
+    private boolean shakingXYState = false;
 
     private record MoveSnapshot(Map<Location, Integer> tiles, int score, int moveCount) {}
 
@@ -51,21 +53,18 @@ public class GameManager extends Group {
     }
 
     /**
-     * GameManager is a Group containing a Board that holds a grid and the score a
-     * Map holds the location of the tiles in the grid
-     * <p>
-     * The purpose of the game is sum the value of the tiles up to 2048 points Based
-     * on the Javascript version: <a href="https://github.com/gabrielecirulli/2048">...</a>
+     * GameManager is a Group containing a Board that holds a grid and the score.
+     * It delegates the game rules to GameModel and keeps JavaFX animation concerns
+     * here.
      *
      * @param gridSize defines the size of the grid, default 6x6
      */
     public GameManager(int gridSize, IntConsumer gridSizeChangeHandler) {
-        this.gameGrid = new HashMap<>();
-
-        gridOperator = new GridOperator(gridSize);
+        var gridOperator = new GridOperator(gridSize);
+        model = new GameModel(gridOperator);
         board = new Board(gridOperator, gridSizeChangeHandler);
-        board.setToolBar(createToolBar());
-        this.getChildren().add(board);
+        board.setToolBar(createToolbarPanel());
+        getChildren().add(board);
 
         board.clearGameProperty().addListener((_, _, newValue) -> {
             if (newValue) {
@@ -89,61 +88,47 @@ public class GameManager extends Group {
             }
         });
 
-        initializeGameGrid();
         startGame();
     }
 
-    /**
-     * Initializes all cells in gameGrid map to null
-     */
     private void initializeGameGrid() {
-        gameGrid.clear();
-        locations.clear();
-        gridOperator.traverseGrid((x, y) -> {
-            var location = new Location(x, y);
-            locations.add(location);
-            gameGrid.put(location, null);
-            return 0;
-        });
+        model.initialize();
+        syncTileMapFromModel();
     }
 
     /**
-     * Starts the game by adding 1 or 2 tiles at random locations
+     * Starts the game by adding 1 or 2 tiles at random locations.
      */
     private void startGame() {
-        var tile0 = Tile.newRandomTile();
-        var randomLocs = new ArrayList<>(locations);
-        Collections.shuffle(randomLocs);
-        var locs = randomLocs.stream().limit(2).iterator();
-        tile0.setLocation(locs.next());
-
-        Tile tile1 = null;
-        if (new Random().nextFloat() <= 0.8) { // gives 80% chance to add a second tile
-            tile1 = Tile.newRandomTile();
-            if (tile1.getValue() == 4 && tile0.getValue() == 4) {
-                tile1 = Tile.newTile(2);
-            }
-            tile1.setLocation(locs.next());
-        }
-
-        Stream.of(tile0, tile1).filter(Objects::nonNull).forEach(t -> gameGrid.put(t.getLocation(), t));
-
+        model.startGame();
+        syncTileMapFromModel();
         redrawTilesInGameGrid();
-
         board.startGame();
     }
 
     /**
-     * Redraws all tiles in the <code>gameGrid</code> object
+     * Redraws all tiles in the <code>gameGrid</code> object.
      */
     private void redrawTilesInGameGrid() {
+        board.clearTiles();
         gameGrid.values().stream().filter(Objects::nonNull).forEach(board::addTile);
     }
 
+    private void syncTileMapFromModel() {
+        gameGrid.clear();
+        model.snapshot().forEach((location, value) -> gameGrid.put(location, value == 0 ? null : createTile(location, value)));
+    }
+
+    private Tile createTile(Location location, int value) {
+        var tile = Tile.newTile(value);
+        tile.setLocation(location);
+        return tile;
+    }
+
     /**
-     * Moves the tiles according to given direction At any move, takes care of merge
-     * tiles, add a new one and perform the required animations It updates the score
-     * and checks if the user won the game or if the game is over
+     * Moves the tiles according to given direction. At any move, takes care of merge
+     * tiles, add a new one and perform the required animations. It updates the score
+     * and checks if the user won the game or if the game is over.
      *
      * @param direction is the selected direction to move the tiles
      */
@@ -157,71 +142,36 @@ public class GameManager extends Group {
         board.setPoints(0);
         mergedToBeRemoved.clear();
         var previousSnapshot = createMoveSnapshot();
+        var moveResult = model.move(direction);
         var parallelTransition = new ParallelTransition();
-        gridOperator.sortGrid(direction);
-        final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
-            var currentLocation = new Location(x, y);
-            var farthestLocation = findFarthestLocation(currentLocation, direction); // farthest available location
-            var opTile = optionalTile(currentLocation);
+        applyMovements(moveResult, parallelTransition);
 
-            var result = new AtomicInteger();
-            var nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-
-            optionalTile(nextLocation).filter(t -> t.isMergeable(opTile) && !t.isMerged()).ifPresent(t -> {
-                var tile = opTile.get();
-                t.merge(tile);
-                t.toFront();
-                gameGrid.put(nextLocation, t);
-                gameGrid.replace(currentLocation, null);
-
-                parallelTransition.getChildren().add(animateExistingTile(tile, t.getLocation()));
-                parallelTransition.getChildren().add(animateMergedTile(t));
-                mergedToBeRemoved.add(tile);
-
-                board.addPoints(t.getValue());
-
-                if (t.getValue() == FINAL_VALUE_TO_WIN) {
-                    board.setGameWin(true);
-                }
-                result.set(1);
-            });
-
-            if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(currentLocation)) {
-                var tile = opTile.get();
-                parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
-
-                gameGrid.put(farthestLocation, tile);
-                gameGrid.replace(currentLocation, null);
-
-                tile.setLocation(farthestLocation);
-
-                result.set(1);
-            }
-
-            return result.get();
-        });
-
-        if (tilesWereMoved > 0) {
+        if (moveResult.tilesMoved()) {
             undoSnapshot = previousSnapshot;
             board.incrementMoveCount();
         }
 
+        if (moveResult.points() > 0) {
+            board.addPoints(moveResult.points());
+        }
+        if (moveResult.won()) {
+            board.setGameWin(true);
+        }
+
         board.animateScore();
-        if (parallelTransition.getChildren().size() > 0) {
+        if (!parallelTransition.getChildren().isEmpty()) {
             parallelTransition.setOnFinished(_ -> {
                 board.removeTiles(mergedToBeRemoved);
-                // reset merged after each movement
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
                 synchronized (gameGrid) {
                     movingTiles = false;
                 }
 
-                var randomAvailableLocation = findRandomAvailableLocation();
-                if (randomAvailableLocation.isEmpty() && mergeMovementsAvailable() == 0) {
-                    // game is over if there are no more moves available
+                var addedTile = model.addRandomTile();
+                if (addedTile.isPresent()) {
+                    addAndAnimateRandomTile(addedTile.get());
+                } else if (!model.hasMergeMovements()) {
                     board.setGameOver(true);
-                } else if (randomAvailableLocation.isPresent() && tilesWereMoved > 0) {
-                    addAndAnimateRandomTile(randomAvailableLocation.get());
                 }
             });
 
@@ -232,41 +182,59 @@ public class GameManager extends Group {
             parallelTransition.play();
         }
 
-        if (tilesWereMoved == 0) {
-            // no tiles got moved
-            // shake the game pane
-            if (shakingAnimation == null) {
-                shakingAnimation = createShakeGamePaneAnimation();
-            }
-
-            if (!shakingAnimationPlaying) {
-                shakingAnimation.play();
-                shakingAnimationPlaying = true;
-            }
+        if (!moveResult.tilesMoved()) {
+            shakeGamePane();
         }
     }
 
-    private boolean shakingAnimationPlaying = false;
-    private boolean shakingXYState = false;
+    private void applyMovements(GameModel.MoveResult moveResult, ParallelTransition parallelTransition) {
+        moveResult.movements().forEach(movement -> {
+            var tile = requireTile(movement.source());
+            if (movement.merge()) {
+                var targetTile = requireTile(movement.destination());
+                targetTile.merge(tile);
+                targetTile.toFront();
+                gameGrid.put(movement.destination(), targetTile);
+                gameGrid.replace(movement.source(), null);
+
+                parallelTransition.getChildren().add(animateExistingTile(tile, targetTile.getLocation()));
+                parallelTransition.getChildren().add(animateMergedTile(targetTile));
+                mergedToBeRemoved.add(tile);
+            } else {
+                parallelTransition.getChildren().add(animateExistingTile(tile, movement.destination()));
+                gameGrid.put(movement.destination(), tile);
+                gameGrid.replace(movement.source(), null);
+                tile.setLocation(movement.destination());
+            }
+        });
+    }
+
+    private Tile requireTile(Location location) {
+        var tile = gameGrid.get(location);
+        if (tile == null) {
+            throw new IllegalStateException("Expected tile at " + location);
+        }
+        return tile;
+    }
+
+    private void shakeGamePane() {
+        if (shakingAnimation == null) {
+            shakingAnimation = createShakeGamePaneAnimation();
+        }
+
+        if (!shakingAnimationPlaying) {
+            shakingAnimation.play();
+            shakingAnimationPlaying = true;
+        }
+    }
 
     private MoveSnapshot createMoveSnapshot() {
-        var tiles = new HashMap<Location, Integer>();
-        gameGrid.forEach((location, tile) -> tiles.put(location, tile == null ? 0 : tile.getValue()));
-        return new MoveSnapshot(tiles, board.getScore(), board.getMoveCount());
+        return new MoveSnapshot(model.snapshot(), board.getScore(), board.getMoveCount());
     }
 
     private void restoreMoveSnapshot(MoveSnapshot snapshot) {
-        gameGrid.clear();
-        snapshot.tiles().forEach((location, value) -> {
-            if (value == 0) {
-                gameGrid.put(location, null);
-            } else {
-                var tile = Tile.newTile(value);
-                tile.setLocation(location);
-                gameGrid.put(location, tile);
-            }
-        });
-        board.clearTiles();
+        model.restoreSnapshot(snapshot.tiles());
+        syncTileMapFromModel();
         board.setPoints(0);
         board.setScore(snapshot.score());
         board.setMoveCount(snapshot.moveCount());
@@ -274,85 +242,8 @@ public class GameManager extends Group {
         undoSnapshot = null;
     }
 
-    /**
-     * optionalTile allows using tiles from the map at some location, whether they
-     * are null or not
-     *
-     * @param loc location of the tile
-     * @return an Optional<Tile> containing null or a valid tile
-     */
-    private Optional<Tile> optionalTile(Location loc) {
-        return Optional.ofNullable(gameGrid.get(loc));
-    }
-
-    /**
-     * Searches for the farthest empty location where the current tile could go
-     *
-     * @param location  of the tile
-     * @param direction of movement
-     * @return a location
-     */
-    private Location findFarthestLocation(Location location, Direction direction) {
-        Location farthest;
-
-        do {
-            farthest = location;
-            location = farthest.offset(direction);
-        } while (gridOperator.isValidLocation(location) && optionalTile(location).isEmpty());
-
-        return farthest;
-    }
-
-    /**
-     * Finds the number of pairs of tiles that can be merged
-     * <p>
-     * This method is called only when the grid is full of tiles, what makes the use
-     * of Optional unnecessary, but it could be used when the board is not full to
-     * find the number of pairs of merge-able tiles and provide a hint for the user,
-     * for instance
-     *
-     * @return the number of pairs of tiles that can be merged
-     */
-    private int mergeMovementsAvailable() {
-        final var pairsOfMergeableTiles = new AtomicInteger();
-
-        Stream.of(Direction.UP, Direction.LEFT).parallel().forEach(direction -> gridOperator.traverseGrid((x, y) -> {
-            var thisLocation = new Location(x, y);
-            optionalTile(thisLocation).ifPresent(t -> {
-                if (t.isMergeable(optionalTile(thisLocation.offset(direction)))) {
-                    pairsOfMergeableTiles.incrementAndGet();
-                }
-            });
-            return 0;
-        }));
-        return pairsOfMergeableTiles.get();
-    }
-
-    /**
-     * Finds a random location or returns null if none exist
-     *
-     * @return a random location or <code>null</code> if there are no more locations
-     * available
-     */
-    private Optional<Location> findRandomAvailableLocation() {
-        var availableLocations = locations.stream().filter(l -> gameGrid.get(l) == null).collect(Collectors.toList());
-
-        if (availableLocations.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Collections.shuffle(availableLocations);
-
-        // returns a random location
-        return Optional.of(availableLocations.get(new Random().nextInt(availableLocations.size())));
-    }
-
-    /**
-     * Adds a tile of random value to a random location with a proper animation
-     *
-     */
-    private void addAndAnimateRandomTile(Location randomLocation) {
-        var tile = board.addRandomTile(randomLocation);
+    private void addAndAnimateRandomTile(GameModel.TileState tileState) {
+        var tile = board.addAnimatedTile(tileState.location(), tileState.value());
         gameGrid.put(tile.getLocation(), tile);
 
         animateNewlyAddedTile(tile).play();
@@ -360,7 +251,7 @@ public class GameManager extends Group {
 
     /**
      * Animation that creates a fade in effect when a tile is added to the game by
-     * increasing the tile scale from 0 to 100%
+     * increasing the tile scale from 0 to 100%.
      *
      * @param tile to be animated
      * @return a scale transition
@@ -371,8 +262,7 @@ public class GameManager extends Group {
         scaleTransition.setToY(1.0);
         scaleTransition.setInterpolator(Interpolator.EASE_OUT);
         scaleTransition.setOnFinished(_ -> {
-            // after last movement on full grid, check if there are movements available
-            if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && mergeMovementsAvailable() == 0) {
+            if (model.isFull() && !model.hasMergeMovements()) {
                 board.setGameOver(true);
             }
         });
@@ -405,7 +295,7 @@ public class GameManager extends Group {
     }
 
     /**
-     * Animation that moves the tile from its previous location to a new location
+     * Animation that moves the tile from its previous location to a new location.
      *
      * @param tile        to be animated
      * @param newLocation new location of the tile
@@ -414,9 +304,9 @@ public class GameManager extends Group {
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         var timeline = new Timeline();
         var kvX = new KeyValue(tile.layoutXProperty(),
-            newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
         var kvY = new KeyValue(tile.layoutYProperty(),
-            newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
         var kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
         var kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
@@ -429,7 +319,7 @@ public class GameManager extends Group {
 
     /**
      * Animation that creates a pop effect when two tiles merge by increasing the
-     * tile scale to 120% at the middle, and then going back to 100%
+     * tile scale to 120% at the middle, and then going back to 100%.
      *
      * @param tile to be animated
      * @return a sequential transition
@@ -449,8 +339,7 @@ public class GameManager extends Group {
     }
 
     /**
-     * Move the tiles according user input if overlay is not on
-     *
+     * Move the tiles according user input if overlay is not on.
      */
     public void move(Direction direction) {
         if (!board.isLayerOn().get()) {
@@ -471,8 +360,7 @@ public class GameManager extends Group {
     }
 
     /**
-     * Set gameManager scale to adjust overall game size
-     *
+     * Set gameManager scale to adjust overall game size.
      */
     public void setScale(double scale) {
         this.setScaleX(scale);
@@ -480,80 +368,73 @@ public class GameManager extends Group {
     }
 
     /**
-     * Pauses the game time, covers the grid
+     * Pauses the game time, covers the grid.
      */
     public void pauseGame() {
         board.pauseGame();
     }
 
     /**
-     * Quit the game with confirmation
+     * Quit the game with confirmation.
      */
     public void quitGame() {
         board.quitGame();
     }
 
     /**
-     * Ask to save the game from a properties file with confirmation
+     * Ask to save the game from a properties file with confirmation.
      */
     public void saveSession() {
         board.saveSession();
     }
 
     /**
-     * Save the game to a properties file, without confirmation
+     * Save the game to a properties file, without confirmation.
      */
     private void doSaveSession() {
         board.saveSession(gameGrid);
     }
 
     /**
-     * Ask to restore the game from a properties file with confirmation
+     * Ask to restore the game from a properties file with confirmation.
      */
     public void restoreSession() {
         board.restoreSession();
     }
 
     /**
-     * Restore the game from a properties file, without confirmation
+     * Restore the game from a properties file, without confirmation.
      */
     private void doRestoreSession() {
         if (board.restoreSession(gameGrid)) {
+            model.restoreSnapshot(tileValues(gameGrid));
             redrawTilesInGameGrid();
             undoSnapshot = null;
         }
     }
 
+    private Map<Location, Integer> tileValues(Map<Location, Tile> tiles) {
+        var values = new HashMap<Location, Integer>();
+        tiles.forEach((location, tile) -> values.put(location, tile == null ? 0 : tile.getValue()));
+        return values;
+    }
+
     /**
-     * Save actual record to a properties file
+     * Save actual record to a properties file.
      */
     public void saveRecord() {
         board.saveRecord();
     }
 
-    private HBox createToolBar() {
-        var btItem1 = createButtonItem("mSave", "Save Session", t -> saveSession());
-        var btItem2 = createButtonItem("mRestore", "Restore Session", _ -> restoreSession());
-        var btItem3 = createButtonItem("mPause", "Pause Game", t -> board.pauseGame());
-        var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.showTryAgainOverlay());
-        var btItem5 = createButtonItem("mUndo", "Undo Move", t -> undoMove());
-        var btItem6 = createButtonItem("mSettings", "Settings", t -> board.settingsGame());
-        var btItem7 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
-        var btItem8 = createButtonItem("mQuit", "Quit Game", t -> quitGame());
-
-        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6, btItem7, btItem8);
-        toolbar.setAlignment(Pos.CENTER);
-        toolbar.setPadding(new Insets(10.0));
-        return toolbar;
+    private ToolbarPanel createToolbarPanel() {
+        return new ToolbarPanel(new ToolbarPanel.Actions(
+                this::saveSession,
+                this::restoreSession,
+                board::pauseGame,
+                board::showTryAgainOverlay,
+                this::undoMove,
+                board::settingsGame,
+                board::aboutGame,
+                this::quitGame));
     }
-
-    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> t) {
-        var g = new Button();
-        g.setPrefSize(40, 40);
-        g.setId(symbol);
-        g.setOnAction(t);
-        g.setTooltip(new Tooltip(text));
-        return g;
-    }
-
 }
