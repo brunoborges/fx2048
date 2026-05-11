@@ -203,6 +203,23 @@
             </build>
         </profile>
 
+        <profile>
+            <id>mac-signing</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <macSign>true</macSign>
+                            <macSigningKeychain>${mac.signing.keychain}</macSigningKeychain>
+                            <macSigningKeyUserName>${mac.signing.key.user.name}</macSigningKeyUserName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Profile for Windows -->
         <profile>
             <id>windows</id>

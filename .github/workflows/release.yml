@@ -56,8 +56,25 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           RELEASE_VERSION_INPUT: ${{ github.event.inputs.release_version }}
           NEXT_SNAPSHOT_VERSION_INPUT: ${{ github.event.inputs.next_snapshot_version }}
+          MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_KEY_USER_NAME: ${{ secrets.MACOS_SIGNING_KEY_USER_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
           set -euo pipefail
+
+          missing=()
+          for name in MACOS_CERTIFICATE_BASE64 MACOS_CERTIFICATE_PASSWORD MACOS_SIGNING_KEY_USER_NAME APPLE_ID APPLE_TEAM_ID APPLE_APP_SPECIFIC_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              missing+=("${name}")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf 'Missing required macOS signing/notarization secrets: %s\n' "${missing[*]}"
+            exit 1
+          fi
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -204,8 +221,85 @@ jobs:
           }
           $wixRoot | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      - name: Configure macOS signing keychain
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_KEY_USER_NAME: ${{ secrets.MACOS_SIGNING_KEY_USER_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          missing=()
+          for name in MACOS_CERTIFICATE_BASE64 MACOS_CERTIFICATE_PASSWORD MACOS_SIGNING_KEY_USER_NAME APPLE_ID APPLE_TEAM_ID APPLE_APP_SPECIFIC_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              missing+=("${name}")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf 'Missing required macOS signing/notarization secrets: %s\n' "${missing[*]}"
+            exit 1
+          fi
+
+          certificate_path="${RUNNER_TEMP}/developer-id-application.p12"
+          keychain_path="${RUNNER_TEMP}/fx2048-signing.keychain-db"
+          keychain_password="$(uuidgen)"
+
+          printf '%s' "${MACOS_CERTIFICATE_BASE64}" | base64 --decode > "${certificate_path}"
+          security create-keychain -p "${keychain_password}" "${keychain_path}"
+          security set-keychain-settings -lut 21600 "${keychain_path}"
+          security unlock-keychain -p "${keychain_password}" "${keychain_path}"
+          security import "${certificate_path}" -P "${MACOS_CERTIFICATE_PASSWORD}" -A -t cert -f pkcs12 -k "${keychain_path}"
+          security list-keychains -d user -s "${keychain_path}"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${keychain_password}" "${keychain_path}"
+          security find-identity -v -p codesigning "${keychain_path}"
+
+          printf 'MACOS_KEYCHAIN_PATH=%s\n' "${keychain_path}" >> "${GITHUB_ENV}"
+
       - name: Build package
+        if: runner.os != 'macOS'
         run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
+
+      - name: Build signed macOS package
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MACOS_SIGNING_KEY_USER_NAME: ${{ secrets.MACOS_SIGNING_KEY_USER_NAME }}
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress -DskipTests -Pmac-signing \
+            -Dmac.signing.keychain="${MACOS_KEYCHAIN_PATH}" \
+            -Dmac.signing.key.user.name="${MACOS_SIGNING_KEY_USER_NAME}" \
+            package javafx:jlink jpackage:jpackage
+
+      - name: Notarize and staple macOS package
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          packages=( target/dist/*.dmg )
+          if [ "${#packages[@]}" -ne 1 ]; then
+            printf 'Expected exactly one DMG, found %s.\n' "${#packages[@]}"
+            printf '%s\n' "${packages[@]}"
+            exit 1
+          fi
+
+          xcrun notarytool submit "${packages[0]}" \
+            --apple-id "${APPLE_ID}" \
+            --team-id "${APPLE_TEAM_ID}" \
+            --password "${APPLE_APP_SPECIFIC_PASSWORD}" \
+            --wait
+          xcrun stapler staple "${packages[0]}"
+          xcrun stapler validate "${packages[0]}"
+          spctl -a -t open --context context:primary-signature -v "${packages[0]}"
 
       - name: Stage release asset
         shell: bash

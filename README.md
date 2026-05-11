@@ -46,6 +46,17 @@ Run the [Release workflow](https://github.com/brunoborges/fx2048/actions/workflo
 
 Direct `v*` tag pushes are also supported when the tag points at a commit whose Maven project version exactly matches the tag without the leading `v`. The same version is shown in the application title/About dialog.
 
+macOS release packages are signed and notarized. Configure these GitHub Actions secrets before running a release:
+
+| Secret | Purpose |
+|---|---|
+| `MACOS_CERTIFICATE_BASE64` | Base64-encoded Developer ID Application `.p12` certificate |
+| `MACOS_CERTIFICATE_PASSWORD` | Password for the `.p12` certificate |
+| `MACOS_SIGNING_KEY_USER_NAME` | Developer ID Application signing identity user/team name |
+| `APPLE_ID` | Apple ID used for notarization |
+| `APPLE_TEAM_ID` | Apple Developer Team ID |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
+
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
 

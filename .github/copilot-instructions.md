@@ -12,6 +12,7 @@
 - Create the platform package: `./mvnw clean package javafx:jlink jpackage:jpackage`
 - Publish packages by manually running `.github/workflows/release.yml`; it releases the current `-SNAPSHOT`, creates a `v*` tag, publishes macOS arm64 DMG, Windows x64 MSI, and Linux amd64/arm64 DEB assets, then bumps `main` to the next `-SNAPSHOT`.
 - The Maven `project.version` in `pom.xml` is the app version source of truth. Direct release tags must match it with a leading `v`.
+- macOS release DMGs are signed and notarized in `release.yml`; the workflow requires Developer ID and Apple notarization secrets before publishing a macOS asset.
 
 ## Architecture
 
