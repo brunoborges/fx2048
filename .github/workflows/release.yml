@@ -20,7 +20,6 @@ concurrency:
 env:
   JAVA_VERSION: '25'
   JAVA_DISTRIBUTION: 'microsoft'
-  JAVA_ARCHITECTURE: 'x64'
   RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
@@ -32,17 +31,35 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            label: macOS
+            label: macOS arm64
+            java_architecture: arm64
             package_glob: target/dist/*.dmg
-            package_suffix: macos.dmg
+            package_suffix: macos-arm64.dmg
+          - os: macos-15-intel
+            label: macOS x64
+            java_architecture: x64
+            package_glob: target/dist/*.dmg
+            package_suffix: macos-x64.dmg
           - os: windows-latest
-            label: Windows
+            label: Windows x64
+            java_architecture: x64
             package_glob: target/dist/*.msi
-            package_suffix: windows.msi
+            package_suffix: windows-x64.msi
+          - os: windows-11-arm
+            label: Windows arm64
+            java_architecture: arm64
+            package_glob: target/dist/*.msi
+            package_suffix: windows-arm64.msi
           - os: ubuntu-latest
-            label: Linux
+            label: Linux amd64
+            java_architecture: x64
             package_glob: target/dist/*.deb
             package_suffix: linux-amd64.deb
+          - os: ubuntu-24.04-arm
+            label: Linux arm64
+            java_architecture: arm64
+            package_glob: target/dist/*.deb
+            package_suffix: linux-arm64.deb
 
     steps:
       - name: Checkout the source code
@@ -55,8 +72,20 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
-          architecture: ${{ env.JAVA_ARCHITECTURE }}
+          architecture: ${{ matrix.java_architecture }}
           cache: maven
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_version="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          expected_tag="v${project_version}"
+          if [ "${RELEASE_TAG}" != "${expected_tag}" ]; then
+            printf 'Release tag "%s" must match pom.xml version "%s" as "%s".\n' "${RELEASE_TAG}" "${project_version}" "${expected_tag}"
+            exit 1
+          fi
+          printf 'PROJECT_VERSION=%s\n' "${project_version}" >> "${GITHUB_ENV}"
 
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'

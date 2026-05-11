@@ -6,7 +6,7 @@
 
     <groupId>io.fxgame</groupId>
     <artifactId>fx2048</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>fx2048</name>
@@ -40,6 +40,23 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>io/fxgame/game2048/app.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>io/fxgame/game2048/app.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <!-- Maven Compiler Plugin -->
             <plugin>
@@ -89,7 +106,7 @@
                 <version>1.7.4</version>
                 <configuration>
                     <name>fx2048</name>
-                    <appVersion>1.0</appVersion>
+                    <appVersion>${project.version}</appVersion>
                     <vendor>Bruno Borges</vendor>
                     <destination>target/dist</destination>
                     <resourceDir>src/jpackage</resourceDir>

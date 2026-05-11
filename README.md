@@ -9,7 +9,7 @@ Check down below for a screenshot.
 
 [![JavaFX Build](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml)
 
-Download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). Each package includes the Java runtime needed to run the game.
+Download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). Packages are built for x64 and arm64 where GitHub-hosted runners are available, and each package includes the Java runtime needed to run the game.
 
 ## Screenshot
 
@@ -48,6 +48,8 @@ Push a version tag to build and publish all platform packages to GitHub Releases
 git tag v1.0.0
 git push origin v1.0.0
 ```
+
+The tag must match the Maven project version in `pom.xml` with a leading `v`. For example, `pom.xml` version `1.0.0` must be released with tag `v1.0.0`. The same version is shown in the application title/About dialog and is used as the native package version.
 
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.

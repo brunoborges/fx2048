@@ -30,8 +30,8 @@ jobs:
     - name: Upload package
       uses: actions/upload-artifact@v4
       with:
-        name: fx2048-1.0.dmg
-        path: target/dist/fx2048-1.0.dmg
+        name: fx2048-macos
+        path: target/dist/*.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -50,8 +50,8 @@ jobs:
     - name: Upload package
       uses: actions/upload-artifact@v4
       with:
-        name: fx2048-1.0.msi
-        path: target/dist/fx2048-1.0.msi
+        name: fx2048-windows
+        path: target/dist/*.msi
 
   build-linux:
     runs-on: ubuntu-latest
@@ -72,5 +72,5 @@ jobs:
     - name: Upload package
       uses: actions/upload-artifact@v4
       with:
-        name: fx2048-1.0.deb
-        path: target/dist/fx2048_1.0-1_amd64.deb
+        name: fx2048-linux
+        path: target/dist/*.deb

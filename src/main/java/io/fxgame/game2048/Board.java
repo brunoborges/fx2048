@@ -453,7 +453,7 @@ public class Board extends Pane {
                 var t24 = new Text("\n\n");
                 t24.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
-                var t31 = new Text(" Version " + Game2048.VERSION + " - 2015\n\n");
+                var t31 = new Text("Version " + Game2048.VERSION + "\n\n");
                 t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
 
                 flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22, link3);
