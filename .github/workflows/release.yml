@@ -35,21 +35,11 @@ jobs:
             java_architecture: arm64
             package_glob: target/dist/*.dmg
             package_suffix: macos-arm64.dmg
-          - os: macos-15-intel
-            label: macOS x64
-            java_architecture: x64
-            package_glob: target/dist/*.dmg
-            package_suffix: macos-x64.dmg
           - os: windows-latest
             label: Windows x64
             java_architecture: x64
             package_glob: target/dist/*.msi
             package_suffix: windows-x64.msi
-          - os: windows-11-arm
-            label: Windows arm64
-            java_architecture: arm64
-            package_glob: target/dist/*.msi
-            package_suffix: windows-arm64.msi
           - os: ubuntu-latest
             label: Linux amd64
             java_architecture: x64

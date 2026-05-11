@@ -6,7 +6,7 @@
 
     <groupId>io.fxgame</groupId>
     <artifactId>fx2048</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>fx2048</name>
@@ -106,7 +106,7 @@
                 <version>1.7.4</version>
                 <configuration>
                     <name>fx2048</name>
-                    <appVersion>${project.version}</appVersion>
+                    <appVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</appVersion>
                     <vendor>Bruno Borges</vendor>
                     <destination>target/dist</destination>
                     <resourceDir>src/jpackage</resourceDir>
@@ -140,6 +140,20 @@
             </plugin>
 
             <!-- Maven Enforcer Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>parse-project-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>

@@ -10,8 +10,8 @@
 - Run one Maven test when tests are present: `./mvnw -Dtest=SomeTest#someMethod test`
 - Create a custom runtime: `./mvnw javafx:jlink`
 - Create the platform package: `./mvnw clean package javafx:jlink jpackage:jpackage`
-- Publish packages by pushing a `v*` tag; `.github/workflows/release.yml` creates a GitHub Release with x64 and arm64 DMG, MSI, and DEB assets.
-- The Maven `project.version` in `pom.xml` is the app/package version source of truth. Release tags must match it with a leading `v`, and the app exposes it through `AppMetadata`.
+- Publish packages by pushing a `v*` tag; `.github/workflows/release.yml` creates a GitHub Release with macOS arm64 DMG, Windows x64 MSI, and Linux amd64/arm64 DEB assets.
+- The Maven `project.version` in `pom.xml` is the app version source of truth. Release tags must match it with a leading `v`; after tagging, bump `pom.xml` to the next `-SNAPSHOT`.
 
 ## Architecture
 
