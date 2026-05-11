@@ -1,5 +1,6 @@
 **/*.class
 *.properties
+!.mvn/wrapper/maven-wrapper.properties
 
 # Package Files #
 **/*.jar
