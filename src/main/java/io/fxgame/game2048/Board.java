@@ -276,17 +276,10 @@ public class Board extends Pane {
     }
 
     private void showMessageOverlay(String message, String warning) {
-        timer.stop();
-        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
-        lOvrText.setText(message);
-        lOvrText.getStyleClass().setAll("game-label", "game-lblPause");
-        lOvrSubText.setText(warning);
-        lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-        txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-        buttonsOverlay.getChildren().setAll(bContinue);
-        getChildren().removeAll(overlay, buttonsOverlay);
-        getChildren().addAll(overlay, buttonsOverlay);
-        state.layerOnProperty.set(true);
+        prepareOverlay("game-overlay-pause");
+        setTextOverlayContent(message, warning, "game-lblPause");
+        setOverlayButtons(bContinue, null);
+        showOverlay();
     }
 
     private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
@@ -312,19 +305,9 @@ public class Board extends Pane {
                 return;
             }
 
-            timer.stop();
-
-            overlay.getStyleClass().setAll("game-overlay", style1);
-            lOvrText.setText(message);
-            lOvrText.getStyleClass().setAll("game-label", style2);
-            lOvrSubText.setText(warning);
-            lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-            txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-            buttonsOverlay.getChildren().setAll(leftButton);
-
-            if (rightButton != null) {
-                buttonsOverlay.getChildren().add(rightButton);
-            }
+            prepareOverlay(style1);
+            setTextOverlayContent(message, warning, style2);
+            setOverlayButtons(leftButton, rightButton);
 
             if (!state.layerOnProperty.get()) {
                 var defaultBtn = rightButton == null ? leftButton : rightButton;
@@ -335,6 +318,32 @@ public class Board extends Pane {
                 state.layerOnProperty.set(true);
             }
         }
+    }
+
+    private void prepareOverlay(String overlayStyle) {
+        timer.stop();
+        overlay.getStyleClass().setAll("game-overlay", overlayStyle);
+    }
+
+    private void setTextOverlayContent(String message, String warning, String messageStyle) {
+        lOvrText.setText(message);
+        lOvrText.getStyleClass().setAll("game-label", messageStyle);
+        lOvrSubText.setText(warning);
+        lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
+        txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
+    }
+
+    private void setOverlayButtons(Button leftButton, Button rightButton) {
+        buttonsOverlay.getChildren().setAll(leftButton);
+        if (rightButton != null) {
+            buttonsOverlay.getChildren().add(rightButton);
+        }
+    }
+
+    private void showOverlay() {
+        getChildren().removeAll(overlay, buttonsOverlay);
+        getChildren().addAll(overlay, buttonsOverlay);
+        state.layerOnProperty.set(true);
     }
 
     private void initGameProperties() {
@@ -397,72 +406,7 @@ public class Board extends Pane {
         });
         state.gameAboutProperty.addListener((_, _, newValue) -> {
             if (newValue) {
-                timer.stop();
-                overlay.getStyleClass().setAll("game-overlay", "game-overlay-quit");
-
-                var flow = new TextFlow();
-                flow.setTextAlignment(TextAlignment.CENTER);
-                flow.setPadding(new Insets(10, 0, 0, 0));
-                flow.setMinSize(gridDimension, gridDimension);
-                flow.setPrefSize(gridDimension, gridDimension);
-                flow.setMaxSize(gridDimension, gridDimension);
-                flow.setPrefSize(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
-
-                var t00 = new Text("2048");
-                t00.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t01 = new Text("FX");
-                t01.getStyleClass().setAll("game-label", "game-lblAbout2");
-
-                var t02 = new Text(" Game\n");
-                t02.getStyleClass().setAll("game-label", "game-lblAbout");
-
-                var t1 = new Text("JavaFX game - Desktop version\n\n");
-                t1.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t20 = new Text("Powered by ");
-                t20.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link1 = new Hyperlink();
-                link1.setText("OpenJFX");
-                link1.setOnAction(_ -> Game2048.urlOpener().open("https://openjfx.io/"));
-                link1.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t21 = new Text(" Project \n\n");
-                t21.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t23 = new Text("© ");
-                t23.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link2 = new Hyperlink();
-                link2.setText("@JPeredaDnr");
-                link2.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/JPeredaDnr"));
-                link2.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t22 = new Text(" & ");
-                t22.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var link3 = new Hyperlink();
-                link3.setText("@brunoborges");
-                link3.setOnAction(_ -> Game2048.urlOpener().open("https://twitter.com/brunoborges"));
-
-                var t32 = new Text(" & ");
-                t32.getStyleClass().setAll("game-label", "game-lblAboutSub");
-                link3.getStyleClass().setAll("game-label", "game-lblAboutSub2");
-
-                var t24 = new Text("\n\n");
-                t24.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                var t31 = new Text("Version " + Game2048.VERSION + "\n\n");
-                t31.getStyleClass().setAll("game-label", "game-lblAboutSub");
-
-                flow.getChildren().setAll(t00, t01, t02, t1, t20, link1, t21, t23, link2, t22, link3);
-                flow.getChildren().addAll(t24, t31);
-                txtOverlay.getChildren().setAll(flow);
-                buttonsOverlay.getChildren().setAll(bContinue);
-                this.getChildren().removeAll(overlay, buttonsOverlay);
-                this.getChildren().addAll(overlay, buttonsOverlay);
-                state.layerOnProperty.set(true);
+                showAboutOverlay();
             }
         });
         state.gameQuitProperty.addListener(new Overlay("Quit Game?", "Non saved data will be lost", bQuit, bContinueNo,
@@ -502,6 +446,53 @@ public class Board extends Pane {
         state.clearState();
     }
 
+    private void showAboutOverlay() {
+        prepareOverlay("game-overlay-quit");
+        txtOverlay.getChildren().setAll(createAboutContent());
+        setOverlayButtons(bContinue, null);
+        showOverlay();
+    }
+
+    private TextFlow createAboutContent() {
+        var flow = new TextFlow();
+        flow.setTextAlignment(TextAlignment.CENTER);
+        flow.setPadding(new Insets(10, 0, 0, 0));
+        flow.setMinSize(gridDimension, gridDimension);
+        flow.setPrefSize(gridDimension, gridDimension);
+        flow.setMaxSize(gridDimension, gridDimension);
+        flow.setPrefSize(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
+
+        flow.getChildren().setAll(
+                styledText("2048", "game-lblAbout"),
+                styledText("FX", "game-lblAbout2"),
+                styledText(" Game\n", "game-lblAbout"),
+                styledText("JavaFX game - Desktop version\n\n", "game-lblAboutSub"),
+                styledText("Powered by ", "game-lblAboutSub"),
+                aboutLink("OpenJFX", "https://openjfx.io/"),
+                styledText(" Project \n\n", "game-lblAboutSub"),
+                styledText("© ", "game-lblAboutSub"),
+                aboutLink("@JPeredaDnr", "https://twitter.com/JPeredaDnr"),
+                styledText(" & ", "game-lblAboutSub"),
+                aboutLink("@brunoborges", "https://twitter.com/brunoborges"),
+                styledText("\n\n", "game-lblAboutSub"),
+                styledText("Version " + Game2048.VERSION + "\n\n", "game-lblAboutSub"));
+
+        return flow;
+    }
+
+    private Text styledText(String text, String styleClass) {
+        var styledText = new Text(text);
+        styledText.getStyleClass().setAll("game-label", styleClass);
+        return styledText;
+    }
+
+    private Hyperlink aboutLink(String text, String url) {
+        var link = new Hyperlink(text);
+        link.setOnAction(_ -> Game2048.urlOpener().open(url));
+        link.getStyleClass().setAll("game-label", "game-lblAboutSub2");
+        return link;
+    }
+
     public void animateScore() {
         if (state.gameMovePoints.get() == 0) {
             return;
@@ -530,11 +521,7 @@ public class Board extends Pane {
     }
 
     public void addTile(Tile tile) {
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
-
-        tile.setLayoutX(layoutX);
-        tile.setLayoutY(layoutY);
+        positionTile(tile);
         gridGroup.getChildren().add(tile);
     }
 
@@ -545,12 +532,7 @@ public class Board extends Pane {
     public Tile addRandomTile(Location randomLocation) {
         var tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
-
-        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
-        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
-
-        tile.setLayoutX(layoutX);
-        tile.setLayoutY(layoutY);
+        positionTile(tile);
         tile.setScaleX(0);
         tile.setScaleY(0);
 
@@ -590,6 +572,14 @@ public class Board extends Pane {
         state.gameMoveCountProperty.set(state.gameMoveCountProperty.get() + 1);
     }
 
+    private void positionTile(Tile tile) {
+        double layoutX = tile.getLocation().getLayoutX(CELL_SIZE) - (tile.getMinWidth() / 2);
+        double layoutY = tile.getLocation().getLayoutY(CELL_SIZE) - (tile.getMinHeight() / 2);
+
+        tile.setLayoutX(layoutX);
+        tile.setLayoutY(layoutY);
+    }
+
     public void addPoints(int points) {
         state.gameMovePoints.set(state.gameMovePoints.get() + points);
         state.gameScoreProperty.set(state.gameScoreProperty.get() + points);
@@ -624,8 +614,7 @@ public class Board extends Pane {
     }
 
     private void showSettingsOverlay() {
-        timer.stop();
-        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
+        prepareOverlay("game-overlay-pause");
 
         var title = new Label("Settings");
         title.getStyleClass().setAll("game-label", "game-lblPause");
@@ -642,10 +631,8 @@ public class Board extends Pane {
         gridSizeRow.getStyleClass().add("game-settings-row");
 
         txtOverlay.getChildren().setAll(title, warning, gridSizeRow);
-        buttonsOverlay.getChildren().setAll(bApplySettings, bContinueNo);
-        this.getChildren().removeAll(overlay, buttonsOverlay);
-        this.getChildren().addAll(overlay, buttonsOverlay);
-        state.layerOnProperty.set(true);
+        setOverlayButtons(bApplySettings, bContinueNo);
+        showOverlay();
     }
 
     public void quitGame() {
