@@ -6,26 +6,129 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Release tag, for example v1.0.0'
-        required: true
+      release_version:
+        description: 'Release version, for example 1.0.2. Defaults to the current -SNAPSHOT version without -SNAPSHOT.'
+        required: false
+      next_snapshot_version:
+        description: 'Next development version, for example 1.0.3-SNAPSHOT. Defaults to the next patch -SNAPSHOT.'
+        required: false
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  group: release-${{ github.event.inputs.release_version || github.ref_name }}
   cancel-in-progress: false
 
 env:
   JAVA_VERSION: '25'
   JAVA_DISTRIBUTION: 'microsoft'
-  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
+  release-context:
+    name: Prepare release context
+    runs-on: ubuntu-latest
+    outputs:
+      release_ref: ${{ steps.tag-context.outputs.release_ref || steps.prepare-release.outputs.release_ref }}
+      release_tag: ${{ steps.tag-context.outputs.release_tag || steps.prepare-release.outputs.release_tag }}
+    steps:
+      - name: Checkout default branch
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          architecture: x64
+          cache: maven
+
+      - name: Prepare release tag and next snapshot
+        id: prepare-release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_VERSION_INPUT: ${{ github.event.inputs.release_version }}
+          NEXT_SNAPSHOT_VERSION_INPUT: ${{ github.event.inputs.next_snapshot_version }}
+        run: |
+          set -euo pipefail
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin "${DEFAULT_BRANCH}" --tags
+          git pull --ff-only origin "${DEFAULT_BRANCH}"
+
+          current_version="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          if [[ "${current_version}" != *-SNAPSHOT ]]; then
+            printf 'Current pom.xml version "%s" must end with -SNAPSHOT for automated release preparation.\n' "${current_version}"
+            exit 1
+          fi
+
+          snapshot_base="${current_version%-SNAPSHOT}"
+          release_version="${RELEASE_VERSION_INPUT:-${snapshot_base}}"
+          if [[ "${release_version}" == *-SNAPSHOT ]]; then
+            printf 'Release version "%s" must not end with -SNAPSHOT.\n' "${release_version}"
+            exit 1
+          fi
+
+          next_snapshot_version="${NEXT_SNAPSHOT_VERSION_INPUT:-}"
+          if [[ -z "${next_snapshot_version}" ]]; then
+            if [[ ! "${release_version}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              printf 'Release version "%s" is not major.minor.patch; provide next_snapshot_version explicitly.\n' "${release_version}"
+              exit 1
+            fi
+            next_snapshot_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))-SNAPSHOT"
+          fi
+          if [[ "${next_snapshot_version}" != *-SNAPSHOT ]]; then
+            printf 'Next snapshot version "%s" must end with -SNAPSHOT.\n' "${next_snapshot_version}"
+            exit 1
+          fi
+
+          release_tag="v${release_version}"
+          if git rev-parse "${release_tag}" >/dev/null 2>&1; then
+            printf 'Release tag "%s" already exists locally.\n' "${release_tag}"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
+            printf 'Release tag "%s" already exists on origin.\n' "${release_tag}"
+            exit 1
+          fi
+
+          ./mvnw --batch-mode --no-transfer-progress versions:set -DnewVersion="${release_version}" -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "Prepare ${release_tag} release"
+          git tag -a "${release_tag}" -m "fx2048 ${release_tag}"
+
+          ./mvnw --batch-mode --no-transfer-progress versions:set -DnewVersion="${next_snapshot_version}" -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "Bump version to ${next_snapshot_version}"
+
+          git push origin "HEAD:${DEFAULT_BRANCH}"
+          git push origin "${release_tag}"
+
+          printf 'release_tag=%s\n' "${release_tag}" >> "${GITHUB_OUTPUT}"
+          printf 'release_ref=refs/tags/%s\n' "${release_tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Use pushed tag
+        id: tag-context
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          printf 'release_tag=%s\n' "${GITHUB_REF_NAME}" >> "${GITHUB_OUTPUT}"
+          printf 'release_ref=%s\n' "${GITHUB_REF}" >> "${GITHUB_OUTPUT}"
+
   build:
     name: Build ${{ matrix.label }} package
+    needs: release-context
     runs-on: ${{ matrix.os }}
+    env:
+      RELEASE_TAG: ${{ needs.release-context.outputs.release_tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -55,7 +158,7 @@ jobs:
       - name: Checkout the source code
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ needs.release-context.outputs.release_ref }}
 
       - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v5
@@ -127,7 +230,9 @@ jobs:
 
   publish:
     name: Publish GitHub Release
-    needs: build
+    needs:
+      - release-context
+      - build
     runs-on: ubuntu-latest
     steps:
       - name: Download package artifacts
@@ -139,7 +244,7 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: fx2048 ${{ env.RELEASE_TAG }}
+          tag_name: ${{ needs.release-context.outputs.release_tag }}
+          name: fx2048 ${{ needs.release-context.outputs.release_tag }}
           files: release-assets/*
           generate_release_notes: true

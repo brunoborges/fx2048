@@ -42,14 +42,9 @@ To create a native OS package, run:
 
 ### Create a GitHub release
 
-Push a version tag to build and publish all platform packages to GitHub Releases:
+Run the [Release workflow](https://github.com/brunoborges/fx2048/actions/workflows/release.yml) manually from `main` to publish a new version. If `pom.xml` is at `1.0.2-SNAPSHOT`, the workflow prepares and tags `v1.0.2`, publishes the platform packages, and bumps `main` to `1.0.3-SNAPSHOT`.
 
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The tag must match the Maven project version in `pom.xml` with a leading `v`. For example, `pom.xml` version `1.0.0` must be released with tag `v1.0.0`. The same version is shown in the application title/About dialog. After tagging a release, bump `pom.xml` to the next `-SNAPSHOT` version on `main`.
+Direct `v*` tag pushes are also supported when the tag points at a commit whose Maven project version exactly matches the tag without the leading `v`. The same version is shown in the application title/About dialog.
 
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
