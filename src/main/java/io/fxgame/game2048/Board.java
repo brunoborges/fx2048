@@ -66,12 +66,7 @@ public class Board extends Pane {
     private final Label lblBest = new Label("0");
     private final Label lblMoves = new Label("0");
     private final Label lblPoints = new Label();
-
-    private final HBox overlay = new HBox();
-    private final VBox txtOverlay = new VBox(10);
-    private final Label lOvrText = new Label();
-    private final Label lOvrSubText = new Label();
-    private final HBox buttonsOverlay = new HBox();
+    private final OverlayPanel overlayPanel;
 
     // Overlay Buttons
     private final Button bTry = new Button("Try again");
@@ -101,6 +96,7 @@ public class Board extends Pane {
         this.gridOperator = grid;
         this.gridSizeChangeHandler = gridSizeChangeHandler;
         gridDimension = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
 
         createScore();
@@ -276,10 +272,7 @@ public class Board extends Pane {
     }
 
     private void showMessageOverlay(String message, String warning) {
-        prepareOverlay("game-overlay-pause");
-        setTextOverlayContent(message, warning, "game-lblPause");
-        setOverlayButtons(bContinue, null);
-        showOverlay();
+        showMessageOverlay(message, warning, "game-overlay-pause", "game-lblPause", bContinue, null);
     }
 
     private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
@@ -305,61 +298,31 @@ public class Board extends Pane {
                 return;
             }
 
-            prepareOverlay(style1);
-            setTextOverlayContent(message, warning, style2);
-            setOverlayButtons(leftButton, rightButton);
+            timer.stop();
+            overlayPanel.showMessage(style1, message, warning, style2, leftButton, rightButton);
 
             if (!state.layerOnProperty.get()) {
                 var defaultBtn = rightButton == null ? leftButton : rightButton;
-                defaultBtn.requestFocus();
-                defaultBtn.setDefaultButton(true);
-
-                Board.this.getChildren().addAll(overlay, buttonsOverlay);
-                state.layerOnProperty.set(true);
+                showOverlay(defaultBtn);
             }
         }
     }
 
-    private void prepareOverlay(String overlayStyle) {
+    private void showMessageOverlay(String message, String warning, String overlayStyle, String messageStyle,
+            Button leftButton, Button rightButton) {
         timer.stop();
-        overlay.getStyleClass().setAll("game-overlay", overlayStyle);
+        overlayPanel.showMessage(overlayStyle, message, warning, messageStyle, leftButton, rightButton);
+        showOverlay(leftButton);
     }
 
-    private void setTextOverlayContent(String message, String warning, String messageStyle) {
-        lOvrText.setText(message);
-        lOvrText.getStyleClass().setAll("game-label", messageStyle);
-        lOvrSubText.setText(warning);
-        lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
-        txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
-    }
-
-    private void setOverlayButtons(Button leftButton, Button rightButton) {
-        buttonsOverlay.getChildren().setAll(leftButton);
-        if (rightButton != null) {
-            buttonsOverlay.getChildren().add(rightButton);
-        }
-    }
-
-    private void showOverlay() {
-        getChildren().removeAll(overlay, buttonsOverlay);
-        getChildren().addAll(overlay, buttonsOverlay);
+    private void showOverlay(Button defaultButton) {
+        getChildren().remove(overlayPanel);
+        getChildren().add(overlayPanel);
+        overlayPanel.setDefaultButton(defaultButton);
         state.layerOnProperty.set(true);
     }
 
     private void initGameProperties() {
-        overlay.setMinSize(gridDimension, gridDimension);
-        overlay.setAlignment(Pos.CENTER);
-        overlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT);
-
-        overlay.getChildren().setAll(txtOverlay);
-        txtOverlay.setAlignment(Pos.CENTER);
-
-        buttonsOverlay.setAlignment(Pos.CENTER);
-        buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + (double) gridDimension / 2);
-        buttonsOverlay.setMinSize(gridDimension, (double) gridDimension / 2);
-        buttonsOverlay.setPickOnBounds(false);
-        buttonsOverlay.setSpacing(10);
-
         bTry.getStyleClass().add("game-button");
         bTry.setOnAction(_ -> tryAgain());
 
@@ -422,12 +385,12 @@ public class Board extends Pane {
 
         state.layerOnProperty.addListener((_, _, b1) -> {
             if (!b1) {
-                getChildren().removeAll(overlay, buttonsOverlay);
+                getChildren().remove(overlayPanel);
                 // Keep the focus on the game when the layer is removed:
                 getParent().requestFocus();
             } else {
                 // Set focus on the first button
-                buttonsOverlay.getChildren().getFirst().requestFocus();
+                overlayPanel.focusFirstButton();
             }
         });
 
@@ -441,16 +404,15 @@ public class Board extends Pane {
     private void doClearGame() {
         saveRecord();
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
-        getChildren().removeAll(overlay, buttonsOverlay);
+        getChildren().remove(overlayPanel);
 
         state.clearState();
     }
 
     private void showAboutOverlay() {
-        prepareOverlay("game-overlay-quit");
-        txtOverlay.getChildren().setAll(createAboutContent());
-        setOverlayButtons(bContinue, null);
-        showOverlay();
+        timer.stop();
+        overlayPanel.showContent("game-overlay-quit", bContinue, null, createAboutContent());
+        showOverlay(bContinue);
     }
 
     private TextFlow createAboutContent() {
@@ -614,7 +576,7 @@ public class Board extends Pane {
     }
 
     private void showSettingsOverlay() {
-        prepareOverlay("game-overlay-pause");
+        timer.stop();
 
         var title = new Label("Settings");
         title.getStyleClass().setAll("game-label", "game-lblPause");
@@ -630,9 +592,8 @@ public class Board extends Pane {
         gridSizeRow.setAlignment(Pos.CENTER);
         gridSizeRow.getStyleClass().add("game-settings-row");
 
-        txtOverlay.getChildren().setAll(title, warning, gridSizeRow);
-        setOverlayButtons(bApplySettings, bContinueNo);
-        showOverlay();
+        overlayPanel.showContent("game-overlay-pause", bApplySettings, bContinueNo, title, warning, gridSizeRow);
+        showOverlay(bApplySettings);
     }
 
     public void quitGame() {
