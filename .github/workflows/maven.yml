@@ -19,13 +19,15 @@ jobs:
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         java-version: ${{ env.JAVA_VERSION }}
         architecture: ${{ env.JAVA_ARCHITECTURE }}
-    - name: Build with Gradle
-      run: ./gradlew dist --info
+        cache: maven
+    - name: Build with Maven
+      run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: Upload Installer
       uses: actions/upload-artifact@v4
       with:
-        name: fx2048-1.0.pkg
-        path: build/jpackage/fx2048-1.0.pkg
+        name: fx2048-1.0.dmg
+        path: target/dist/fx2048-1.0.dmg
+
   build-windows:
     runs-on: windows-latest
     steps:
@@ -37,13 +39,15 @@ jobs:
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         java-version: ${{ env.JAVA_VERSION }}
         architecture: ${{ env.JAVA_ARCHITECTURE }}
-    - name: Build with Gradle
-      run: ./gradlew dist --info
+        cache: maven
+    - name: Build with Maven
+      run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: Upload Installer
       uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.msi
-        path: build/jpackage/fx2048-1.0.msi
+        path: target/dist/fx2048-1.0.msi
+
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -55,12 +59,13 @@ jobs:
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         java-version: ${{ env.JAVA_VERSION }}
         architecture: ${{ env.JAVA_ARCHITECTURE }}
-    - name: Build with Gradle
-      run: ./gradlew dist --info
-    - name: List installers
-      run: ls -l build/jpackage/
+        cache: maven
+    - name: Build with Maven
+      run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
+    - name: List packages
+      run: ls -l target/dist/
     - name: Upload Installer
       uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.deb
-        path: build/jpackage/fx2048_1.0-1_amd64.deb
+        path: target/dist/fx2048_1.0-1_amd64.deb

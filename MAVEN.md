@@ -1,10 +1,10 @@
 # Maven Build Guide for fx2048
 
-This project now supports both Gradle and Maven build systems.
+This project uses Maven as its build system.
 
 ## Prerequisites
 
-- Java 21 (LTS)
+- Java 25
 - Maven 3.9.x (or use the included Maven wrapper)
 
 ## Building with Maven
@@ -40,7 +40,7 @@ The project includes a Maven wrapper (`mvnw`) that ensures everyone uses the sam
 
 This will create a custom Java runtime in `target/fx2048/` with only the modules needed for the application.
 
-### Create a native installer with jpackage
+### Create a native package with jpackage
 ```bash
 ./mvnw clean package javafx:jlink jpackage:jpackage
 ```
@@ -48,8 +48,8 @@ This will create a custom Java runtime in `target/fx2048/` with only the modules
 This will:
 1. Build the application
 2. Create a custom JRE with jlink
-3. Create a native installer for your platform:
-   - **macOS**: PKG installer in `target/dist/`
+3. Create a native package for your platform:
+   - **macOS**: DMG disk image in `target/dist/`
    - **Windows**: MSI installer in `target/dist/`
    - **Linux**: DEB package in `target/dist/`
 
@@ -82,21 +82,21 @@ fx2048/
 | `./mvnw package` | Package the application as a JAR |
 | `./mvnw javafx:run` | Run the JavaFX application |
 | `./mvnw javafx:jlink` | Create a custom JRE with jlink |
-| `./mvnw jpackage:jpackage` | Create a native installer |
+| `./mvnw jpackage:jpackage` | Create a native package |
 | `./mvnw clean install` | Clean, build, and install to local repo |
 
-## Platform-Specific Installers
+## Platform-Specific Packages
 
-The project uses Maven profiles to automatically select the correct installer type:
+The project uses Maven profiles to automatically select the correct package type:
 
-- **macOS**: Automatically creates `.pkg` installer
+- **macOS**: Automatically creates `.dmg` disk image
 - **Windows**: Automatically creates `.msi` installer  
 - **Linux**: Automatically creates `.deb` package
 
 ## Dependencies
 
 The project uses the following main dependencies:
-- **JavaFX 21**: For the UI framework
+- **JavaFX 25**: For the UI framework
   - javafx-base
   - javafx-graphics
   - javafx-controls
@@ -106,7 +106,7 @@ All dependencies are managed in `pom.xml` and automatically downloaded from Mave
 ## Troubleshooting
 
 ### JavaFX not found
-Make sure you're using Java 21. The JavaFX dependencies will be automatically downloaded by Maven.
+Make sure you're using Java 25. The JavaFX dependencies will be automatically downloaded by Maven.
 
 ### Module system issues
 This project uses Java modules (JPMS). The module descriptor is in `src/main/java/module-info.java`.
@@ -116,11 +116,3 @@ On Unix-like systems, make the wrapper executable:
 ```bash
 chmod +x mvnw
 ```
-
-## Switching Between Build Systems
-
-You can use either build system:
-- **Gradle**: Use `./gradlew` commands (see main README.md)
-- **Maven**: Use `./mvnw` commands (this guide)
-
-Both build systems are configured to produce the same output.

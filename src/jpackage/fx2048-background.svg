@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 418" role="img" aria-labelledby="title desc">
+  <title id="title">installer background</title>
+  <desc id="desc">A clean yellow-gold installer background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="620" y2="418" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#faf8ef"/>
+      <stop offset="0.45" stop-color="#f3d774"/>
+      <stop offset="1" stop-color="#edc22e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f9f6f2" stop-opacity="0.56"/>
+      <stop offset="1" stop-color="#f9f6f2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="620" height="418" fill="url(#bg)"/>
+  <circle cx="520" cy="82" r="150" fill="url(#glow)" opacity="0.75"/>
+  <circle cx="92" cy="340" r="136" fill="url(#glow)" opacity="0.45"/>
+  <path d="M382 42c86 38 156 108 194 194" fill="none" stroke="#f9f6f2" stroke-width="26" stroke-linecap="round" opacity="0.34"/>
+  <path d="M410 92c56 30 100 74 130 130" fill="none" stroke="#f9f6f2" stroke-width="16" stroke-linecap="round" opacity="0.28"/>
+  <rect x="36" y="36" width="548" height="346" fill="none" stroke="#f9f6f2" stroke-width="3" opacity="0.18"/>
+</svg>

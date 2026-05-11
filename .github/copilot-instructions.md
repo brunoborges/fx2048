@@ -2,16 +2,14 @@
 
 ## Build and run commands
 
-- Primary build system is Gradle; CI runs `./gradlew dist --info` on macOS, Windows, and Linux with Java 25.
-- Use JDK 25 for local work. `build.gradle`, `pom.xml`, and `.github/workflows/gradle.yml` all target Java/JavaFX 25 even though older docs mention earlier Java versions.
-- Run the app: `./gradlew run`
-- Compile, assemble, and run checks/tests: `./gradlew build`
-- Run tests: `./gradlew test`
-- Run one Gradle test when tests are present: `./gradlew test --tests 'io.fxgame.game2048.SomeTest.someMethod'`
-- Create the platform distribution/installer: `./gradlew dist` or `./gradlew dist --info`
-- Create runtime/package artifacts directly: `./gradlew jlink` and `./gradlew jpackage`
-- Maven is also configured: `./mvnw javafx:run`, `./mvnw test`, `./mvnw clean package`, `./mvnw javafx:jlink`, and `./mvnw clean package javafx:jlink jpackage:jpackage`
+- Maven is the build system; CI runs `./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage` on macOS, Windows, and Linux with Java 25.
+- Use JDK 25 for local work. `pom.xml` and `.github/workflows/maven.yml` target Java/JavaFX 25.
+- Run the app: `./mvnw javafx:run`
+- Compile and package: `./mvnw clean package`
+- Run tests: `./mvnw test`
 - Run one Maven test when tests are present: `./mvnw -Dtest=SomeTest#someMethod test`
+- Create a custom runtime: `./mvnw javafx:jlink`
+- Create the platform package: `./mvnw clean package javafx:jlink jpackage:jpackage`
 
 ## Architecture
 
@@ -26,8 +24,8 @@
 
 ## Codebase conventions
 
-- Prefer Gradle for automation changes because GitHub Actions uses Gradle; keep Maven in sync when changing dependencies, Java versions, main class/module settings, or packaging behavior.
-- Keep the module name `fxgame` and main class `io.fxgame.game2048.AppLauncher` aligned across `module-info.java`, `build.gradle`, and `pom.xml`.
+- Prefer Maven for automation changes because GitHub Actions uses Maven.
+- Keep the module name `fxgame` and main class `io.fxgame.game2048.AppLauncher` aligned across `module-info.java` and `pom.xml`.
 - Preserve the JavaFX property/listener flow: toolbar and overlay button actions set `GameState` properties in `Board`; `GameManager` listens for confirmed reset/save/restore events and mutates the game grid.
 - Do not bypass `GameManager.move(Direction)` for gameplay changes. It gates moves while overlays are shown and while tile animations are in progress.
 - Empty cells are represented by keys present in `gameGrid` with `null` values. Movement logic depends on `Optional.ofNullable(gameGrid.get(location))` and on `GridOperator.sortGrid(direction)` before traversal.

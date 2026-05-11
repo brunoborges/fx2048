@@ -15,7 +15,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>25</maven.compiler.release>
-        <javafx.version>25</javafx.version>
+        <javafx.version>25.0.3</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
     </properties>
@@ -45,7 +45,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.15.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
                 </configuration>
@@ -72,7 +72,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -86,12 +86,13 @@
             <plugin>
                 <groupId>org.panteleyev</groupId>
                 <artifactId>jpackage-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>1.7.4</version>
                 <configuration>
                     <name>fx2048</name>
                     <appVersion>1.0</appVersion>
                     <vendor>Bruno Borges</vendor>
                     <destination>target/dist</destination>
+                    <resourceDir>src/jpackage</resourceDir>
                     <module>fxgame/${main.class}</module>
                     <runtimeImage>target/fx2048</runtimeImage>
                     <javaOptions>
@@ -111,14 +112,39 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.5.0</version>
             </plugin>
 
             <!-- Maven Clean Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.5.0</version>
+            </plugin>
+
+            <!-- Maven Enforcer Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-runtime</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[3.9.9,)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>[25,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -138,7 +164,8 @@
                         <groupId>org.panteleyev</groupId>
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
-                            <type>PKG</type>
+                            <type>DMG</type>
+                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.icns</icon>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -160,6 +187,7 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
                             <type>MSI</type>
+                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.ico</icon>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -182,6 +210,7 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
                             <type>DEB</type>
+                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.png</icon>
                         </configuration>
                     </plugin>
                 </plugins>
