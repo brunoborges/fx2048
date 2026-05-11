@@ -8,14 +8,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
 import java.util.HashMap;
@@ -70,7 +63,7 @@ public class GameManager extends Group {
         var gridOperator = new GridOperator(gridSize);
         model = new GameModel(gridOperator);
         board = new Board(gridOperator, gridSizeChangeHandler);
-        board.setToolBar(createToolBar());
+        board.setToolBar(createToolbarPanel());
         getChildren().add(board);
 
         board.clearGameProperty().addListener((_, _, newValue) -> {
@@ -433,28 +426,15 @@ public class GameManager extends Group {
         board.saveRecord();
     }
 
-    private HBox createToolBar() {
-        var btItem1 = createButtonItem("mSave", "Save Session", _ -> saveSession());
-        var btItem2 = createButtonItem("mRestore", "Restore Session", _ -> restoreSession());
-        var btItem3 = createButtonItem("mPause", "Pause Game", _ -> board.pauseGame());
-        var btItem4 = createButtonItem("mReplay", "Try Again", _ -> board.showTryAgainOverlay());
-        var btItem5 = createButtonItem("mUndo", "Undo Move", _ -> undoMove());
-        var btItem6 = createButtonItem("mSettings", "Settings", _ -> board.settingsGame());
-        var btItem7 = createButtonItem("mInfo", "About the Game", _ -> board.aboutGame());
-        var btItem8 = createButtonItem("mQuit", "Quit Game", _ -> quitGame());
-
-        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6, btItem7, btItem8);
-        toolbar.setAlignment(Pos.CENTER);
-        toolbar.setPadding(new Insets(10.0));
-        return toolbar;
-    }
-
-    private Button createButtonItem(String symbol, String text, EventHandler<ActionEvent> action) {
-        var button = new Button();
-        button.setPrefSize(40, 40);
-        button.setId(symbol);
-        button.setOnAction(action);
-        button.setTooltip(new Tooltip(text));
-        return button;
+    private ToolbarPanel createToolbarPanel() {
+        return new ToolbarPanel(new ToolbarPanel.Actions(
+                this::saveSession,
+                this::restoreSession,
+                board::pauseGame,
+                board::showTryAgainOverlay,
+                this::undoMove,
+                board::settingsGame,
+                board::aboutGame,
+                this::quitGame));
     }
 }
