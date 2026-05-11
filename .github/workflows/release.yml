@@ -1,0 +1,126 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, for example v1.0.0'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '25'
+  JAVA_DISTRIBUTION: 'microsoft'
+  JAVA_ARCHITECTURE: 'x64'
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }} package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macOS
+            package_glob: target/dist/*.dmg
+            package_suffix: macos.dmg
+          - os: windows-latest
+            label: Windows
+            package_glob: target/dist/*.msi
+            package_suffix: windows.msi
+          - os: ubuntu-latest
+            label: Linux
+            package_glob: target/dist/*.deb
+            package_suffix: linux-amd64.deb
+
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Set up OpenJDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          architecture: ${{ env.JAVA_ARCHITECTURE }}
+          cache: maven
+
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes fakeroot
+
+      - name: Install WiX Toolset
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $wixRoots = @(
+            "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin",
+            "${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin"
+          )
+          $wixRoot = $wixRoots | Where-Object { Test-Path (Join-Path $_ 'candle.exe') } | Select-Object -First 1
+          if (-not $wixRoot) {
+            choco install wixtoolset --no-progress --yes
+            $wixRoot = $wixRoots | Where-Object { Test-Path (Join-Path $_ 'candle.exe') } | Select-Object -First 1
+          }
+          if (-not $wixRoot) {
+            throw 'WiX Toolset was not found after installation.'
+          }
+          $wixRoot | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build package
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
+
+      - name: Stage release asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          shopt -s nullglob
+          packages=( ${{ matrix.package_glob }} )
+          if [ "${#packages[@]}" -ne 1 ]; then
+            printf 'Expected exactly one package matching "%s", found %s.\n' '${{ matrix.package_glob }}' "${#packages[@]}"
+            printf '%s\n' "${packages[@]}"
+            exit 1
+          fi
+          cp "${packages[0]}" "release-assets/fx2048-${RELEASE_TAG}-${{ matrix.package_suffix }}"
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fx2048-${{ matrix.label }}
+          path: release-assets/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: fx2048 ${{ env.RELEASE_TAG }}
+          files: release-assets/*
+          generate_release_notes: true

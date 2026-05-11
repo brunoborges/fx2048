@@ -10,6 +10,7 @@
 - Run one Maven test when tests are present: `./mvnw -Dtest=SomeTest#someMethod test`
 - Create a custom runtime: `./mvnw javafx:jlink`
 - Create the platform package: `./mvnw clean package javafx:jlink jpackage:jpackage`
+- Publish packages for all major OSes by pushing a `v*` tag; `.github/workflows/release.yml` creates a GitHub Release with DMG, MSI, and DEB assets.
 
 ## Architecture
 

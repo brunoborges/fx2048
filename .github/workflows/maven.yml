@@ -1,6 +1,11 @@
 name: Java Build
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  workflow_dispatch:
 
 env:
   JAVA_VERSION: '25'
@@ -22,7 +27,7 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
-    - name: Upload Installer
+    - name: Upload package
       uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.dmg
@@ -42,7 +47,7 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
-    - name: Upload Installer
+    - name: Upload package
       uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.msi
@@ -64,7 +69,7 @@ jobs:
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: List packages
       run: ls -l target/dist/
-    - name: Upload Installer
+    - name: Upload package
       uses: actions/upload-artifact@v4
       with:
         name: fx2048-1.0.deb

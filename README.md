@@ -9,7 +9,7 @@ Check down below for a screenshot.
 
 [![JavaFX Build](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml)
 
-You may find binaries available for download, for Windows, Mac and Linux, with Java bundled in. Check successful builds for stable releases.
+Download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). Each package includes the Java runtime needed to run the game.
 
 ## Screenshot
 
@@ -38,6 +38,15 @@ To create a native OS package, run:
 
 ```bash
 ./mvnw clean package javafx:jlink jpackage:jpackage
+```
+
+### Create a GitHub release
+
+Push a version tag to build and publish all platform packages to GitHub Releases:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 ## Feedback / Contributing / Comments
