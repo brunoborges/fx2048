@@ -12,6 +12,7 @@ class GameState {
     final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
     final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
+    final IntegerProperty gameMoveCountProperty = new SimpleIntegerProperty(0);
     final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameAboutProperty = new SimpleBooleanProperty(false);
@@ -19,6 +20,7 @@ class GameState {
     final BooleanProperty gameTryAgainProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameSaveProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameRestoreProperty = new SimpleBooleanProperty(false);
+    final BooleanProperty gameSettingsProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameQuitProperty = new SimpleBooleanProperty(false);
     final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
     final BooleanProperty resetGame = new SimpleBooleanProperty(false);
@@ -32,6 +34,7 @@ class GameState {
         gameTryAgainProperty.set(false);
         gameSaveProperty.set(false);
         gameRestoreProperty.set(false);
+        gameSettingsProperty.set(false);
         gameAboutProperty.set(false);
         gameQuitProperty.set(false);
     }
@@ -39,9 +42,10 @@ class GameState {
     public void clearState() {
         Arrays.asList(clearGame, resetGame, restoreGame, saveGame, layerOnProperty, gameWonProperty, gameOverProperty,
                 gameAboutProperty, gamePauseProperty, gameTryAgainProperty, gameSaveProperty, gameRestoreProperty,
-                gameQuitProperty).forEach(a -> a.set(false));
+                gameSettingsProperty, gameQuitProperty).forEach(a -> a.set(false));
 
         gameScoreProperty.set(0);
+        gameMoveCountProperty.set(0);
 
         clearGame.set(true);
     }

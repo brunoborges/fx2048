@@ -17,8 +17,8 @@ import static io.fxgame.game2048.Direction.*;
  */
 public class GamePane extends StackPane {
 
-    private final GameManager gameManager;
-    private final Bounds gameBounds;
+    private GameManager gameManager;
+    private Bounds gameBounds;
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
@@ -27,19 +27,10 @@ public class GamePane extends StackPane {
     }
 
     public GamePane() {
-        gameManager = new GameManager(UserSettings.LOCAL.getGridSize());
-        gameBounds = gameManager.getLayoutBounds();
-
-        getChildren().add(gameManager);
+        createGameManager(UserSettings.LOCAL.getGridSize());
 
         getStyleClass().addAll("game-root");
-        ChangeListener<Number> resize = (ov, v, v1) -> {
-            double scale = Math.min((getWidth() - UserSettings.MARGIN) / gameBounds.getWidth(),
-                    (getHeight() - UserSettings.MARGIN) / gameBounds.getHeight());
-            gameManager.setScale(scale);
-            gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
-            gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
-        };
+        ChangeListener<Number> resize = (_, _, _) -> resizeGameManager();
         widthProperty().addListener(resize);
         heightProperty().addListener(resize);
 
@@ -47,6 +38,35 @@ public class GamePane extends StackPane {
         addSwipeHandlers();
         setFocusTraversable(true);
         setOnMouseClicked(e -> requestFocus());
+    }
+
+    private void createGameManager(int gridSize) {
+        if (gameManager != null) {
+            gameManager.saveRecord();
+            getChildren().remove(gameManager);
+        }
+
+        gameManager = new GameManager(gridSize, this::changeGridSize);
+        gameBounds = gameManager.getLayoutBounds();
+        getChildren().add(gameManager);
+        resizeGameManager();
+    }
+
+    private void changeGridSize(int gridSize) {
+        createGameManager(gridSize);
+        requestFocus();
+    }
+
+    private void resizeGameManager() {
+        if (gameBounds == null || getWidth() <= 0 || getHeight() <= 0) {
+            return;
+        }
+
+        double scale = Math.min((getWidth() - UserSettings.MARGIN) / gameBounds.getWidth(),
+                (getHeight() - UserSettings.MARGIN) / gameBounds.getHeight());
+        gameManager.setScale(scale);
+        gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
+        gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
     }
 
     private final BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
@@ -59,6 +79,7 @@ public class GamePane extends StackPane {
                 case S -> gameManager.saveSession();
                 case R -> gameManager.restoreSession();
                 case P -> gameManager.pauseGame();
+                case U -> gameManager.undoMove();
                 case Q -> {
                     if (!cmdCtrlKeyPressed.get()) gameManager.quitGame();
                 }

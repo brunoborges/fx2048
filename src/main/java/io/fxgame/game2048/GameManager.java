@@ -1,7 +1,6 @@
 package io.fxgame.game2048;
 
 import javafx.animation.*;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -14,6 +13,7 @@ import javafx.util.Duration;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,9 +37,17 @@ public class GameManager extends Group {
     private final Board board;
     private final GridOperator gridOperator;
     private Animation shakingAnimation;
+    private MoveSnapshot undoSnapshot;
+
+    private record MoveSnapshot(Map<Location, Integer> tiles, int score, int moveCount) {}
 
     public GameManager() {
         this(UserSettings.LOCAL.getGridSize());
+    }
+
+    public GameManager(int gridSize) {
+        this(gridSize, _ -> {
+        });
     }
 
     /**
@@ -51,19 +59,35 @@ public class GameManager extends Group {
      *
      * @param gridSize defines the size of the grid, default 6x6
      */
-    public GameManager(int gridSize) {
+    public GameManager(int gridSize, IntConsumer gridSizeChangeHandler) {
         this.gameGrid = new HashMap<>();
 
         gridOperator = new GridOperator(gridSize);
-        board = new Board(gridOperator);
+        board = new Board(gridOperator, gridSizeChangeHandler);
         board.setToolBar(createToolBar());
         this.getChildren().add(board);
 
-        var trueProperty = new SimpleBooleanProperty(true);
-        board.clearGameProperty().and(trueProperty).addListener((_, _, _) -> initializeGameGrid());
-        board.resetGameProperty().and(trueProperty).addListener((_, _, _) -> startGame());
-        board.restoreGameProperty().and(trueProperty).addListener((_, _, _) -> doRestoreSession());
-        board.saveGameProperty().and(trueProperty).addListener((_, _, _) -> doSaveSession());
+        board.clearGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                undoSnapshot = null;
+                initializeGameGrid();
+            }
+        });
+        board.resetGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                startGame();
+            }
+        });
+        board.restoreGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                doRestoreSession();
+            }
+        });
+        board.saveGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                doSaveSession();
+            }
+        });
 
         initializeGameGrid();
         startGame();
@@ -132,6 +156,7 @@ public class GameManager extends Group {
 
         board.setPoints(0);
         mergedToBeRemoved.clear();
+        var previousSnapshot = createMoveSnapshot();
         var parallelTransition = new ParallelTransition();
         gridOperator.sortGrid(direction);
         final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
@@ -176,21 +201,26 @@ public class GameManager extends Group {
             return result.get();
         });
 
+        if (tilesWereMoved > 0) {
+            undoSnapshot = previousSnapshot;
+            board.incrementMoveCount();
+        }
+
         board.animateScore();
         if (parallelTransition.getChildren().size() > 0) {
             parallelTransition.setOnFinished(_ -> {
                 board.removeTiles(mergedToBeRemoved);
                 // reset merged after each movement
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
+                synchronized (gameGrid) {
+                    movingTiles = false;
+                }
 
                 var randomAvailableLocation = findRandomAvailableLocation();
                 if (randomAvailableLocation.isEmpty() && mergeMovementsAvailable() == 0) {
                     // game is over if there are no more moves available
                     board.setGameOver(true);
                 } else if (randomAvailableLocation.isPresent() && tilesWereMoved > 0) {
-                    synchronized (gameGrid) {
-                        movingTiles = false;
-                    }
                     addAndAnimateRandomTile(randomAvailableLocation.get());
                 }
             });
@@ -218,6 +248,31 @@ public class GameManager extends Group {
 
     private boolean shakingAnimationPlaying = false;
     private boolean shakingXYState = false;
+
+    private MoveSnapshot createMoveSnapshot() {
+        var tiles = new HashMap<Location, Integer>();
+        gameGrid.forEach((location, tile) -> tiles.put(location, tile == null ? 0 : tile.getValue()));
+        return new MoveSnapshot(tiles, board.getScore(), board.getMoveCount());
+    }
+
+    private void restoreMoveSnapshot(MoveSnapshot snapshot) {
+        gameGrid.clear();
+        snapshot.tiles().forEach((location, value) -> {
+            if (value == 0) {
+                gameGrid.put(location, null);
+            } else {
+                var tile = Tile.newTile(value);
+                tile.setLocation(location);
+                gameGrid.put(location, tile);
+            }
+        });
+        board.clearTiles();
+        board.setPoints(0);
+        board.setScore(snapshot.score());
+        board.setMoveCount(snapshot.moveCount());
+        redrawTilesInGameGrid();
+        undoSnapshot = null;
+    }
 
     /**
      * optionalTile allows using tiles from the map at some location, whether they
@@ -403,6 +458,18 @@ public class GameManager extends Group {
         }
     }
 
+    public void undoMove() {
+        synchronized (gameGrid) {
+            if (movingTiles || undoSnapshot == null) {
+                return;
+            }
+        }
+
+        if (!board.isLayerOn().get()) {
+            restoreMoveSnapshot(undoSnapshot);
+        }
+    }
+
     /**
      * Set gameManager scale to adjust overall game size
      *
@@ -451,9 +518,9 @@ public class GameManager extends Group {
      * Restore the game from a properties file, without confirmation
      */
     private void doRestoreSession() {
-        initializeGameGrid();
         if (board.restoreSession(gameGrid)) {
             redrawTilesInGameGrid();
+            undoSnapshot = null;
         }
     }
 
@@ -469,10 +536,12 @@ public class GameManager extends Group {
         var btItem2 = createButtonItem("mRestore", "Restore Session", _ -> restoreSession());
         var btItem3 = createButtonItem("mPause", "Pause Game", t -> board.pauseGame());
         var btItem4 = createButtonItem("mReplay", "Try Again", t -> board.showTryAgainOverlay());
-        var btItem5 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
-        var btItem6 = createButtonItem("mQuit", "Quit Game", t -> quitGame());
+        var btItem5 = createButtonItem("mUndo", "Undo Move", t -> undoMove());
+        var btItem6 = createButtonItem("mSettings", "Settings", t -> board.settingsGame());
+        var btItem7 = createButtonItem("mInfo", "About the Game", t -> board.aboutGame());
+        var btItem8 = createButtonItem("mQuit", "Quit Game", t -> quitGame());
 
-        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6);
+        var toolbar = new HBox(btItem1, btItem2, btItem3, btItem4, btItem5, btItem6, btItem7, btItem8);
         toolbar.setAlignment(Pos.CENTER);
         toolbar.setPadding(new Insets(10.0));
         return toolbar;

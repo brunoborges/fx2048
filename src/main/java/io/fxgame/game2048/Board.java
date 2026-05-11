@@ -5,6 +5,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -21,6 +23,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -61,6 +64,7 @@ public class Board extends Pane {
     private final VBox vScore = new VBox(-5);
     private final Label lblScore = new Label("0");
     private final Label lblBest = new Label("0");
+    private final Label lblMoves = new Label("0");
     private final Label lblPoints = new Label();
 
     private final HBox overlay = new HBox();
@@ -75,7 +79,9 @@ public class Board extends Pane {
     private final Button bContinueNo = new Button("No, keep going");
     private final Button bSave = new Button("Save");
     private final Button bRestore = new Button("Restore");
+    private final Button bApplySettings = new Button("Apply");
     private final Button bQuit = new Button("Quit");
+    private final ChoiceBox<Integer> gridSizeChoice = new ChoiceBox<>();
 
     private final HBox hToolbar = new HBox();
 
@@ -84,9 +90,16 @@ public class Board extends Pane {
     private final int gridDimension;
     private final GridOperator gridOperator;
     private final SessionManager sessionManager;
+    private final IntConsumer gridSizeChangeHandler;
 
     public Board(GridOperator grid) {
+        this(grid, _ -> {
+        });
+    }
+
+    public Board(GridOperator grid, IntConsumer gridSizeChangeHandler) {
         this.gridOperator = grid;
+        this.gridSizeChangeHandler = gridSizeChangeHandler;
         gridDimension = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
         sessionManager = new SessionManager(gridOperator);
 
@@ -129,7 +142,18 @@ public class Board extends Pane {
         lblBest.getStyleClass().addAll("game-label", "game-score");
         lblBest.textProperty().bind(state.gameBestProperty.asString());
         vRecord.getChildren().addAll(lblTitBest, lblBest);
-        hScores.getChildren().addAll(vScore, vRecord);
+
+        var vMoves = new VBox(-5);
+        vMoves.setAlignment(Pos.CENTER);
+        vMoves.getStyleClass().add("game-vbox");
+
+        var lblTitMoves = new Label("MOVES");
+        lblTitMoves.getStyleClass().addAll("game-label", "game-titScore");
+        lblMoves.getStyleClass().addAll("game-label", "game-score");
+        lblMoves.textProperty().bind(state.gameMoveCountProperty.asString());
+        vMoves.getChildren().addAll(lblTitMoves, lblMoves);
+
+        hScores.getChildren().addAll(vScore, vRecord, vMoves);
 
         var vFill = new VBox();
         VBox.setVgrow(vFill, Priority.ALWAYS);
@@ -216,7 +240,7 @@ public class Board extends Pane {
 
     protected void setToolBar(HBox toolbar) {
         toolbar.disableProperty().bind(state.layerOnProperty);
-        toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 10));
+        toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 16));
         hToolbar.getChildren().add(toolbar);
     }
 
@@ -238,6 +262,31 @@ public class Board extends Pane {
 
     private void exitGame() {
         Platform.exit();
+    }
+
+    private void applySettings() {
+        var selectedGridSize = gridSizeChoice.getValue();
+        UserSettings.LOCAL.setGridSize(selectedGridSize);
+
+        if (selectedGridSize != gridOperator.getGridSize()) {
+            gridSizeChangeHandler.accept(selectedGridSize);
+        } else {
+            keepGoing();
+        }
+    }
+
+    private void showMessageOverlay(String message, String warning) {
+        timer.stop();
+        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
+        lOvrText.setText(message);
+        lOvrText.getStyleClass().setAll("game-label", "game-lblPause");
+        lOvrSubText.setText(warning);
+        lOvrSubText.getStyleClass().setAll("game-label", "game-lblWarning");
+        txtOverlay.getChildren().setAll(lOvrText, lOvrSubText);
+        buttonsOverlay.getChildren().setAll(bContinue);
+        getChildren().removeAll(overlay, buttonsOverlay);
+        getChildren().addAll(overlay, buttonsOverlay);
+        state.layerOnProperty.set(true);
     }
 
     private final Overlay wonListener = new Overlay("You win!", "", bContinue, bTry, "game-overlay-won", "game-lblWon");
@@ -299,6 +348,7 @@ public class Board extends Pane {
         buttonsOverlay.setAlignment(Pos.CENTER);
         buttonsOverlay.setTranslateY(TOP_HEIGHT + GAP_HEIGHT + (double) gridDimension / 2);
         buttonsOverlay.setMinSize(gridDimension, (double) gridDimension / 2);
+        buttonsOverlay.setPickOnBounds(false);
         buttonsOverlay.setSpacing(10);
 
         bTry.getStyleClass().add("game-button");
@@ -316,8 +366,18 @@ public class Board extends Pane {
         bRestore.getStyleClass().add("game-button");
         bRestore.setOnAction(_ -> state.restoreGame.set(true));
 
+        bApplySettings.getStyleClass().add("game-button");
+        bApplySettings.setOnAction(_ -> applySettings());
+
         bQuit.getStyleClass().add("game-button");
         bQuit.setOnAction(_ -> exitGame());
+
+        gridSizeChoice.getItems().setAll(IntStream
+                .rangeClosed(GridOperator.MIN_GRID_SIZE, GridOperator.MAX_GRID_SIZE)
+                .boxed()
+                .toList());
+        gridSizeChoice.setValue(gridOperator.getGridSize());
+        gridSizeChoice.getStyleClass().add("game-settings-choice");
 
         state.gameWonProperty.addListener(wonListener);
         state.gameOverProperty
@@ -330,6 +390,11 @@ public class Board extends Pane {
                 "game-overlay-pause", "game-lblPause"));
         state.gameRestoreProperty.addListener(new Overlay("Restore?", "Current game will be deleted", bRestore, bContinueNo,
                 "game-overlay-pause", "game-lblPause"));
+        state.gameSettingsProperty.addListener((_, _, newValue) -> {
+            if (newValue) {
+                showSettingsOverlay();
+            }
+        });
         state.gameAboutProperty.addListener((_, _, newValue) -> {
             if (newValue) {
                 timer.stop();
@@ -473,6 +538,10 @@ public class Board extends Pane {
         gridGroup.getChildren().add(tile);
     }
 
+    public void clearTiles() {
+        gridGroup.getChildren().removeIf(c -> c instanceof Tile);
+    }
+
     public Tile addRandomTile(Location randomLocation) {
         var tile = Tile.newRandomTile();
         tile.setLocation(randomLocation);
@@ -501,6 +570,26 @@ public class Board extends Pane {
         state.gameMovePoints.set(points);
     }
 
+    public int getScore() {
+        return state.gameScoreProperty.get();
+    }
+
+    public void setScore(int score) {
+        state.gameScoreProperty.set(score);
+    }
+
+    public int getMoveCount() {
+        return state.gameMoveCountProperty.get();
+    }
+
+    public void setMoveCount(int moveCount) {
+        state.gameMoveCountProperty.set(moveCount);
+    }
+
+    public void incrementMoveCount() {
+        state.gameMoveCountProperty.set(state.gameMoveCountProperty.get() + 1);
+    }
+
     public void addPoints(int points) {
         state.gameMovePoints.set(state.gameMovePoints.get() + points);
         state.gameScoreProperty.set(state.gameScoreProperty.get() + points);
@@ -526,6 +615,37 @@ public class Board extends Pane {
         if (!state.gameAboutProperty.get()) {
             state.gameAboutProperty.set(true);
         }
+    }
+
+    public void settingsGame() {
+        if (!state.gameSettingsProperty.get()) {
+            state.gameSettingsProperty.set(true);
+        }
+    }
+
+    private void showSettingsOverlay() {
+        timer.stop();
+        overlay.getStyleClass().setAll("game-overlay", "game-overlay-pause");
+
+        var title = new Label("Settings");
+        title.getStyleClass().setAll("game-label", "game-lblPause");
+
+        var warning = new Label("Changing grid size starts a new game");
+        warning.getStyleClass().setAll("game-label", "game-lblWarning");
+
+        var gridSizeLabel = new Label("Grid size");
+        gridSizeLabel.getStyleClass().setAll("game-label", "game-settings-label");
+        gridSizeChoice.setValue(gridOperator.getGridSize());
+
+        var gridSizeRow = new HBox(15, gridSizeLabel, gridSizeChoice);
+        gridSizeRow.setAlignment(Pos.CENTER);
+        gridSizeRow.getStyleClass().add("game-settings-row");
+
+        txtOverlay.getChildren().setAll(title, warning, gridSizeRow);
+        buttonsOverlay.getChildren().setAll(bApplySettings, bContinueNo);
+        this.getChildren().removeAll(overlay, buttonsOverlay);
+        this.getChildren().addAll(overlay, buttonsOverlay);
+        state.layerOnProperty.set(true);
     }
 
     public void quitGame() {
@@ -567,9 +687,12 @@ public class Board extends Pane {
      */
     public void saveSession(Map<Location, Tile> gameGrid) {
         state.saveGame.set(false);
-        sessionManager.saveSession(gameGrid, state.gameScoreProperty.getValue(),
-                LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay());
-        keepGoing();
+        if (sessionManager.saveSession(gameGrid, state.gameScoreProperty.getValue(),
+                LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay(), state.gameMoveCountProperty.getValue())) {
+            keepGoing();
+        } else {
+            showMessageOverlay("Save failed", "Session could not be written");
+        }
     }
 
     public void restoreSession() {
@@ -583,30 +706,30 @@ public class Board extends Pane {
      */
     public boolean restoreSession(Map<Location, Tile> gameGrid) {
         state.restoreGame.set(false);
+        var restoredSession = sessionManager.restoreSession();
+        if (restoredSession.isEmpty()) {
+            showMessageOverlay("Restore failed", "No valid saved game found");
+            return false;
+        }
+
         doClearGame();
         timer.stop();
-        var sTime = new SimpleStringProperty("");
-        int score = sessionManager.restoreSession(gameGrid, sTime);
-        if (score >= 0) {
-            state.gameScoreProperty.set(score);
-            // check tiles>=2048
-            state.gameWonProperty.set(false);
-            gameGrid.forEach((_, t) -> {
-                if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
-                    state.gameWonProperty.removeListener(wonListener);
-                    state.gameWonProperty.set(true);
-                    state.gameWonProperty.addListener(wonListener);
-                }
-            });
-            if (!sTime.get().isEmpty()) {
-                time = LocalTime.now().minusNanos(Long.parseLong(sTime.get()));
+        gameGrid.clear();
+        gameGrid.putAll(restoredSession.get().gameGrid());
+        state.gameScoreProperty.set(restoredSession.get().score());
+        state.gameMoveCountProperty.set(restoredSession.get().moveCount());
+        // check tiles>=2048
+        state.gameWonProperty.set(false);
+        gameGrid.forEach((_, t) -> {
+            if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
+                state.gameWonProperty.removeListener(wonListener);
+                state.gameWonProperty.set(true);
+                state.gameWonProperty.addListener(wonListener);
             }
-            timer.play();
-            return true;
-        }
-        // not session found, restart again
-        doResetGame();
-        return false;
+        });
+        time = LocalTime.now().minusNanos(restoredSession.get().time());
+        timer.play();
+        return true;
     }
 
     public void saveRecord() {
