@@ -529,9 +529,9 @@ public class Board extends Pane {
         gridGroup.getChildren().removeIf(c -> c instanceof Tile);
     }
 
-    public Tile addRandomTile(Location randomLocation) {
-        var tile = Tile.newRandomTile();
-        tile.setLocation(randomLocation);
+    public Tile addAnimatedTile(Location location, int value) {
+        var tile = Tile.newTile(value);
+        tile.setLocation(location);
         positionTile(tile);
         tile.setScaleX(0);
         tile.setScaleY(0);

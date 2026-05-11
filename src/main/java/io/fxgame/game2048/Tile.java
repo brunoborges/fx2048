@@ -3,7 +3,6 @@ package io.fxgame.game2048;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import java.util.Optional;
-import java.util.Random;
 
 /**
  * @author Bruno Borges
@@ -13,13 +12,6 @@ public class Tile extends Label {
     private Integer value;
     private Location location;
     private Boolean merged;
-
-    private static final Random random = new Random();
-
-    public static Tile newRandomTile() {
-        int value = random.nextDouble() < 0.9 ? 2 : 4;
-        return new Tile(value);
-    }
 
     public static Tile newTile(int value) {
         if (value % 2 != 0) {
