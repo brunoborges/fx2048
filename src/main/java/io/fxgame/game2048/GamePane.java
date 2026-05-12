@@ -4,6 +4,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
@@ -17,8 +18,11 @@ import static io.fxgame.game2048.Direction.*;
  */
 public class GamePane extends StackPane {
 
+    private static final double STATUS_BAR_HEIGHT = 20;
+
     private GameManager gameManager;
     private Bounds gameBounds;
+    private final SystemStatusBar statusBar = new SystemStatusBar();
 
     static {
         // Downloaded from https://01.org/clear-sans/blogs
@@ -28,6 +32,7 @@ public class GamePane extends StackPane {
 
     public GamePane() {
         createGameManager(UserSettings.LOCAL.getGridSize());
+        createStatusBar();
 
         getStyleClass().addAll("game-root");
         ChangeListener<Number> resize = (_, _, _) -> resizeGameManager();
@@ -50,7 +55,18 @@ public class GamePane extends StackPane {
         gameManager = new GameManager(gridSize, this::changeGridSize);
         gameBounds = gameManager.getLayoutBounds();
         getChildren().add(gameManager);
+        statusBar.toFront();
         resizeGameManager();
+    }
+
+    private void createStatusBar() {
+        statusBar.setMinHeight(STATUS_BAR_HEIGHT);
+        statusBar.setPrefHeight(STATUS_BAR_HEIGHT);
+        statusBar.setMaxHeight(STATUS_BAR_HEIGHT);
+        statusBar.setMaxWidth(Double.MAX_VALUE);
+        statusBar.prefWidthProperty().bind(widthProperty());
+        StackPane.setAlignment(statusBar, Pos.BOTTOM_CENTER);
+        getChildren().add(statusBar);
     }
 
     private void changeGridSize(int gridSize) {
@@ -63,11 +79,12 @@ public class GamePane extends StackPane {
             return;
         }
 
+        var availableHeight = Math.max(1, getHeight() - UserSettings.MARGIN - STATUS_BAR_HEIGHT);
         double scale = Math.min((getWidth() - UserSettings.MARGIN) / gameBounds.getWidth(),
-                (getHeight() - UserSettings.MARGIN) / gameBounds.getHeight());
+                availableHeight / gameBounds.getHeight());
         gameManager.setScale(scale);
         gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
-        gameManager.setLayoutY((getHeight() - gameBounds.getHeight()) / 2d);
+        gameManager.setLayoutY((getHeight() - STATUS_BAR_HEIGHT - gameBounds.getHeight()) / 2d);
     }
 
     private final BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
@@ -116,6 +133,12 @@ public class GamePane extends StackPane {
 
     public GameManager getGameManager() {
         return gameManager;
+    }
+
+    public void dispose() {
+        gameManager.saveRecord();
+        gameManager.dispose();
+        statusBar.stop();
     }
 
 }

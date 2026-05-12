@@ -24,4 +24,11 @@ class SystemStatusBarTest {
         assertEquals("Memory 128 MB / 512 MB",
                 SystemStatusBar.formatMemoryUsage(128L * 1024L * 1024L, 512L * 1024L * 1024L));
     }
+
+    @Test
+    void formatsGarbageCollectionCount() {
+        assertEquals("GC --", SystemStatusBar.formatGarbageCollectionCount(-1));
+        assertEquals("GC 0", SystemStatusBar.formatGarbageCollectionCount(0));
+        assertEquals("GC 42", SystemStatusBar.formatGarbageCollectionCount(42));
+    }
 }
