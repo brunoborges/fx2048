@@ -20,6 +20,8 @@
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
+        <runtime.max.heap>-Xmx64m</runtime.max.heap>
+        <runtime.garbage.collector>-XX:+UseZGC</runtime.garbage.collector>
     </properties>
 
     <dependencies>
@@ -90,6 +92,10 @@
                     <stripDebug>true</stripDebug>
                     <jlinkImageName>fx2048</jlinkImageName>
                     <jlinkZipName>game2048</jlinkZipName>
+                    <options>
+                        <option>${runtime.max.heap}</option>
+                        <option>${runtime.garbage.collector}</option>
+                    </options>
                 </configuration>
             </plugin>
 
@@ -122,6 +128,8 @@
                     <runtimeImage>target/fx2048</runtimeImage>
                     <javaOptions>
                         <option>-Dfile.encoding=UTF-8</option>
+                        <option>${runtime.max.heap}</option>
+                        <option>${runtime.garbage.collector}</option>
                     </javaOptions>
                     <linuxShortcut>true</linuxShortcut>
                     <linuxMenuGroup>Games</linuxMenuGroup>

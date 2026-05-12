@@ -23,6 +23,8 @@ The project includes a Maven wrapper (`mvnw`) that ensures everyone uses the sam
 ./mvnw javafx:run
 ```
 
+The Maven and packaged launchers default to `-Xmx64m -XX:+UseZGC`.
+
 #### Package the application
 ```bash
 ./mvnw clean package
