@@ -58,6 +58,9 @@ public enum UserSettings {
         } catch (FileNotFoundException e) {
             Logger.getLogger(UserSettings.class.getName()).log(Level.INFO, "Properties file not found: {0}", fileName);
             return false;
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(UserSettings.class.getName()).log(Level.WARNING, "Invalid properties file: {0}", fileName);
+            return false;
         } catch (IOException ex) {
             Logger.getLogger(UserSettings.class.getName()).log(Level.SEVERE, null, ex);
             return false;
