@@ -6,7 +6,7 @@
 
     <groupId>io.fxgame</groupId>
     <artifactId>fx2048</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>fx2048</name>
