@@ -1,22 +1,16 @@
 package io.fxgame.game2048;
 
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -46,10 +40,7 @@ public class Board extends Pane {
 
     private final GameState state = new GameState();
 
-    private LocalTime time;
-    private Timeline timer;
-    private final StringProperty clock = new SimpleStringProperty("00:00:00");
-    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+    private final GameTimer gameTimer = new GameTimer();
 
     // User Interface controls
     private final VBox vGame = new VBox(0);
@@ -161,9 +152,7 @@ public class Board extends Pane {
         hTime.setMinSize(gridDimension, GAP_HEIGHT);
         hTime.setAlignment(Pos.BOTTOM_RIGHT);
         lblTime.getStyleClass().addAll("game-label", "game-time");
-        lblTime.textProperty().bind(clock);
-        timer = new Timeline(new KeyFrame(Duration.ZERO, _ -> clock.set(LocalTime.now().minusNanos(time.toNanoOfDay()).format(fmt))), new KeyFrame(Duration.seconds(1)));
-        timer.setCycleCount(Animation.INDEFINITE);
+        lblTime.textProperty().bind(gameTimer.clockProperty());
         hTime.getChildren().add(lblTime);
 
         vGame.getChildren().add(hTime);
@@ -248,7 +237,7 @@ public class Board extends Pane {
 
     private void keepGoing() {
         state.keepGoing();
-        timer.play();
+        gameTimer.resume();
     }
 
     private void exitGame() {
@@ -293,7 +282,7 @@ public class Board extends Pane {
                 return;
             }
 
-            timer.stop();
+            gameTimer.pause();
             overlayPanel.showMessage(style1, message, warning, style2, leftButton, rightButton);
 
             if (!state.layerOnProperty.get()) {
@@ -305,7 +294,7 @@ public class Board extends Pane {
 
     private void showMessageOverlay(String message, String warning, String overlayStyle, String messageStyle,
             Button leftButton, Button rightButton) {
-        timer.stop();
+        gameTimer.pause();
         overlayPanel.showMessage(overlayStyle, message, warning, messageStyle, leftButton, rightButton);
         showOverlay(leftButton);
     }
@@ -405,7 +394,7 @@ public class Board extends Pane {
     }
 
     private void showAboutOverlay() {
-        timer.stop();
+        gameTimer.pause();
         overlayPanel.showContent("game-overlay-quit", bContinue, null, new AboutContent(gridDimension));
         showOverlay(bContinue);
     }
@@ -460,9 +449,7 @@ public class Board extends Pane {
 
     public void startGame() {
         restoreRecord();
-
-        time = LocalTime.now();
-        timer.playFromStart();
+        gameTimer.startNew();
     }
 
     public void setPoints(int points) {
@@ -531,7 +518,7 @@ public class Board extends Pane {
     }
 
     private void showSettingsOverlay() {
-        timer.stop();
+        gameTimer.pause();
 
         var title = new Label("Settings");
         title.getStyleClass().setAll("game-label", "game-lblPause");
@@ -591,7 +578,7 @@ public class Board extends Pane {
     public void saveSession(Map<Location, Integer> gridValues) {
         state.saveGame.set(false);
         if (sessionManager.saveSession(gridValues, state.gameScoreProperty.getValue(),
-                LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay(), state.gameMoveCountProperty.getValue())) {
+                gameTimer.elapsedNanos(), state.gameMoveCountProperty.getValue())) {
             keepGoing();
         } else {
             showMessageOverlay("Save failed", "Session could not be written");
@@ -616,7 +603,7 @@ public class Board extends Pane {
         }
 
         doClearGame();
-        timer.stop();
+        gameTimer.pause();
         gridValues.clear();
         gridValues.putAll(restoredSession.get().gridValues());
         state.gameScoreProperty.set(restoredSession.get().score());
@@ -630,8 +617,7 @@ public class Board extends Pane {
                 state.gameWonProperty.addListener(wonListener);
             }
         });
-        time = LocalTime.now().minusNanos(restoredSession.get().time());
-        timer.play();
+        gameTimer.restore(restoredSession.get().time());
         return true;
     }
 
