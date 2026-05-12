@@ -264,16 +264,63 @@ jobs:
         if: runner.os != 'macOS'
         run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
 
-      - name: Build signed macOS package
+      - name: Build signed macOS app image and package
         if: runner.os == 'macOS'
         shell: bash
         env:
           MACOS_SIGNING_KEY_USER_NAME: ${{ secrets.MACOS_SIGNING_KEY_USER_NAME }}
         run: |
-          ./mvnw --batch-mode --no-transfer-progress -DskipTests -Pmac-signing \
-            -Dmac.signing.keychain="${MACOS_KEYCHAIN_PATH}" \
-            -Dmac.signing.key.user.name="${MACOS_SIGNING_KEY_USER_NAME}" \
-            package javafx:jlink jpackage:jpackage
+          set -euo pipefail
+
+          ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink
+
+          runtime_max_heap="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=runtime.max.heap -q -DforceStdout)"
+          runtime_garbage_collector="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=runtime.garbage.collector -q -DforceStdout)"
+          app_image_dir="target/app-image"
+          app_image="${app_image_dir}/fx2048.app"
+
+          rm -rf "${app_image_dir}" target/dist
+          mkdir -p "${app_image_dir}" target/dist
+
+          jpackage \
+            --type app-image \
+            --dest "${app_image_dir}" \
+            --name fx2048 \
+            --app-version "${PROJECT_VERSION}" \
+            --vendor "Bruno Borges" \
+            --resource-dir src/jpackage \
+            --module fxgame/io.fxgame.game2048.AppLauncher \
+            --runtime-image target/fx2048 \
+            --java-options -Dfile.encoding=UTF-8 \
+            --java-options "${runtime_max_heap}" \
+            --java-options "${runtime_garbage_collector}" \
+            --mac-package-identifier fx2048 \
+            --mac-package-name fx2048 \
+            --icon src/main/resources/io/fxgame/game2048/fx2048-logo.icns \
+            --mac-sign \
+            --mac-signing-keychain "${MACOS_KEYCHAIN_PATH}" \
+            --mac-signing-key-user-name "${MACOS_SIGNING_KEY_USER_NAME}" \
+            --mac-entitlements src/jpackage/fx2048.entitlements
+
+          codesign --force --timestamp --options runtime \
+            --entitlements src/jpackage/fx2048.entitlements \
+            --keychain "${MACOS_KEYCHAIN_PATH}" \
+            --sign "${MACOS_SIGNING_KEY_USER_NAME}" \
+            "${app_image}"
+          codesign --verify --deep --strict --verbose=4 "${app_image}"
+          codesign -d --entitlements :- "${app_image}" 2>&1 | tee /tmp/fx2048-entitlements.plist
+          grep -q 'com.apple.security.cs.allow-jit' /tmp/fx2048-entitlements.plist
+
+          jpackage \
+            --type dmg \
+            --dest target/dist \
+            --name fx2048 \
+            --app-version "${PROJECT_VERSION}" \
+            --vendor "Bruno Borges" \
+            --resource-dir src/jpackage \
+            --app-image "${app_image}" \
+            --mac-package-identifier fx2048 \
+            --mac-package-name fx2048
 
       - name: Sign macOS DMG package
         if: runner.os == 'macOS'
