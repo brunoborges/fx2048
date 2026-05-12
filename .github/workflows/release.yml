@@ -310,6 +310,7 @@ jobs:
           codesign --verify --deep --strict --verbose=4 "${app_image}"
           codesign -d --entitlements :- "${app_image}" 2>&1 | tee /tmp/fx2048-entitlements.plist
           grep -q 'com.apple.security.cs.allow-jit' /tmp/fx2048-entitlements.plist
+          grep -q 'com.apple.security.cs.disable-library-validation' /tmp/fx2048-entitlements.plist
 
           jpackage \
             --type dmg \
