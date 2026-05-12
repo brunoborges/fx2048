@@ -635,4 +635,8 @@ public class Board extends Pane {
         gridGroup.getChildren().removeAll(mergedToBeRemoved);
     }
 
+    public void dispose() {
+        gameTimer.pause();
+    }
+
 }

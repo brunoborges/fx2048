@@ -24,6 +24,8 @@ Maven is the build system used by CI; use the included Maven wrapper:
 ./mvnw javafx:run
 ```
 
+The application is launched with a maximum 32 MB heap and ZGC by default.
+
 ### Create a distribution to your operating system (Windows, Linux, or Mac OS)
 
 You can create a ZIP file that bundles a custom runtime and the game, or create a native OS package. On macOS, the package is a DMG that opens in Finder for drag-and-drop installation.
