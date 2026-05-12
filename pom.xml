@@ -237,6 +237,7 @@
                             <macSign>true</macSign>
                             <macSigningKeychain>${mac.signing.keychain}</macSigningKeychain>
                             <macSigningKeyUserName>${mac.signing.key.user.name}</macSigningKeyUserName>
+                            <macEntitlements>src/jpackage/fx2048.entitlements</macEntitlements>
                         </configuration>
                     </plugin>
                 </plugins>
