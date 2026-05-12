@@ -28,7 +28,7 @@ jobs:
     - name: Build with Maven
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: Upload package
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: fx2048-macos
         path: target/dist/*.dmg
@@ -48,7 +48,7 @@ jobs:
     - name: Build with Maven
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: Upload package
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: fx2048-windows
         path: target/dist/*.msi
@@ -70,7 +70,7 @@ jobs:
     - name: List packages
       run: ls -l target/dist/
     - name: Upload package
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: fx2048-linux
         path: target/dist/*.deb
