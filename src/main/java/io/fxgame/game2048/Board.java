@@ -588,9 +588,9 @@ public class Board extends Pane {
     /*
      * Once we have confirmation
      */
-    public void saveSession(Map<Location, Tile> gameGrid) {
+    public void saveSession(Map<Location, Integer> gridValues) {
         state.saveGame.set(false);
-        if (sessionManager.saveSession(gameGrid, state.gameScoreProperty.getValue(),
+        if (sessionManager.saveSession(gridValues, state.gameScoreProperty.getValue(),
                 LocalTime.now().minusNanos(time.toNanoOfDay()).toNanoOfDay(), state.gameMoveCountProperty.getValue())) {
             keepGoing();
         } else {
@@ -607,7 +607,7 @@ public class Board extends Pane {
     /*
      * Once we have confirmation
      */
-    public boolean restoreSession(Map<Location, Tile> gameGrid) {
+    public boolean restoreSession(Map<Location, Integer> gridValues) {
         state.restoreGame.set(false);
         var restoredSession = sessionManager.restoreSession();
         if (restoredSession.isEmpty()) {
@@ -617,14 +617,14 @@ public class Board extends Pane {
 
         doClearGame();
         timer.stop();
-        gameGrid.clear();
-        gameGrid.putAll(restoredSession.get().gameGrid());
+        gridValues.clear();
+        gridValues.putAll(restoredSession.get().gridValues());
         state.gameScoreProperty.set(restoredSession.get().score());
         state.gameMoveCountProperty.set(restoredSession.get().moveCount());
         // check tiles>=2048
         state.gameWonProperty.set(false);
-        gameGrid.forEach((_, t) -> {
-            if (t != null && t.getValue() >= GameManager.FINAL_VALUE_TO_WIN) {
+        gridValues.forEach((_, value) -> {
+            if (value >= GameManager.FINAL_VALUE_TO_WIN) {
                 state.gameWonProperty.removeListener(wonListener);
                 state.gameWonProperty.set(true);
                 state.gameWonProperty.addListener(wonListener);

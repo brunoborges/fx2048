@@ -18,18 +18,18 @@ public class SessionManager {
     private final Properties props = new Properties();
     private final GridOperator gridOperator;
 
-    protected record SessionData(Map<Location, Tile> gameGrid, int score, long time, int moveCount) {}
+    protected record SessionData(Map<Location, Integer> gridValues, int score, long time, int moveCount) {}
 
     public SessionManager(GridOperator gridOperator) {
         this.gridOperator = gridOperator;
         this.propertiesFilename = "game2048_" + gridOperator.getGridSize() + ".properties";
     }
 
-    protected boolean saveSession(Map<Location, Tile> gameGrid, Integer score, Long time, Integer moveCount) {
+    protected boolean saveSession(Map<Location, Integer> gridValues, Integer score, Long time, Integer moveCount) {
         props.clear();
         gridOperator.traverseGrid((x, y) -> {
-            var tile = gameGrid.get(new Location(x, y));
-            props.setProperty("Location_" + x + "_" + y, tile != null ? tile.getValue().toString() : "0");
+            var tileValue = gridValues.get(new Location(x, y));
+            props.setProperty("Location_" + x + "_" + y, Integer.toString(tileValue == null ? 0 : tileValue));
             return 0;
         });
         props.setProperty("score", score.toString());
@@ -45,17 +45,15 @@ public class SessionManager {
         }
 
         try {
-            var restoredGrid = new HashMap<Location, Tile>();
+            var restoredValues = new HashMap<Location, Integer>();
             gridOperator.traverseGrid((x, y) -> {
                 var val = requireProperty("Location_" + x + "_" + y);
                 var tileValue = Integer.parseInt(val);
                 var location = new Location(x, y);
-                restoredGrid.put(location, null);
+                restoredValues.put(location, 0);
                 if (tileValue != 0) {
                     validateTileValue(tileValue);
-                    var tile = Tile.newTile(tileValue);
-                    tile.setLocation(location);
-                    restoredGrid.put(location, tile);
+                    restoredValues.put(location, tileValue);
                 }
                 return 0;
             });
@@ -64,7 +62,7 @@ public class SessionManager {
             var time = parseNonNegativeLong(requireProperty("time"), "time");
             var moveCount = parseNonNegativeInt(props.getProperty("moves", "0"), "moves");
 
-            return Optional.of(new SessionData(restoredGrid, score, time, moveCount));
+            return Optional.of(new SessionData(restoredValues, score, time, moveCount));
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Invalid saved session: " + propertiesFilename, e);
             return Optional.empty();
