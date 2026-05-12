@@ -22,6 +22,7 @@ public class Game2048 extends Application {
     @Override
     public void stop() {
         gamePane.getGameManager().saveRecord();
+        gamePane.getGameManager().dispose();
     }
 
     @Override

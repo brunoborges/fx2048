@@ -23,6 +23,19 @@
     -fx-font-size: 14px;
     -fx-text-fill: #bbada0;
 }
+.game-status-bar {
+    -fx-background-color: #bbada0;
+    -fx-background-radius: 6;
+    -fx-border-color: #bbada0;
+    -fx-border-radius: 6;
+    -fx-border-width: 2;
+    -fx-padding: 4 10 4 10;
+    -fx-spacing: 18;
+}
+.game-status-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #f9f6f2;
+}
 .game-backGrid {
     -fx-background-color: #bbada0;
     -fx-border-color: #bbada0; 

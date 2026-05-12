@@ -37,6 +37,7 @@ public class Board extends Pane {
     private static final int TOP_HEIGHT = 92;
     private static final int GAP_HEIGHT = 50;
     private static final int TOOLBAR_HEIGHT = 80;
+    private static final int STATUS_BAR_HEIGHT = 32;
 
     private final GameState state = new GameState();
 
@@ -65,6 +66,7 @@ public class Board extends Pane {
     private final ChoiceBox<Integer> gridSizeChoice = new ChoiceBox<>();
 
     private final HBox hToolbar = new HBox();
+    private final SystemStatusBar statusBar = new SystemStatusBar();
 
     private final Label lblTime = new Label();
 
@@ -88,6 +90,7 @@ public class Board extends Pane {
         createScore();
         createGrid();
         createToolBar();
+        createStatusBar();
         initGameProperties();
     }
 
@@ -216,6 +219,13 @@ public class Board extends Pane {
 
         vGame.getChildren().add(hPadding);
         vGame.getChildren().add(hToolbar);
+    }
+
+    private void createStatusBar() {
+        statusBar.setMinSize(gridDimension, STATUS_BAR_HEIGHT);
+        statusBar.setPrefSize(gridDimension, STATUS_BAR_HEIGHT);
+        statusBar.setMaxSize(gridDimension, STATUS_BAR_HEIGHT);
+        vGame.getChildren().add(statusBar);
     }
 
     protected void setToolBar(HBox toolbar) {
@@ -633,6 +643,11 @@ public class Board extends Pane {
 
     public void removeTiles(Set<Tile> mergedToBeRemoved) {
         gridGroup.getChildren().removeAll(mergedToBeRemoved);
+    }
+
+    public void dispose() {
+        gameTimer.pause();
+        statusBar.stop();
     }
 
 }

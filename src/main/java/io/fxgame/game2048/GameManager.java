@@ -422,6 +422,10 @@ public class GameManager extends Group {
         board.saveRecord();
     }
 
+    public void dispose() {
+        board.dispose();
+    }
+
     private ToolbarPanel createToolbarPanel() {
         return new ToolbarPanel(new ToolbarPanel.Actions(
                 this::saveSession,

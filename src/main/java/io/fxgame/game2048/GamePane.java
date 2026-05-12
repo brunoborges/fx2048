@@ -43,6 +43,7 @@ public class GamePane extends StackPane {
     private void createGameManager(int gridSize) {
         if (gameManager != null) {
             gameManager.saveRecord();
+            gameManager.dispose();
             getChildren().remove(gameManager);
         }
 
