@@ -20,7 +20,7 @@
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
-        <runtime.max.heap>-Xmx64m</runtime.max.heap>
+        <runtime.max.heap>-Xmx32m</runtime.max.heap>
         <runtime.garbage.collector>-XX:+UseZGC</runtime.garbage.collector>
     </properties>
 

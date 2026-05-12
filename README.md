@@ -24,7 +24,7 @@ Maven is the build system used by CI; use the included Maven wrapper:
 ./mvnw javafx:run
 ```
 
-The application is launched with a maximum 64 MB heap and ZGC by default.
+The application is launched with a maximum 32 MB heap and ZGC by default.
 
 ### Create a distribution to your operating system (Windows, Linux, or Mac OS)
 
