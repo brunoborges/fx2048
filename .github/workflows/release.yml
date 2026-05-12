@@ -275,6 +275,27 @@ jobs:
             -Dmac.signing.key.user.name="${MACOS_SIGNING_KEY_USER_NAME}" \
             package javafx:jlink jpackage:jpackage
 
+      - name: Sign macOS DMG package
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MACOS_SIGNING_KEY_USER_NAME: ${{ secrets.MACOS_SIGNING_KEY_USER_NAME }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          packages=( target/dist/*.dmg )
+          if [ "${#packages[@]}" -ne 1 ]; then
+            printf 'Expected exactly one DMG, found %s.\n' "${#packages[@]}"
+            printf '%s\n' "${packages[@]}"
+            exit 1
+          fi
+
+          codesign --force --timestamp \
+            --keychain "${MACOS_KEYCHAIN_PATH}" \
+            --sign "${MACOS_SIGNING_KEY_USER_NAME}" \
+            "${packages[0]}"
+          codesign --verify --verbose=4 "${packages[0]}"
+
       - name: Notarize and staple macOS package
         if: runner.os == 'macOS'
         shell: bash
