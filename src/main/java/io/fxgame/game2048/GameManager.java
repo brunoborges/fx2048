@@ -392,7 +392,7 @@ public class GameManager extends Group {
      * Save the game to a properties file, without confirmation.
      */
     private void doSaveSession() {
-        board.saveSession(gameGrid);
+        board.saveSession(model.snapshot());
     }
 
     /**
@@ -406,17 +406,13 @@ public class GameManager extends Group {
      * Restore the game from a properties file, without confirmation.
      */
     private void doRestoreSession() {
-        if (board.restoreSession(gameGrid)) {
-            model.restoreSnapshot(tileValues(gameGrid));
+        var restoredValues = new HashMap<Location, Integer>();
+        if (board.restoreSession(restoredValues)) {
+            model.restoreSnapshot(restoredValues);
+            syncTileMapFromModel();
             redrawTilesInGameGrid();
             undoSnapshot = null;
         }
-    }
-
-    private Map<Location, Integer> tileValues(Map<Location, Tile> tiles) {
-        var values = new HashMap<Location, Integer>();
-        tiles.forEach((location, tile) -> values.put(location, tile == null ? 0 : tile.getValue()));
-        return values;
     }
 
     /**
