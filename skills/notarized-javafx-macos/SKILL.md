@@ -37,11 +37,45 @@ For GitHub Actions, configure these as repository or environment secrets:
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
 
-Export and encode a certificate locally:
+### What to put in each GitHub secret
+
+Use a `Developer ID Application` certificate, not a `Mac Developer`, `Apple Development`, or `Developer ID Installer` certificate, when signing a `.app` or `.dmg`.
+
+1. `MACOS_CERTIFICATE_BASE64`: export the Developer ID Application certificate and its private key from Keychain Access as a password-protected `.p12`, then base64-encode the `.p12` as a single line.
+
+   ```bash
+   security find-identity -v -p codesigning
+   base64 -i path/to/developer-id-application.p12 | tr -d '\n'
+   ```
+
+2. `MACOS_CERTIFICATE_PASSWORD`: use the password entered when exporting the `.p12` file.
+
+3. `MACOS_SIGNING_KEY_USER_NAME`: use the exact identity string from `security find-identity -v -p codesigning`, usually:
+
+   ```text
+   Developer ID Application: Example Name (TEAMID)
+   ```
+
+   Do not use the SHA-1 hash at the start of the `security find-identity` output.
+
+4. `APPLE_ID`: use the Apple ID email address for the Apple Developer account that has access to the team.
+
+5. `APPLE_TEAM_ID`: use the 10-character Apple Developer Team ID. It usually appears in parentheses at the end of the Developer ID Application identity and in the Apple Developer Membership details.
+
+6. `APPLE_APP_SPECIFIC_PASSWORD`: generate an app-specific password at `https://appleid.apple.com/account/manage` for notarization. Use this app-specific password, not the normal Apple ID password.
+
+Set repository secrets with the GitHub CLI, preferably by reading values from environment variables so secrets do not appear in shell history:
 
 ```bash
-security find-identity -v -p codesigning
-base64 -i path/to/developer-id-application.p12 | tr -d '\n'
+export REPO="owner/repo"
+export MACOS_CERTIFICATE_BASE64="$(base64 -i path/to/developer-id-application.p12 | tr -d '\n')"
+
+printf '%s' "${MACOS_CERTIFICATE_BASE64}" | ghx secret set MACOS_CERTIFICATE_BASE64 --repo "${REPO}"
+printf '%s' "${MACOS_CERTIFICATE_PASSWORD}" | ghx secret set MACOS_CERTIFICATE_PASSWORD --repo "${REPO}"
+printf '%s' "${MACOS_SIGNING_KEY_USER_NAME}" | ghx secret set MACOS_SIGNING_KEY_USER_NAME --repo "${REPO}"
+printf '%s' "${APPLE_ID}" | ghx secret set APPLE_ID --repo "${REPO}"
+printf '%s' "${APPLE_TEAM_ID}" | ghx secret set APPLE_TEAM_ID --repo "${REPO}"
+printf '%s' "${APPLE_APP_SPECIFIC_PASSWORD}" | ghx secret set APPLE_APP_SPECIFIC_PASSWORD --repo "${REPO}"
 ```
 
 ## Recommended release workflow
