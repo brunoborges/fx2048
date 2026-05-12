@@ -34,9 +34,7 @@ final class GameTimer {
     private GameTimer(LongSupplier nanoTime, boolean useTimeline) {
         this.nanoTime = nanoTime;
         if (useTimeline) {
-            timeline = new Timeline(
-                    new KeyFrame(Duration.ZERO, _ -> updateClock()),
-                    new KeyFrame(Duration.seconds(1)));
+            timeline = new Timeline(new KeyFrame(Duration.seconds(1), _ -> updateClock()));
             timeline.setCycleCount(Animation.INDEFINITE);
         } else {
             timeline = null;
@@ -60,7 +58,7 @@ final class GameTimer {
         }
         updateClock();
         if (timeline != null) {
-            timeline.play();
+            timeline.playFromStart();
         }
     }
 
