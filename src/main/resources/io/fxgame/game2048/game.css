@@ -30,7 +30,7 @@
 }
 .game-status-text {
     -fx-font-size: 11px;
-    -fx-text-fill: black;
+    -fx-text-fill: #bbada0;
 }
 .game-backGrid {
     -fx-background-color: #bbada0;
