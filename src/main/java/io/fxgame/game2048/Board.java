@@ -56,12 +56,12 @@ public class Board extends Pane {
     private final OverlayPanel overlayPanel;
 
     // Overlay Buttons
-    private final Button bTry = new Button("Try again");
-    private final Button bContinue = new Button("Keep going");
-    private final Button bContinueNo = new Button("No, keep going");
+    private final Button bTry = new Button("New Game");
+    private final Button bContinue = new Button("Continue");
+    private final Button bContinueNo = new Button("Cancel");
     private final Button bSave = new Button("Save");
     private final Button bRestore = new Button("Restore");
-    private final Button bApplySettings = new Button("Apply");
+    private final Button bApplySettings = new Button("Apply & Restart");
     private final Button bQuit = new Button("Quit");
     private final ChoiceBox<Integer> gridSizeChoice = new ChoiceBox<>();
 
