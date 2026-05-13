@@ -9,7 +9,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -219,9 +218,9 @@ public class Board extends Pane {
         vGame.getChildren().add(hToolbar);
     }
 
-    protected void setToolBar(HBox toolbar) {
+    protected void setToolBar(ToolbarPanel toolbar) {
         toolbar.disableProperty().bind(state.layerOnProperty);
-        toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 16));
+        toolbar.bindSpacingTo(hToolbar.widthProperty());
         hToolbar.getChildren().add(toolbar);
     }
 

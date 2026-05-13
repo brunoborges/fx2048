@@ -1,5 +1,7 @@
 package io.fxgame.game2048;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -11,6 +13,7 @@ final class ToolbarPanel extends HBox {
 
     private static final double BUTTON_SIZE = 40.0;
     private static final double PADDING = 10.0;
+    private static final double MAX_SPACING = 32.0;
 
     ToolbarPanel(Actions actions) {
         super(
@@ -28,6 +31,12 @@ final class ToolbarPanel extends HBox {
         setPadding(new Insets(PADDING));
         setMinHeight(Region.USE_PREF_SIZE);
         setMaxHeight(Region.USE_PREF_SIZE);
+    }
+
+    void bindSpacingTo(ObservableNumberValue width) {
+        spacingProperty().bind(Bindings.createDoubleBinding(
+                () -> calculateSpacing(width.doubleValue(), getChildren().size()),
+                width));
     }
 
     record Actions(
@@ -49,5 +58,15 @@ final class ToolbarPanel extends HBox {
         button.setOnAction(_ -> action.run());
         button.setTooltip(new Tooltip(tooltip));
         return button;
+    }
+
+    static double calculateSpacing(double width, int buttonCount) {
+        if (buttonCount <= 1) {
+            return 0;
+        }
+
+        var gaps = buttonCount - 1;
+        var availableSpacing = width - PADDING * 2 - BUTTON_SIZE * buttonCount;
+        return Math.max(0, Math.min(MAX_SPACING, availableSpacing / gaps));
     }
 }
