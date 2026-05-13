@@ -265,9 +265,23 @@
       align-items: start;
     }
 
-    .memory-points {
+    .memory-flow {
       display: grid;
       gap: 16px;
+    }
+
+    .memory-takeaway {
+      display: grid;
+      gap: 12px;
+    }
+
+    .memory-takeaway p + p {
+      padding-top: 12px;
+      border-top: 1px solid var(--cp-border);
+    }
+
+    .memory-table {
+      overflow-x: auto;
     }
 
     .memory-chart {
@@ -313,6 +327,15 @@
       margin-top: 12px;
       color: var(--cp-text-muted);
       font-size: 0.95rem;
+    }
+
+    .package-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .package-list li + li {
+      margin-top: 4px;
     }
 
     .figure-card {
@@ -593,60 +616,76 @@
 
       <section class="container" aria-labelledby="memory-heading">
         <div class="section-heading">
-          <h2 id="memory-heading">Desktop 2048 memory comparison</h2>
-          <p>fx2048 sits between a small native WebKit wrapper and a full browser tab, while keeping its Java heap capped at 32 MB.</p>
+          <h2 id="memory-heading">Memory use across 2048 implementations</h2>
+          <p>A 2048 board is tiny; most memory comes from the runtime that hosts it. These local snapshots compare three ways to ship the same kind of game.</p>
         </div>
-        <div class="comparison-grid">
-          <div class="memory-points">
-            <article class="card">
-              <h3>Measured memory snapshots</h3>
-              <div class="memory-chart" aria-label="Memory usage comparison chart">
-                <div class="memory-chart-row">
-                  <span class="memory-chart-label">fx2048 heap cap</span>
-                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 11.3%;"></span></span>
-                  <span class="memory-chart-value">32 MB</span>
-                </div>
-                <div class="memory-chart-row">
-                  <span class="memory-chart-label">2048 Game.app RSS</span>
-                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 41.5%;"></span></span>
-                  <span class="memory-chart-value">~117 MiB</span>
-                </div>
-                <div class="memory-chart-row">
-                  <span class="memory-chart-label">fx2048 app footprint</span>
-                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 67.0%;"></span></span>
-                  <span class="memory-chart-value">~189 MB</span>
-                </div>
-                <div class="memory-chart-row">
-                  <span class="memory-chart-label">play2048.co Chrome tab</span>
-                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 100%;"></span></span>
-                  <span class="memory-chart-value">282 MB</span>
-                </div>
-              </div>
-              <p class="memory-chart-note">These are practical local snapshots, not a lab benchmark. The app footprint is a local macOS physical-footprint measurement from the tuned packaged runtime. The Chrome number comes from the screenshot beside this chart.</p>
+        <div class="memory-flow">
+          <div class="comparison-grid">
+            <article class="card memory-takeaway">
+              <h3>Takeaway</h3>
+              <p>fx2048's packaged JavaFX build measured about 189 MB on macOS: larger than a small Cocoa/WebKit wrapper, but lower than the same kind of game running inside a full Chrome tab.</p>
+              <p>The 32 MB Java heap cap is a JVM tuning boundary, not total process memory. Native runtime, graphics, code cache, stacks, and libraries sit outside the heap.</p>
             </article>
-            <article class="card">
-              <h3>fx2048 keeps the JVM constrained</h3>
-              <p>The packaged app starts with an 8 MB heap, caps it at 32 MB, uses G1GC with periodic concurrent collections, smaller thread stacks, C1-only compilation, and a tightly bounded JIT code cache. It also ships only the Java runtime modules it needs and exposes live memory information in the status bar.</p>
-            </article>
-            <article class="card">
-              <h3>The native macOS app is WebKit-based</h3>
-              <p><em>2048 Game.app</em> measured around 117 MiB RSS. Its bundle is a native Cocoa/AppKit shell that links WebKit and hosts bundled HTML, CSS, and JavaScript assets, so it is not Electron, Java, or Node, but it still carries WebKit and JavaScriptCore runtime overhead.</p>
-            </article>
-            <article class="card">
-              <h3>The browser version shows the largest baseline</h3>
-              <p>The original JavaScript web version at <a href="https://play2048.co">play2048.co</a> is wonderfully small as a web app, but the browser runtime around it is not free. The Chrome Task Manager screenshot here shows the tab running that game consuming 282 MB.</p>
-            </article>
-            <article class="card">
-              <h3>Useful reality check, with caveats</h3>
-              <p>RSS, physical footprint, Chrome Task Manager, and Java heap limits are not identical measurements. Still, the comparison is useful: a focused JavaFX desktop app can stay in the same practical range as WebKit-backed desktop software and below a full browser tab hosting the same kind of game.</p>
-            </article>
+            <figure class="figure-card">
+              <img src="assets/play2048-chrome-task-manager.png" alt="Chrome Task Manager screenshot showing the play2048.co tab consuming 282 MB of memory." width="1956" height="1078">
+              <figcaption>
+                Chrome Task Manager showing the <a href="https://play2048.co">play2048.co</a> tab at 282 MB, the browser baseline used below.
+              </figcaption>
+            </figure>
           </div>
-          <figure class="figure-card">
-            <img src="assets/play2048-chrome-task-manager.png" alt="Chrome Task Manager screenshot showing the play2048.co tab consuming 282 MB of memory." width="1956" height="1078">
-            <figcaption>
-              Chrome Task Manager showing the <a href="https://play2048.co">play2048.co</a> tab at 282 MB. fx2048's Java heap is capped at 32 MB.
-            </figcaption>
-          </figure>
+          <div class="table-card memory-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Implementation</th>
+                  <th>Observed memory</th>
+                  <th>Runtime</th>
+                  <th>What it means</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>fx2048 packaged app</td>
+                  <td>~189 MB physical footprint</td>
+                  <td>JavaFX app with a custom jlink runtime and tuned JVM options.</td>
+                  <td>A focused desktop JVM profile, including more than just the Java heap.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://apps.apple.com/ca/app/2048-game/id871033113?mt=12">2048 Game.app</a></td>
+                  <td>~117 MiB RSS</td>
+                  <td>Cocoa/AppKit shell with WebKit hosting bundled HTML, CSS, and JavaScript assets.</td>
+                  <td>A compact WebKit wrapper, not Electron, Java, Node, or a fully custom native renderer.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://play2048.co">play2048.co</a> in Chrome</td>
+                  <td>282 MB</td>
+                  <td>The JavaScript game hosted inside a full Chrome browser tab.</td>
+                  <td>The largest baseline here because the full browser runtime comes with the tab.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <article class="card">
+            <h3>Runtime footprint snapshot</h3>
+            <div class="memory-chart" aria-label="Memory usage comparison chart">
+              <div class="memory-chart-row">
+                <span class="memory-chart-label">2048 Game.app RSS</span>
+                <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 41.5%;"></span></span>
+                <span class="memory-chart-value">~117 MiB</span>
+              </div>
+              <div class="memory-chart-row">
+                <span class="memory-chart-label">fx2048 app footprint</span>
+                <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 67.0%;"></span></span>
+                <span class="memory-chart-value">~189 MB</span>
+              </div>
+              <div class="memory-chart-row">
+                <span class="memory-chart-label">play2048.co Chrome tab</span>
+                <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 100%;"></span></span>
+                <span class="memory-chart-value">282 MB</span>
+              </div>
+            </div>
+            <p class="memory-chart-note">The chart is normalized to the Chrome tab's 282 MB measurement. RSS, physical footprint, and Chrome Task Manager are different measurements, so treat this as a practical comparison rather than a lab benchmark. The 32 MB Java heap cap is not plotted because it is a tuning limit, not process memory.</p>
+          </article>
         </div>
       </section>
 
@@ -729,11 +768,23 @@
       .then((release) => {
         const packageAssets = release.assets
           .filter((asset) => /\.(dmg|msi|deb)$/.test(asset.name))
-          .map((asset) => `${asset.name}: ${formatSize(asset.size)}`);
+          .map((asset) => ({ name: asset.name, size: formatSize(asset.size) }));
 
-        packageSizes.textContent = packageAssets.length > 0
-          ? packageAssets.join("; ")
-          : "No platform packages found on the latest release.";
+        if (packageAssets.length === 0) {
+          packageSizes.textContent = "No platform packages found on the latest release.";
+          return;
+        }
+
+        const list = document.createElement("ul");
+        list.className = "package-list";
+
+        for (const asset of packageAssets) {
+          const item = document.createElement("li");
+          item.textContent = `${asset.name}: ${asset.size}`;
+          list.append(item);
+        }
+
+        packageSizes.replaceChildren(list);
       })
       .catch(() => {
         packageSizes.textContent = "Latest release package sizes are available on GitHub Releases.";
