@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How fx2048 is built: Java, JavaFX, Maven, jlink, jpackage, runtime settings, package sizes, and source code stats.">
+  <link rel="icon" href="assets/fx2048.png">
+  <title>fx2048 - Technology</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--cp-bg), var(--cp-bg-elevated));
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+    }
+
+    a {
+      color: var(--cp-link);
+    }
+
+    code {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      padding: 2px 6px;
+    }
+
+    .page {
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--cp-text);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 0.625rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a {
+      color: var(--cp-text-muted);
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      color: var(--cp-accent);
+    }
+
+    .hero {
+      padding: 72px 0 32px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    h1 {
+      max-width: 820px;
+      margin: 18px 0 16px;
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+
+    .lede {
+      max-width: 760px;
+      margin: 0;
+      color: var(--cp-text-muted);
+      font-size: clamp(1.1rem, 2vw, 1.3rem);
+    }
+
+    section {
+      padding: 36px 0;
+    }
+
+    .section-heading {
+      max-width: 760px;
+      margin-bottom: 24px;
+    }
+
+    .section-heading h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      letter-spacing: -0.04em;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--cp-text-muted);
+      font-size: 1.05rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card,
+    .card,
+    .table-card {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 0 1px var(--cp-sheen);
+    }
+
+    .stat-card {
+      padding: 20px;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .stat-card span {
+      color: var(--cp-text-muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 20px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--cp-text-muted);
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-weight: 700;
+    }
+
+    td {
+      color: var(--cp-text-muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .site-footer {
+      margin-top: 48px;
+      border-top: 1px solid var(--cp-border);
+      padding: 28px 0;
+      color: var(--cp-text-muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .footer-row a {
+      margin-left: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .stats,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 48px;
+      }
+
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="index.html" aria-label="fx2048 home">
+          <img src="assets/fx2048.png" alt="" width="36" height="36">
+          <span>fx2048</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Game</a>
+          <a href="index.html#download">Download</a>
+          <a href="technology.html">Technology</a>
+          <a href="https://github.com/brunoborges/fx2048">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container hero">
+        <span class="eyebrow">Under the hood</span>
+        <h1>How fx2048 is built and packaged.</h1>
+        <p class="lede">
+          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint.
+        </p>
+      </div>
+
+      <section class="container" aria-labelledby="stats-heading">
+        <div class="section-heading">
+          <h2 id="stats-heading">Project at a glance</h2>
+          <p>Current source and runtime facts from the repository and latest published release.</p>
+        </div>
+        <div class="stats">
+          <article class="stat-card">
+            <strong>2,468</strong>
+            <span>Main Java lines</span>
+          </article>
+          <article class="stat-card">
+            <strong>24</strong>
+            <span>Java source files</span>
+          </article>
+          <article class="stat-card">
+            <strong>48 MB</strong>
+            <span>Configured max heap</span>
+          </article>
+          <article class="stat-card">
+            <strong>~43 MB</strong>
+            <span>Typical installer size</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="stack-heading">
+        <div class="section-heading">
+          <h2 id="stack-heading">Technology stack</h2>
+          <p>The app is intentionally simple: Java modules, JavaFX controls and animation APIs, Maven automation, and platform-native packages.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Application runtime</h3>
+            <p>Java 25, JavaFX 25.0.3, and the JPMS module <code>fxgame</code>. The launcher enters <code>io.fxgame.game2048.AppLauncher</code>.</p>
+          </article>
+          <article class="card">
+            <h3>UI and animation</h3>
+            <p>JavaFX scene graph, CSS styling, keyboard and swipe input, tile move/merge animations, overlays, score effects, and a lightweight status bar.</p>
+          </article>
+          <article class="card">
+            <h3>Game model</h3>
+            <p>The game rules live in Java classes for grid traversal, tile state, move/merge flow, scoring, game-over checks, persistence, and records.</p>
+          </article>
+          <article class="card">
+            <h3>Build and packaging</h3>
+            <p>Maven builds the app, <code>jlink</code> creates a custom runtime, and <code>jpackage</code> produces DMG, MSI, and DEB installers.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="libraries-heading">
+        <div class="section-heading">
+          <h2 id="libraries-heading">Libraries and tools</h2>
+          <p>The dependency list is short, which keeps the desktop app easy to audit and package.</p>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Technology</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Language and UI framework</td>
+                <td>Java 25 with JavaFX 25.0.3 modules: <code>javafx-base</code>, <code>javafx-graphics</code>, and <code>javafx-controls</code>.</td>
+              </tr>
+              <tr>
+                <td>Tests</td>
+                <td>JUnit Jupiter 5.11.4 through Maven Surefire 3.5.3.</td>
+              </tr>
+              <tr>
+                <td>Build</td>
+                <td>Maven wrapper, Maven Compiler Plugin 3.15.0, JavaFX Maven Plugin 0.0.8, Maven JAR Plugin 3.5.0, and jpackage Maven Plugin 1.7.4.</td>
+              </tr>
+              <tr>
+                <td>Packaging</td>
+                <td><code>jlink</code> strips the runtime image, and <code>jpackage</code> creates native installers from that runtime.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="runtime-heading">
+        <div class="section-heading">
+          <h2 id="runtime-heading">Runtime profile</h2>
+          <p>fx2048 is tuned for a small desktop-game footprint rather than server-style throughput.</p>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Setting or behavior</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Maximum Java heap</td>
+                <td><code>-Xmx48m</code></td>
+              </tr>
+              <tr>
+                <td>Garbage collector</td>
+                <td><code>-XX:+UseZGC</code></td>
+              </tr>
+              <tr>
+                <td>Status bar</td>
+                <td>Shows live CPU, memory, and garbage-collection count while the game is running.</td>
+              </tr>
+              <tr>
+                <td>Persistence</td>
+                <td>Saves local settings, session state, elapsed time, score, and best-score records under the user's home directory.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="size-heading">
+        <div class="section-heading">
+          <h2 id="size-heading">Code and package size</h2>
+          <p>The page keeps the source stats static and reads current release package sizes from GitHub when available.</p>
+        </div>
+        <div class="table-card">
+          <table>
+            <tbody>
+              <tr>
+                <td>Main Java</td>
+                <td>2,468 lines across 21 files</td>
+              </tr>
+              <tr>
+                <td>Tests</td>
+                <td>223 Java lines across 3 files</td>
+              </tr>
+              <tr>
+                <td>Styling</td>
+                <td>392 lines of JavaFX CSS</td>
+              </tr>
+              <tr>
+                <td>Tracked source/config total</td>
+                <td>3,084 lines</td>
+              </tr>
+              <tr>
+                <td>Latest release packages</td>
+                <td id="package-sizes">Loading package sizes...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="release-heading">
+        <div class="section-heading">
+          <h2 id="release-heading">Release pipeline</h2>
+          <p>GitHub Actions builds platform installers and publishes signed releases.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>macOS</h3>
+            <p>Builds an Apple Silicon DMG, signs the app with hardened runtime entitlements, signs the disk image, notarizes it with Apple, staples it, and validates Gatekeeper.</p>
+          </article>
+          <article class="card">
+            <h3>Windows and Linux</h3>
+            <p>Builds a Windows x64 MSI and Linux amd64/arm64 DEB packages, each bundling the custom runtime needed by the game.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-row">
+        <span>Want to play instead?</span>
+        <span>
+          <a href="index.html">Game page</a>
+          <a href="https://github.com/brunoborges/fx2048">Source</a>
+          <a href="https://github.com/brunoborges/fx2048/releases">Releases</a>
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const packageSizes = document.querySelector("#package-sizes");
+    const formatSize = (bytes) => `${(bytes / 1048576).toFixed(1)} MiB`;
+
+    fetch("https://api.github.com/repos/brunoborges/fx2048/releases/latest", {
+      headers: { "Accept": "application/vnd.github+json" }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`GitHub release lookup failed: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((release) => {
+        const packageAssets = release.assets
+          .filter((asset) => /\.(dmg|msi|deb)$/.test(asset.name))
+          .map((asset) => `${asset.name}: ${formatSize(asset.size)}`);
+
+        packageSizes.textContent = packageAssets.length > 0
+          ? packageAssets.join("; ")
+          : "No platform packages found on the latest release.";
+      })
+      .catch(() => {
+        packageSizes.textContent = "Latest release package sizes are available on GitHub Releases.";
+      });
+  </script>
+</body>
+</html>
