@@ -23,6 +23,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 
 /**
@@ -36,6 +37,7 @@ public class Board extends Pane {
     private static final int TOP_HEIGHT = 92;
     private static final int GAP_HEIGHT = 50;
     private static final int TOOLBAR_HEIGHT = 80;
+    private static final int GRID_DIMENSION = CELL_SIZE * GridOperator.DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
 
     private final GameState state = new GameState();
 
@@ -54,12 +56,12 @@ public class Board extends Pane {
     private final OverlayPanel overlayPanel;
 
     // Overlay Buttons
-    private final Button bTry = new Button("Try again");
-    private final Button bContinue = new Button("Keep going");
-    private final Button bContinueNo = new Button("No, keep going");
+    private final Button bTry = new Button("New Game");
+    private final Button bContinue = new Button("Continue");
+    private final Button bContinueNo = new Button("Cancel");
     private final Button bSave = new Button("Save");
     private final Button bRestore = new Button("Restore");
-    private final Button bApplySettings = new Button("Apply");
+    private final Button bApplySettings = new Button("Apply & Restart");
     private final Button bQuit = new Button("Quit");
     private final ChoiceBox<Integer> gridSizeChoice = new ChoiceBox<>();
 
@@ -67,7 +69,8 @@ public class Board extends Pane {
 
     private final Label lblTime = new Label();
 
-    private final int gridDimension;
+    private final int gridDimension = GRID_DIMENSION;
+    private final double gridScale;
     private final GridOperator gridOperator;
     private final SessionManager sessionManager;
     private final IntConsumer gridSizeChangeHandler;
@@ -80,7 +83,7 @@ public class Board extends Pane {
     public Board(GridOperator grid, IntConsumer gridSizeChangeHandler) {
         this.gridOperator = grid;
         this.gridSizeChangeHandler = gridSizeChangeHandler;
-        gridDimension = layoutWidthForGridSize(grid.getGridSize());
+        gridScale = calculateGridScale(grid.getGridSize());
         overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
 
@@ -90,12 +93,16 @@ public class Board extends Pane {
         initGameProperties();
     }
 
-    static int layoutWidthForGridSize(int gridSize) {
-        return CELL_SIZE * gridSize + BORDER_WIDTH * 2;
+    static int layoutWidth() {
+        return GRID_DIMENSION;
     }
 
-    static int layoutHeightForGridSize(int gridSize) {
-        return TOP_HEIGHT + GAP_HEIGHT + layoutWidthForGridSize(gridSize) + TOOLBAR_HEIGHT * 2;
+    static int layoutHeight() {
+        return TOP_HEIGHT + GAP_HEIGHT + GRID_DIMENSION + TOOLBAR_HEIGHT * 2;
+    }
+
+    static double calculateGridScale(int gridSize) {
+        return (double) GridOperator.DEFAULT_GRID_SIZE / gridSize;
     }
 
     private void createScore() {
@@ -190,6 +197,7 @@ public class Board extends Pane {
         });
 
         gridGroup.getStyleClass().add("game-grid");
+        gridGroup.getTransforms().setAll(new Scale(gridScale, gridScale, 0, 0));
         gridGroup.setManaged(false);
         gridGroup.setLayoutX(BORDER_WIDTH);
         gridGroup.setLayoutY(BORDER_WIDTH);

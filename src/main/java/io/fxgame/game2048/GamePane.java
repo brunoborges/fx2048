@@ -19,8 +19,6 @@ import static io.fxgame.game2048.Direction.*;
 public class GamePane extends StackPane {
 
     private static final double STATUS_BAR_HEIGHT = 20;
-    private static final double REFERENCE_GAME_WIDTH = Board.layoutWidthForGridSize(GridOperator.DEFAULT_GRID_SIZE);
-    private static final double REFERENCE_GAME_HEIGHT = Board.layoutHeightForGridSize(GridOperator.DEFAULT_GRID_SIZE);
 
     private GameManager gameManager;
     private Bounds gameBounds;
@@ -87,9 +85,7 @@ public class GamePane extends StackPane {
                 availableWidth,
                 availableHeight,
                 gameBounds.getWidth(),
-                gameBounds.getHeight(),
-                REFERENCE_GAME_WIDTH,
-                REFERENCE_GAME_HEIGHT);
+                gameBounds.getHeight());
         gameManager.setScale(scale);
         gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
         gameManager.setLayoutY((getHeight() - STATUS_BAR_HEIGHT - gameBounds.getHeight()) / 2d);
@@ -99,12 +95,8 @@ public class GamePane extends StackPane {
             double availableWidth,
             double availableHeight,
             double gameWidth,
-            double gameHeight,
-            double referenceWidth,
-            double referenceHeight) {
-        var currentGridScale = Math.min(availableWidth / gameWidth, availableHeight / gameHeight);
-        var referenceGridScale = Math.min(availableWidth / referenceWidth, availableHeight / referenceHeight);
-        return Math.min(currentGridScale, referenceGridScale);
+            double gameHeight) {
+        return Math.min(availableWidth / gameWidth, availableHeight / gameHeight);
     }
 
     private final BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);

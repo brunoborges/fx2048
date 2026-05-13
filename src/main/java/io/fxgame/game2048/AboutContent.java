@@ -17,17 +17,13 @@ final class AboutContent extends TextFlow {
         setPrefSize(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
 
         getChildren().setAll(
-                styledText("2048", "game-lblAbout"),
-                styledText("FX", "game-lblAbout2"),
-                styledText(" Game\n", "game-lblAbout"),
                 styledText("JavaFX game - Desktop version\n\n", "game-lblAboutSub"),
-                styledText("Powered by ", "game-lblAboutSub"),
-                aboutLink("OpenJFX", "https://openjfx.io/"),
-                styledText(" Project \n\n", "game-lblAboutSub"),
-                styledText("© ", "game-lblAboutSub"),
-                aboutLink("@JPeredaDnr", "https://twitter.com/JPeredaDnr"),
-                styledText(" & ", "game-lblAboutSub"),
-                aboutLink("@brunoborges", "https://twitter.com/brunoborges"),
+                styledText("Creator and maintainer: ", "game-lblAboutSub"),
+                aboutLink("@brunoborges", "https://github.com/brunoborges"),
+                styledText("\nContributor: ", "game-lblAboutSub"),
+                aboutLink("JPereda", "https://github.com/JPeredaDnr"),
+                styledText("\nProject site: ", "game-lblAboutSub"),
+                aboutLink("brunoborges.github.io/fx2048", "https://brunoborges.github.io/fx2048/"),
                 styledText("\n\n", "game-lblAboutSub"),
                 styledText("Version " + Game2048.VERSION + "\n\n", "game-lblAboutSub"));
     }
