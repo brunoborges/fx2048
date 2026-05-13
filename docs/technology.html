@@ -593,26 +593,23 @@
 
       <section class="container" aria-labelledby="memory-heading">
         <div class="section-heading">
-          <h2 id="memory-heading">JavaFX can be lean desktop software</h2>
-          <p>Java desktop apps have a historic reputation for being heavy, but modern Java and JavaFX can be reliable, stable, and efficient when packaged deliberately.</p>
+          <h2 id="memory-heading">Desktop 2048 memory comparison</h2>
+          <p>fx2048 sits between a small native WebKit wrapper and a full browser tab, while keeping its Java heap capped at 32 MB.</p>
         </div>
         <div class="comparison-grid">
           <div class="memory-points">
             <article class="card">
-              <h3>fx2048 caps the Java heap at 32 MB</h3>
-              <p>The packaged app starts with an 8 MB heap, caps it at 32 MB, uses G1GC with periodic concurrent collections, smaller thread stacks, C1-only compilation, and a tightly bounded JIT code cache. It also ships only the Java runtime modules it needs and exposes live memory information in the status bar.</p>
-            </article>
-            <article class="card">
-              <h3>The browser version shows a different baseline</h3>
-              <p>The original JavaScript web version at <a href="https://play2048.co">play2048.co</a> is wonderfully small as a web app, but the browser runtime around it is not free. The Chrome Task Manager screenshot here shows the tab running that game consuming 282 MB.</p>
-            </article>
-            <article class="card">
-              <h3>Memory usage snapshot</h3>
+              <h3>Measured memory snapshots</h3>
               <div class="memory-chart" aria-label="Memory usage comparison chart">
                 <div class="memory-chart-row">
                   <span class="memory-chart-label">fx2048 heap cap</span>
                   <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 11.3%;"></span></span>
                   <span class="memory-chart-value">32 MB</span>
+                </div>
+                <div class="memory-chart-row">
+                  <span class="memory-chart-label">2048 Game.app RSS</span>
+                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 41.5%;"></span></span>
+                  <span class="memory-chart-value">~117 MiB</span>
                 </div>
                 <div class="memory-chart-row">
                   <span class="memory-chart-label">fx2048 app footprint</span>
@@ -625,11 +622,23 @@
                   <span class="memory-chart-value">282 MB</span>
                 </div>
               </div>
-              <p class="memory-chart-note">The app footprint is a local macOS physical-footprint measurement from the tuned packaged runtime. The Chrome number comes from the screenshot beside this chart.</p>
+              <p class="memory-chart-note">These are practical local snapshots, not a lab benchmark. The app footprint is a local macOS physical-footprint measurement from the tuned packaged runtime. The Chrome number comes from the screenshot beside this chart.</p>
             </article>
             <article class="card">
-              <h3>Not a lab benchmark, but a useful reality check</h3>
-              <p>Browser Task Manager and Java heap limits are not identical measurements. Still, this comparison is a practical reminder: a focused JavaFX desktop app can use far less memory than people often assume, especially compared with a full browser tab hosting the same kind of game.</p>
+              <h3>fx2048 keeps the JVM constrained</h3>
+              <p>The packaged app starts with an 8 MB heap, caps it at 32 MB, uses G1GC with periodic concurrent collections, smaller thread stacks, C1-only compilation, and a tightly bounded JIT code cache. It also ships only the Java runtime modules it needs and exposes live memory information in the status bar.</p>
+            </article>
+            <article class="card">
+              <h3>The native macOS app is WebKit-based</h3>
+              <p><em>2048 Game.app</em> measured around 117 MiB RSS. Its bundle is a native Cocoa/AppKit shell that links WebKit and hosts bundled HTML, CSS, and JavaScript assets, so it is not Electron, Java, or Node, but it still carries WebKit and JavaScriptCore runtime overhead.</p>
+            </article>
+            <article class="card">
+              <h3>The browser version shows the largest baseline</h3>
+              <p>The original JavaScript web version at <a href="https://play2048.co">play2048.co</a> is wonderfully small as a web app, but the browser runtime around it is not free. The Chrome Task Manager screenshot here shows the tab running that game consuming 282 MB.</p>
+            </article>
+            <article class="card">
+              <h3>Useful reality check, with caveats</h3>
+              <p>RSS, physical footprint, Chrome Task Manager, and Java heap limits are not identical measurements. Still, the comparison is useful: a focused JavaFX desktop app can stay in the same practical range as WebKit-backed desktop software and below a full browser tab hosting the same kind of game.</p>
             </article>
           </div>
           <figure class="figure-card">
