@@ -1,9 +1,9 @@
 package io.fxgame.game2048;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntConsumer;
-import java.util.stream.IntStream;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -16,7 +16,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -63,9 +62,8 @@ public class Board extends Pane {
     private final Button bContinueNo = new Button("Cancel");
     private final Button bSave = new Button("Save");
     private final Button bRestore = new Button("Restore");
-    private final Button bApplySettings = new Button("Apply & Restart");
+    private final Button bApplySettings = new Button("Apply");
     private final Button bQuit = new Button("Quit");
-    private final ChoiceBox<Integer> gridSizeChoice = new ChoiceBox<>();
 
     private final HBox hToolbar = new HBox();
 
@@ -76,6 +74,7 @@ public class Board extends Pane {
     private final GridOperator gridOperator;
     private final SessionManager sessionManager;
     private final IntConsumer gridSizeChangeHandler;
+    private final SettingsPanel settingsPanel;
 
     public Board(GridOperator grid) {
         this(grid, _ -> {
@@ -88,6 +87,7 @@ public class Board extends Pane {
         gridScale = calculateGridScale(grid.getGridSize());
         overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
+        settingsPanel = new SettingsPanel(List.of(new GridSizeSetting(gridOperator, gridSizeChangeHandler)));
 
         createScore();
         createGrid();
@@ -273,12 +273,8 @@ public class Board extends Pane {
     }
 
     private void applySettings() {
-        var selectedGridSize = gridSizeChoice.getValue();
-        UserSettings.LOCAL.setGridSize(selectedGridSize);
-
-        if (selectedGridSize != gridOperator.getGridSize()) {
-            gridSizeChangeHandler.accept(selectedGridSize);
-        } else {
+        var startsNewGame = settingsPanel.apply();
+        if (!startsNewGame) {
             keepGoing();
         }
     }
@@ -355,13 +351,6 @@ public class Board extends Pane {
 
         bQuit.getStyleClass().add("game-button");
         bQuit.setOnAction(_ -> exitGame());
-
-        gridSizeChoice.getItems().setAll(IntStream
-                .rangeClosed(GridOperator.MIN_GRID_SIZE, GridOperator.MAX_GRID_SIZE)
-                .boxed()
-                .toList());
-        gridSizeChoice.setValue(gridOperator.getGridSize());
-        gridSizeChoice.getStyleClass().add("game-settings-choice");
 
         state.gameWonProperty.addListener(wonListener);
         state.gameOverProperty
@@ -551,22 +540,8 @@ public class Board extends Pane {
 
     private void showSettingsOverlay() {
         gameTimer.pause();
-
-        var title = new Label("Settings");
-        title.getStyleClass().setAll("game-label", "game-lblPause");
-
-        var warning = new Label("Changing grid size starts a new game");
-        warning.getStyleClass().setAll("game-label", "game-lblWarning");
-
-        var gridSizeLabel = new Label("Grid size");
-        gridSizeLabel.getStyleClass().setAll("game-label", "game-settings-label");
-        gridSizeChoice.setValue(gridOperator.getGridSize());
-
-        var gridSizeRow = new HBox(15, gridSizeLabel, gridSizeChoice);
-        gridSizeRow.setAlignment(Pos.CENTER);
-        gridSizeRow.getStyleClass().add("game-settings-row");
-
-        overlayPanel.showContent("game-overlay-pause", bApplySettings, bContinueNo, title, warning, gridSizeRow);
+        settingsPanel.refresh();
+        overlayPanel.showContent("game-overlay-pause", bApplySettings, bContinueNo, settingsPanel);
         showOverlay(bApplySettings);
     }
 
