@@ -22,6 +22,10 @@ enum AnimationSpeed {
         return multiplier == 0.0 ? Duration.ZERO : duration.multiply(multiplier);
     }
 
+    boolean isInstant() {
+        return multiplier == 0.0;
+    }
+
     @Override
     public String toString() {
         return label;

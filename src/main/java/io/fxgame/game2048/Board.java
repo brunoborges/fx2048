@@ -426,6 +426,11 @@ public class Board extends Pane {
             return;
         }
 
+        if (animationsDisabled()) {
+            lblPoints.setOpacity(0);
+            return;
+        }
+
         final var timeline = new Timeline();
         lblPoints.setText("+" + state.gameMovePoints.getValue().toString());
         lblPoints.setOpacity(1);
@@ -452,6 +457,10 @@ public class Board extends Pane {
         return animationSpeed.scale(baseDuration);
     }
 
+    boolean animationsDisabled() {
+        return animationSpeed.isInstant();
+    }
+
     private void setAnimationSpeed(AnimationSpeed animationSpeed) {
         this.animationSpeed = animationSpeed;
     }
@@ -459,6 +468,11 @@ public class Board extends Pane {
     public void addTile(Tile tile) {
         positionTile(tile);
         gridGroup.getChildren().add(tile);
+    }
+
+    void moveTileImmediately(Tile tile, Location location) {
+        tile.setLocation(location);
+        positionTile(tile);
     }
 
     public void clearTiles() {
