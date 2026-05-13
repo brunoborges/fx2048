@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="fx2048 is a polished JavaFX desktop version of 2048 for macOS, Windows, and Linux.">
+  <meta name="description" content="fx2048 is a polished desktop version of 2048 for macOS, Windows, and Linux.">
   <link rel="icon" href="assets/fx2048.png">
-  <title>fx2048 - JavaFX 2048 for desktop</title>
+  <title>fx2048 - 2048 for desktop</title>
   <script>
     (() => {
       const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
@@ -222,13 +222,7 @@
     }
 
     .screenshot-card {
-      position: relative;
       margin: 0;
-      padding: 18px;
-      border: 1px solid var(--cp-border);
-      border-radius: 16px;
-      background: var(--cp-panel);
-      box-shadow: var(--cp-shadow);
     }
 
     .screenshot-card img {
@@ -236,9 +230,6 @@
       width: min(100%, 400px);
       height: auto;
       margin: 0 auto;
-      border-radius: 16px;
-      border: 1px solid var(--cp-border);
-      background: var(--cp-surface);
     }
 
     section {
@@ -384,6 +375,7 @@
         <nav class="nav-links" aria-label="Primary navigation">
           <a href="#features">Features</a>
           <a href="#download">Download</a>
+          <a href="technology.html">Technology</a>
           <a href="https://github.com/brunoborges/fx2048">GitHub</a>
         </nav>
       </div>
@@ -392,10 +384,10 @@
     <main id="top">
       <div class="container hero">
         <div>
-          <span class="eyebrow">JavaFX 25 desktop game</span>
-          <h1>2048, polished for your desktop.</h1>
+          <span class="eyebrow">Free desktop puzzle game</span>
+          <h1>Play 2048 without opening a browser.</h1>
           <p class="lede">
-            fx2048 is a modern JavaFX version of the classic 2048 puzzle, packaged with its own Java runtime for macOS, Windows, and Linux.
+            Slide numbered tiles, build bigger merges, save your session, and keep chasing a new best score in a focused desktop app for macOS, Windows, and Linux.
           </p>
           <div class="actions">
             <a class="button primary" href="#download">Download fx2048</a>
@@ -404,27 +396,27 @@
           <p class="release-note" id="release-note">Loading latest release details...</p>
         </div>
         <figure class="screenshot-card">
-          <img src="assets/screenshot.png" alt="Screenshot of fx2048 showing a 2048 game board with score, toolbar, and status bar." width="400" height="572">
+          <img src="assets/screenshot.png" alt="Screenshot of fx2048 showing a 2048 game board with score, toolbar, and status bar." width="1478" height="1944">
         </figure>
       </div>
 
       <section id="features" class="container">
         <div class="section-heading">
-          <h2>Built for players, packaged like a native app.</h2>
-          <p>It is still the simple 2048 you know, with a JavaFX desktop interface and platform installers.</p>
+          <h2>The classic 2048 loop, with desktop polish.</h2>
+          <p>Quick to start, easy to control, and ready when you want one more run.</p>
         </div>
         <div class="grid">
           <article class="card">
-            <h3>Desktop controls</h3>
+            <h3>Fast controls</h3>
             <p>Play with arrow keys, keyboard shortcuts, and swipe gestures on supported devices.</p>
           </article>
           <article class="card">
-            <h3>Flexible boards</h3>
-            <p>Choose supported grid sizes, keep best scores, and restore saved sessions.</p>
+            <h3>Different board sizes</h3>
+            <p>Choose a board size that fits the challenge you want, from compact games to longer sessions.</p>
           </article>
           <article class="card">
-            <h3>Ready-to-run packages</h3>
-            <p>Installers include the Java runtime, so players do not need to install Java separately.</p>
+            <h3>Save and return</h3>
+            <p>Keep your current game, restore it later, and track your best score over time.</p>
           </article>
         </div>
       </section>
@@ -432,7 +424,7 @@
       <section id="download" class="container">
         <div class="section-heading">
           <h2>Download</h2>
-          <p>Choose the installer for your operating system. If a button cannot find a matching asset, it opens the latest GitHub release.</p>
+          <p>Choose the installer for your operating system. Everything needed to run the game is included.</p>
         </div>
         <div class="downloads" id="downloads">
           <article class="download-card" data-asset-match="macos-arm64.dmg">
@@ -475,6 +467,7 @@
         <span>fx2048 is open source under GPL-3.0.</span>
         <span>
           <a href="https://github.com/brunoborges/fx2048">Source</a>
+          <a href="technology.html">Technology</a>
           <a href="https://github.com/brunoborges/fx2048/issues">Issues</a>
           <a href="https://github.com/brunoborges/fx2048/releases">Releases</a>
         </span>
