@@ -19,6 +19,8 @@ import static io.fxgame.game2048.Direction.*;
 public class GamePane extends StackPane {
 
     private static final double STATUS_BAR_HEIGHT = 20;
+    private static final double REFERENCE_GAME_WIDTH = Board.layoutWidthForGridSize(GridOperator.DEFAULT_GRID_SIZE);
+    private static final double REFERENCE_GAME_HEIGHT = Board.layoutHeightForGridSize(GridOperator.DEFAULT_GRID_SIZE);
 
     private GameManager gameManager;
     private Bounds gameBounds;
@@ -79,12 +81,30 @@ public class GamePane extends StackPane {
             return;
         }
 
+        var availableWidth = Math.max(1, getWidth() - UserSettings.MARGIN);
         var availableHeight = Math.max(1, getHeight() - UserSettings.MARGIN - STATUS_BAR_HEIGHT);
-        double scale = Math.min((getWidth() - UserSettings.MARGIN) / gameBounds.getWidth(),
-                availableHeight / gameBounds.getHeight());
+        double scale = calculateGameScale(
+                availableWidth,
+                availableHeight,
+                gameBounds.getWidth(),
+                gameBounds.getHeight(),
+                REFERENCE_GAME_WIDTH,
+                REFERENCE_GAME_HEIGHT);
         gameManager.setScale(scale);
         gameManager.setLayoutX((getWidth() - gameBounds.getWidth()) / 2d);
         gameManager.setLayoutY((getHeight() - STATUS_BAR_HEIGHT - gameBounds.getHeight()) / 2d);
+    }
+
+    static double calculateGameScale(
+            double availableWidth,
+            double availableHeight,
+            double gameWidth,
+            double gameHeight,
+            double referenceWidth,
+            double referenceHeight) {
+        var currentGridScale = Math.min(availableWidth / gameWidth, availableHeight / gameHeight);
+        var referenceGridScale = Math.min(availableWidth / referenceWidth, availableHeight / referenceHeight);
+        return Math.min(currentGridScale, referenceGridScale);
     }
 
     private final BooleanProperty cmdCtrlKeyPressed = new SimpleBooleanProperty(false);
