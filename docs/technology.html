@@ -350,7 +350,7 @@
         <span class="eyebrow">Under the hood</span>
         <h1>How fx2048 is built and packaged.</h1>
         <p class="lede">
-          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint.
+          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint. Its recent modernization was planned, implemented, debugged, and documented with GitHub Copilot.
         </p>
       </div>
 
@@ -375,6 +375,31 @@
           <article class="stat-card">
             <strong>~43 MB</strong>
             <span>Typical installer size</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="copilot-heading">
+        <div class="section-heading">
+          <h2 id="copilot-heading">Built with GitHub Copilot</h2>
+          <p>GitHub Copilot helped drive the current version of fx2048 end to end, from gameplay polish to signed releases and this website.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Game and UI improvements</h3>
+            <p>Copilot helped iterate on the desktop experience, including controls, overlays, status information, layout fixes, and visual refinements.</p>
+          </article>
+          <article class="card">
+            <h3>Release automation</h3>
+            <p>Copilot assisted with Maven, GitHub Actions, jlink, jpackage, platform artifacts, version bumps, changelog updates, and release workflow fixes.</p>
+          </article>
+          <article class="card">
+            <h3>macOS signing diagnostics</h3>
+            <p>Copilot helped diagnose and fix hardened runtime, JVM JIT, JavaFX native library validation, DMG signing, notarization, and Gatekeeper issues.</p>
+          </article>
+          <article class="card">
+            <h3>Documentation and agent skills</h3>
+            <p>Copilot authored the GitHub Pages site and captured the macOS JavaFX signing lessons as a reusable agent skill for future projects.</p>
           </article>
         </div>
       </section>
