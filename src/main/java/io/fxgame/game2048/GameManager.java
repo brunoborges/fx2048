@@ -180,6 +180,10 @@ public class GameManager extends Group {
                 } else if (!model.hasMergeMovements()) {
                     board.setGameOver(true);
                 }
+
+                if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.AFTER_EVERY_MOVE) {
+                    doAutoSaveSession();
+                }
             });
 
             setMovingTiles(true);
@@ -451,7 +455,35 @@ public class GameManager extends Group {
         board.saveRecord();
     }
 
+    /**
+     * Auto-save the session silently, without confirmation overlays.
+     */
+    private void doAutoSaveSession() {
+        board.silentSaveSession(model.snapshot());
+    }
+
+    /**
+     * Auto-restore the session silently on startup if auto-save is enabled and a saved session exists.
+     */
+    public void tryAutoRestoreSession() {
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.OFF) {
+            return;
+        }
+        var restoredValues = new HashMap<Location, Integer>();
+        if (board.silentRestoreSession(restoredValues)) {
+            model.restoreSnapshot(restoredValues);
+            undoManager.resetForRestoredBoard(restoredValues);
+            syncTileMapFromModel();
+            redrawTilesInGameGrid();
+            board.setUndoCount(undoManager.remainingUndos());
+            setUndoSnapshot(null);
+        }
+    }
+
     public void dispose() {
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.ON_EXIT) {
+            doAutoSaveSession();
+        }
         board.dispose();
     }
 

@@ -91,6 +91,7 @@ public class Board extends Pane {
         sessionManager = new SessionManager(gridOperator);
         settingsPanel = new SettingsPanel(List.of(
                 new GridSizeSetting(gridOperator, gridSizeChangeHandler),
+                new AutoSaveSetting(),
                 new AnimationSpeedSetting(this::setAnimationSpeed)));
 
         createScore();
@@ -652,6 +653,42 @@ public class Board extends Pane {
     private void restoreRecord() {
         var recordManager = new RecordManager(gridOperator.getGridSize());
         state.gameBestProperty.set(recordManager.restoreRecord());
+    }
+
+    /**
+     * Silently save the session without confirmation overlays. Used for auto-save.
+     */
+    boolean silentSaveSession(Map<Location, Integer> gridValues) {
+        return sessionManager.saveSession(gridValues, state.gameScoreProperty.getValue(),
+                gameTimer.elapsedNanos(), state.gameMoveCountProperty.getValue());
+    }
+
+    /**
+     * Silently restore the session without confirmation overlays. Used for auto-restore on startup.
+     * Returns true if a session was restored, false if no saved session was found.
+     */
+    boolean silentRestoreSession(Map<Location, Integer> gridValues) {
+        var restoredSession = sessionManager.restoreSession();
+        if (restoredSession.isEmpty()) {
+            return false;
+        }
+
+        doClearGame();
+        gameTimer.pause();
+        gridValues.clear();
+        gridValues.putAll(restoredSession.get().gridValues());
+        state.gameScoreProperty.set(restoredSession.get().score());
+        state.gameMoveCountProperty.set(restoredSession.get().moveCount());
+        state.gameWonProperty.set(false);
+        gridValues.forEach((_, value) -> {
+            if (value >= GameManager.FINAL_VALUE_TO_WIN) {
+                state.gameWonProperty.removeListener(wonListener);
+                state.gameWonProperty.set(true);
+                state.gameWonProperty.addListener(wonListener);
+            }
+        });
+        gameTimer.restore(restoredSession.get().time());
+        return true;
     }
 
     public void removeTiles(Set<Tile> mergedToBeRemoved) {

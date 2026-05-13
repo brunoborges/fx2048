@@ -22,6 +22,7 @@ public enum UserSettings {
     private static final String SETTINGS_FILENAME = "settings.properties";
     private static final String GRID_SIZE_KEY = "gridSize";
     private static final String ANIMATION_SPEED_KEY = "animationSpeed";
+    private static final String AUTO_SAVE_KEY = "autoSave";
     private final File userGameFolder;
 
     UserSettings() {
@@ -117,6 +118,19 @@ public enum UserSettings {
         var settings = new Properties();
         restore(settings, SETTINGS_FILENAME);
         settings.setProperty(ANIMATION_SPEED_KEY, validateAnimationSpeed(animationSpeed).name());
+        store(settings, SETTINGS_FILENAME);
+    }
+
+    public AutoSaveMode getAutoSave() {
+        var settings = new Properties();
+        restore(settings, SETTINGS_FILENAME);
+        return AutoSaveMode.fromString(settings.getProperty(AUTO_SAVE_KEY, AutoSaveMode.OFF.name()));
+    }
+
+    public void setAutoSave(AutoSaveMode mode) {
+        var settings = new Properties();
+        restore(settings, SETTINGS_FILENAME);
+        settings.setProperty(AUTO_SAVE_KEY, mode.name());
         store(settings, SETTINGS_FILENAME);
     }
 

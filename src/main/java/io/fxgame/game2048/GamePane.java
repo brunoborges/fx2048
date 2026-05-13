@@ -32,6 +32,7 @@ public class GamePane extends StackPane {
 
     public GamePane() {
         createGameManager(UserSettings.LOCAL.getGridSize());
+        gameManager.tryAutoRestoreSession();
         createStatusBar();
 
         getStyleClass().addAll("game-root");
