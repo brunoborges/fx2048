@@ -60,7 +60,7 @@ class UndoManagerTest {
         var manager = new UndoManager();
         manager.consumeUndo();
         manager.resetForRestoredBoard(Map.of(
-                new Location(0, 0), 1024,
+                new Location(0, 0), 2048,
                 new Location(1, 0), 0));
 
         assertEquals(UndoManager.MAX_UNDOS, manager.remainingUndos());

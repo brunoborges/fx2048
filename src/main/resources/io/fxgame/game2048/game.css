@@ -307,7 +307,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mSave:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -321,7 +320,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mRestore:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -335,7 +333,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.1;
     -fx-scale-y: 1.1;
-    -fx-focus-traversable: true;
 }
 #mPause:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -349,7 +346,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mReplay:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -363,7 +359,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mUndo:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -377,7 +372,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mSettings:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -391,7 +385,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 0.7;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mInfo:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
@@ -405,7 +398,6 @@ SVG ICONS https://icomoon.io/app/
     -fx-background-color: #f9f6f2;
     -fx-scale-x: 1.0;
     -fx-scale-y: 1.0;
-    -fx-focus-traversable: true;
 }
 #mQuit:hover {
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);

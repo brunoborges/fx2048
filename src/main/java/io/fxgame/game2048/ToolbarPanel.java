@@ -62,6 +62,7 @@ final class ToolbarPanel extends HBox {
         button.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
         button.setId(id);
         button.setOnAction(_ -> action.run());
+        button.setFocusTraversable(false);
         button.setTooltip(new Tooltip(tooltip));
         return button;
     }
