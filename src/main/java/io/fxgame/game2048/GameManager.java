@@ -28,9 +28,9 @@ public class GameManager extends Group {
 
     public static final int FINAL_VALUE_TO_WIN = GameModel.FINAL_VALUE_TO_WIN;
 
-    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
-    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
-    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
+    private static final Duration BASE_ANIMATION_EXISTING_TILE = Duration.millis(65);
+    private static final Duration BASE_ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
+    private static final Duration BASE_ANIMATION_MERGED_TILE = Duration.millis(80);
 
     private volatile boolean movingTiles = false;
     private final Map<Location, Tile> gameGrid = new HashMap<>();
@@ -277,7 +277,8 @@ public class GameManager extends Group {
      * @return a scale transition
      */
     private ScaleTransition animateNewlyAddedTile(Tile tile) {
-        final var scaleTransition = new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
+        final var scaleTransition = new ScaleTransition(
+                board.scaleAnimationDuration(BASE_ANIMATION_NEWLY_ADDED_TILE), tile);
         scaleTransition.setToX(1.0);
         scaleTransition.setToY(1.0);
         scaleTransition.setInterpolator(Interpolator.EASE_OUT);
@@ -328,8 +329,9 @@ public class GameManager extends Group {
         var kvY = new KeyValue(tile.layoutYProperty(),
                 newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
 
-        var kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
-        var kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
+        var animationDuration = board.scaleAnimationDuration(BASE_ANIMATION_EXISTING_TILE);
+        var kfX = new KeyFrame(animationDuration, kvX);
+        var kfY = new KeyFrame(animationDuration, kvY);
 
         timeline.getKeyFrames().add(kfX);
         timeline.getKeyFrames().add(kfY);
@@ -345,12 +347,13 @@ public class GameManager extends Group {
      * @return a sequential transition
      */
     private SequentialTransition animateMergedTile(Tile tile) {
-        final var scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        var animationDuration = board.scaleAnimationDuration(BASE_ANIMATION_MERGED_TILE);
+        final var scale0 = new ScaleTransition(animationDuration, tile);
         scale0.setToX(1.2);
         scale0.setToY(1.2);
         scale0.setInterpolator(Interpolator.EASE_IN);
 
-        final var scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
+        final var scale1 = new ScaleTransition(animationDuration, tile);
         scale1.setToX(1.0);
         scale1.setToY(1.0);
         scale1.setInterpolator(Interpolator.EASE_OUT);
