@@ -209,6 +209,7 @@ public class Board extends Pane {
         hPadding.setMaxSize(gridDimension, TOOLBAR_HEIGHT);
 
         hToolbar.setAlignment(Pos.CENTER);
+        hToolbar.setFillHeight(false);
         hToolbar.getStyleClass().add("game-backGrid");
         hToolbar.setMinSize(gridDimension, TOOLBAR_HEIGHT);
         hToolbar.setPrefSize(gridDimension, TOOLBAR_HEIGHT);
