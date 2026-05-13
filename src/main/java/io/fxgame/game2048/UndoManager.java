@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 final class UndoManager {
 
-    static final int INITIAL_UNDOS = 2;
-    static final int MAX_UNDOS = 3;
+    static final int INITIAL_UNDOS = 1;
+    static final int MAX_UNDOS = 4;
     private static final List<Integer> EARN_MILESTONES = List.of(512, 1024, 2048);
 
     private final Set<Integer> earnedMilestones = new HashSet<>();
