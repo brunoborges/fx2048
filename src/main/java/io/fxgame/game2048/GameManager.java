@@ -36,6 +36,7 @@ public class GameManager extends Group {
 
     private final Board board;
     private final GameModel model;
+    private final UndoManager undoManager = new UndoManager();
     private Animation shakingAnimation;
     private MoveSnapshot undoSnapshot;
     private boolean shakingAnimationPlaying = false;
@@ -101,8 +102,11 @@ public class GameManager extends Group {
      */
     private void startGame() {
         model.startGame();
+        undoSnapshot = null;
+        undoManager.resetForNewGame();
         syncTileMapFromModel();
         redrawTilesInGameGrid();
+        board.setUndoCount(undoManager.remainingUndos());
         board.startGame();
     }
 
@@ -149,6 +153,8 @@ public class GameManager extends Group {
         if (moveResult.tilesMoved()) {
             undoSnapshot = previousSnapshot;
             board.incrementMoveCount();
+            undoManager.awardEarnedUndos(moveResult.movements());
+            board.setUndoCount(undoManager.remainingUndos());
         }
 
         if (moveResult.points() > 0) {
@@ -355,7 +361,11 @@ public class GameManager extends Group {
         }
 
         if (!board.isLayerOn().get()) {
+            if (!undoManager.consumeUndo()) {
+                return;
+            }
             restoreMoveSnapshot(undoSnapshot);
+            board.setUndoCount(undoManager.remainingUndos());
         }
     }
 
@@ -409,8 +419,10 @@ public class GameManager extends Group {
         var restoredValues = new HashMap<Location, Integer>();
         if (board.restoreSession(restoredValues)) {
             model.restoreSnapshot(restoredValues);
+            undoManager.resetForRestoredBoard(restoredValues);
             syncTileMapFromModel();
             redrawTilesInGameGrid();
+            board.setUndoCount(undoManager.remainingUndos());
             undoSnapshot = null;
         }
     }
@@ -435,6 +447,6 @@ public class GameManager extends Group {
                 this::undoMove,
                 board::settingsGame,
                 board::aboutGame,
-                this::quitGame));
+                this::quitGame), board.undoCountProperty());
     }
 }

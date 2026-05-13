@@ -1,6 +1,7 @@
 package io.fxgame.game2048;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableIntegerValue;
 import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,13 +16,16 @@ final class ToolbarPanel extends HBox {
     private static final double PADDING = 10.0;
     private static final double MAX_SPACING = 32.0;
 
-    ToolbarPanel(Actions actions) {
-        super(
+    ToolbarPanel(Actions actions, ObservableIntegerValue undoCount) {
+        super();
+        var undoButton = button("mUndo", "Undo Move", actions.undoMove());
+        undoButton.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+        getChildren().addAll(
                 button("mSave", "Save Session", actions.saveSession()),
                 button("mRestore", "Restore Session", actions.restoreSession()),
                 button("mPause", "Pause Game", actions.pauseGame()),
                 button("mReplay", "Try Again", actions.tryAgain()),
-                button("mUndo", "Undo Move", actions.undoMove()),
+                undoButton,
                 button("mSettings", "Settings", actions.settings()),
                 button("mInfo", "About the Game", actions.about()),
                 button("mQuit", "Quit Game", actions.quit()));
