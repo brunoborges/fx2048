@@ -75,6 +75,7 @@ public class Board extends Pane {
     private final SessionManager sessionManager;
     private final IntConsumer gridSizeChangeHandler;
     private final SettingsPanel settingsPanel;
+    private AnimationSpeed animationSpeed;
 
     public Board(GridOperator grid) {
         this(grid, _ -> {
@@ -84,10 +85,14 @@ public class Board extends Pane {
     public Board(GridOperator grid, IntConsumer gridSizeChangeHandler) {
         this.gridOperator = grid;
         this.gridSizeChangeHandler = gridSizeChangeHandler;
+        animationSpeed = UserSettings.LOCAL.getAnimationSpeed();
         gridScale = calculateGridScale(grid.getGridSize());
         overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
-        settingsPanel = new SettingsPanel(List.of(new GridSizeSetting(gridOperator, gridSizeChangeHandler), new AutoSaveSetting()));
+        settingsPanel = new SettingsPanel(List.of(
+                new GridSizeSetting(gridOperator, gridSizeChangeHandler),
+                new AutoSaveSetting(),
+                new AnimationSpeedSetting(this::setAnimationSpeed)));
 
         createScore();
         createGrid();
@@ -433,7 +438,7 @@ public class Board extends Pane {
         final var kvO = new KeyValue(lblPoints.opacityProperty(), 0);
         final var kvY = new KeyValue(lblPoints.layoutYProperty(), 100);
 
-        var animationDuration = Duration.millis(600);
+        var animationDuration = animationSpeed.scale(Duration.millis(600));
         final KeyFrame kfO = new KeyFrame(animationDuration, kvO);
         final KeyFrame kfY = new KeyFrame(animationDuration, kvY);
 
@@ -441,6 +446,14 @@ public class Board extends Pane {
         timeline.getKeyFrames().add(kfY);
 
         timeline.play();
+    }
+
+    Duration scaleAnimationDuration(Duration baseDuration) {
+        return animationSpeed.scale(baseDuration);
+    }
+
+    private void setAnimationSpeed(AnimationSpeed animationSpeed) {
+        this.animationSpeed = animationSpeed;
     }
 
     public void addTile(Tile tile) {

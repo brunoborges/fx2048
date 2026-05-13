@@ -3,6 +3,8 @@ package io.fxgame.game2048;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +21,7 @@ public enum UserSettings {
     public final static int MARGIN = 36;
     private static final String SETTINGS_FILENAME = "settings.properties";
     private static final String GRID_SIZE_KEY = "gridSize";
+    private static final String ANIMATION_SPEED_KEY = "animationSpeed";
     private static final String AUTO_SAVE_KEY = "autoSave";
     private final File userGameFolder;
 
@@ -93,6 +96,31 @@ public enum UserSettings {
         store(settings, SETTINGS_FILENAME);
     }
 
+    public AnimationSpeed getAnimationSpeed() {
+        var settings = new Properties();
+        restore(settings, SETTINGS_FILENAME);
+
+        var animationSpeed = settings.getProperty(ANIMATION_SPEED_KEY);
+        if (animationSpeed == null) {
+            return AnimationSpeed.DEFAULT;
+        }
+
+        try {
+            return AnimationSpeed.valueOf(animationSpeed.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(UserSettings.class.getName()).log(Level.WARNING,
+                    "Invalid animation speed setting. Using default animation speed.", e);
+            return AnimationSpeed.DEFAULT;
+        }
+    }
+
+    public void setAnimationSpeed(AnimationSpeed animationSpeed) {
+        var settings = new Properties();
+        restore(settings, SETTINGS_FILENAME);
+        settings.setProperty(ANIMATION_SPEED_KEY, validateAnimationSpeed(animationSpeed).name());
+        store(settings, SETTINGS_FILENAME);
+    }
+
     public AutoSaveMode getAutoSave() {
         var settings = new Properties();
         restore(settings, SETTINGS_FILENAME);
@@ -112,6 +140,10 @@ public enum UserSettings {
                     .formatted(GridOperator.MIN_GRID_SIZE, GridOperator.MAX_GRID_SIZE));
         }
         return gridSize;
+    }
+
+    private AnimationSpeed validateAnimationSpeed(AnimationSpeed animationSpeed) {
+        return Objects.requireNonNull(animationSpeed, "Animation speed cannot be null.");
     }
 
 }
