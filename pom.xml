@@ -17,7 +17,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <javafx.version>25.0.3</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
         <runtime.initial.heap>-Xms8m</runtime.initial.heap>
