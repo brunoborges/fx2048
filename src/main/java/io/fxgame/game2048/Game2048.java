@@ -16,6 +16,8 @@ import java.util.Objects;
 public class Game2048 extends Application {
 
     public static final String VERSION = AppMetadata.VERSION;
+    private static final double MIN_WINDOW_WIDTH = 360;
+    private static final double MIN_WINDOW_HEIGHT = 480;
     private static Game2048 applicationInstance;
     private GamePane gamePane;
 
@@ -66,8 +68,8 @@ public class Game2048 extends Application {
                 visualBounds.getHeight() / (gameBounds.getHeight() + margin));
         primaryStage.setTitle("2048FX " + VERSION);
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(gameBounds.getWidth() / 2d);
-        primaryStage.setMinHeight(gameBounds.getHeight() / 2d);
+        primaryStage.setMinWidth(MIN_WINDOW_WIDTH);
+        primaryStage.setMinHeight(MIN_WINDOW_HEIGHT);
         primaryStage.setWidth(((gameBounds.getWidth() + margin) * factor) / 1.5d);
         primaryStage.setHeight(((gameBounds.getHeight() + margin) * factor) / 1.5d);
     }
