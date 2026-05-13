@@ -162,12 +162,6 @@
 .game-settings-panel {
     -fx-spacing: 10;
 }
-.game-settings-list {
-    -fx-spacing: 8;
-}
-.game-settings-row {
-    -fx-padding: 20 0 10 0;
-}
 .game-settings-label {
     -fx-font-size: 28px;
     -fx-text-fill: #776e65;
