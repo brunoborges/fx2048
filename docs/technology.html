@@ -270,6 +270,51 @@
       gap: 16px;
     }
 
+    .memory-chart {
+      display: grid;
+      gap: 14px;
+    }
+
+    .memory-chart-row {
+      display: grid;
+      grid-template-columns: minmax(140px, 0.8fr) minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .memory-chart-label {
+      color: var(--cp-text);
+      font-weight: 700;
+    }
+
+    .memory-chart-track {
+      overflow: hidden;
+      height: 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      background: var(--cp-surface-soft);
+    }
+
+    .memory-chart-bar {
+      display: block;
+      width: var(--bar-size);
+      height: 100%;
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+
+    .memory-chart-value {
+      color: var(--cp-text-muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .memory-chart-note {
+      margin-top: 12px;
+      color: var(--cp-text-muted);
+      font-size: 0.95rem;
+    }
+
     .figure-card {
       margin: 0;
       padding: 16px;
@@ -403,7 +448,7 @@
             <span>Java source files</span>
           </article>
           <article class="stat-card">
-            <strong>48 MB</strong>
+            <strong>32 MB</strong>
             <span>Configured max heap</span>
           </article>
           <article class="stat-card">
@@ -560,6 +605,27 @@
             <article class="card">
               <h3>The browser version shows a different baseline</h3>
               <p>The original JavaScript web version at <a href="https://play2048.co">play2048.co</a> is wonderfully small as a web app, but the browser runtime around it is not free. The Chrome Task Manager screenshot here shows the tab running that game consuming 282 MB.</p>
+            </article>
+            <article class="card">
+              <h3>Memory usage snapshot</h3>
+              <div class="memory-chart" aria-label="Memory usage comparison chart">
+                <div class="memory-chart-row">
+                  <span class="memory-chart-label">fx2048 heap cap</span>
+                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 11.3%;"></span></span>
+                  <span class="memory-chart-value">32 MB</span>
+                </div>
+                <div class="memory-chart-row">
+                  <span class="memory-chart-label">fx2048 app footprint</span>
+                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 67.0%;"></span></span>
+                  <span class="memory-chart-value">~189 MB</span>
+                </div>
+                <div class="memory-chart-row">
+                  <span class="memory-chart-label">play2048.co Chrome tab</span>
+                  <span class="memory-chart-track" aria-hidden="true"><span class="memory-chart-bar" style="--bar-size: 100%;"></span></span>
+                  <span class="memory-chart-value">282 MB</span>
+                </div>
+              </div>
+              <p class="memory-chart-note">The app footprint is a local macOS physical-footprint measurement from the tuned packaged runtime. The Chrome number comes from the screenshot beside this chart.</p>
             </article>
             <article class="card">
               <h3>Not a lab benchmark, but a useful reality check</h3>
