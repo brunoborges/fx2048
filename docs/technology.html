@@ -214,6 +214,7 @@
 
     .stat-card,
     .card,
+    .figure-card,
     .table-card {
       border: 1px solid var(--cp-border);
       border-radius: 16px;
@@ -255,6 +256,38 @@
     .card p {
       margin: 0;
       color: var(--cp-text-muted);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .memory-points {
+      display: grid;
+      gap: 16px;
+    }
+
+    .figure-card {
+      margin: 0;
+      padding: 16px;
+    }
+
+    .figure-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .figure-card figcaption {
+      margin-top: 12px;
+      color: var(--cp-text-muted);
+      font-size: 0.95rem;
     }
 
     .table-card {
@@ -309,7 +342,8 @@
 
     @media (max-width: 860px) {
       .stats,
-      .grid {
+      .grid,
+      .comparison-grid {
         grid-template-columns: 1fr;
       }
 
@@ -505,6 +539,35 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="memory-heading">
+        <div class="section-heading">
+          <h2 id="memory-heading">JavaFX can be lean desktop software</h2>
+          <p>Java desktop apps have a historic reputation for being heavy, but modern Java and JavaFX can be reliable, stable, and efficient when packaged deliberately.</p>
+        </div>
+        <div class="comparison-grid">
+          <div class="memory-points">
+            <article class="card">
+              <h3>fx2048 caps the Java heap at 48 MB</h3>
+              <p>The packaged app runs with <code>-Xmx48m</code> and ZGC, ships only the Java runtime modules it needs, and exposes live memory information in the status bar.</p>
+            </article>
+            <article class="card">
+              <h3>The browser version shows a different baseline</h3>
+              <p>The original JavaScript web version at <a href="https://play2048.co">play2048.co</a> is wonderfully small as a web app, but the browser runtime around it is not free. The Chrome Task Manager screenshot here shows the tab running that game consuming 282 MB.</p>
+            </article>
+            <article class="card">
+              <h3>Not a lab benchmark, but a useful reality check</h3>
+              <p>Browser Task Manager and Java heap limits are not identical measurements. Still, this comparison is a practical reminder: a focused JavaFX desktop app can use far less memory than people often assume, especially compared with a full browser tab hosting the same kind of game.</p>
+            </article>
+          </div>
+          <figure class="figure-card">
+            <img src="assets/play2048-chrome-task-manager.png" alt="Chrome Task Manager screenshot showing the play2048.co tab consuming 282 MB of memory." width="1956" height="1078">
+            <figcaption>
+              Chrome Task Manager showing the <a href="https://play2048.co">play2048.co</a> tab at 282 MB. fx2048's Java heap is capped at 48 MB.
+            </figcaption>
+          </figure>
         </div>
       </section>
 
