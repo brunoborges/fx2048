@@ -350,7 +350,7 @@
         <span class="eyebrow">Under the hood</span>
         <h1>How fx2048 is built and packaged.</h1>
         <p class="lede">
-          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint.
+          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint. Its recent modernization was planned, implemented, debugged, and documented with GitHub Copilot.
         </p>
       </div>
 
@@ -379,6 +379,31 @@
         </div>
       </section>
 
+      <section class="container" aria-labelledby="copilot-heading">
+        <div class="section-heading">
+          <h2 id="copilot-heading">Built with GitHub Copilot</h2>
+          <p><a href="https://github.com/features/copilot">GitHub Copilot</a> helped drive the current version of fx2048 end to end, from gameplay polish to signed releases and this website.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Game and UI improvements</h3>
+            <p>Copilot helped iterate on the desktop experience, including controls, overlays, status information, layout fixes, and visual refinements.</p>
+          </article>
+          <article class="card">
+            <h3>Release automation</h3>
+            <p>Copilot assisted with Maven, GitHub Actions, jlink, jpackage, platform artifacts, version bumps, changelog updates, and release workflow fixes.</p>
+          </article>
+          <article class="card">
+            <h3>macOS signing diagnostics</h3>
+            <p>Copilot helped diagnose and fix hardened runtime, JVM JIT, JavaFX native library validation, DMG signing, notarization, and Gatekeeper issues.</p>
+          </article>
+          <article class="card">
+            <h3>Documentation and agent skills</h3>
+            <p>Copilot authored the GitHub Pages site and captured the macOS JavaFX signing lessons as a reusable agent skill for future projects.</p>
+          </article>
+        </div>
+      </section>
+
       <section class="container" aria-labelledby="stack-heading">
         <div class="section-heading">
           <h2 id="stack-heading">Technology stack</h2>
@@ -387,7 +412,7 @@
         <div class="grid">
           <article class="card">
             <h3>Application runtime</h3>
-            <p>Java 25, JavaFX 25.0.3, and the JPMS module <code>fxgame</code>. The launcher enters <code>io.fxgame.game2048.AppLauncher</code>.</p>
+            <p><a href="https://openjdk.org/projects/jdk/25/">Java 25</a>, <a href="https://openjfx.io/">JavaFX 25.0.3</a>, and the JPMS module <code>fxgame</code>. The launcher enters <code>io.fxgame.game2048.AppLauncher</code>.</p>
           </article>
           <article class="card">
             <h3>UI and animation</h3>
@@ -399,7 +424,7 @@
           </article>
           <article class="card">
             <h3>Build and packaging</h3>
-            <p>Maven builds the app, <code>jlink</code> creates a custom runtime, and <code>jpackage</code> produces DMG, MSI, and DEB installers.</p>
+            <p><a href="https://maven.apache.org/">Maven</a> builds the app, <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jlink.html"><code>jlink</code></a> creates a custom runtime, and <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html"><code>jpackage</code></a> produces DMG, MSI, and DEB installers.</p>
           </article>
         </div>
       </section>
@@ -420,19 +445,28 @@
             <tbody>
               <tr>
                 <td>Language and UI framework</td>
-                <td>Java 25 with JavaFX 25.0.3 modules: <code>javafx-base</code>, <code>javafx-graphics</code>, and <code>javafx-controls</code>.</td>
+                <td>
+                  <a href="https://openjdk.org/projects/jdk/25/">Java 25</a> with JavaFX 25.0.3 modules: <code>javafx-base</code>, <code>javafx-graphics</code>, and <code>javafx-controls</code>.
+                  JavaFX source lives in the <a href="https://github.com/openjdk/jfx">OpenJDK jfx repository</a>, while JavaFX binaries are published by Gluon at <a href="https://openjfx.io/">openjfx.io</a>.
+                </td>
               </tr>
               <tr>
                 <td>Tests</td>
-                <td>JUnit Jupiter 5.11.4 through Maven Surefire 3.5.3.</td>
+                <td><a href="https://junit.org/junit5/">JUnit Jupiter 5.11.4</a> through <a href="https://maven.apache.org/surefire/maven-surefire-plugin/">Maven Surefire 3.5.3</a>.</td>
               </tr>
               <tr>
                 <td>Build</td>
-                <td>Maven wrapper, Maven Compiler Plugin 3.15.0, JavaFX Maven Plugin 0.0.8, Maven JAR Plugin 3.5.0, and jpackage Maven Plugin 1.7.4.</td>
+                <td>
+                  <a href="https://maven.apache.org/wrapper/">Maven wrapper</a>,
+                  <a href="https://maven.apache.org/plugins/maven-compiler-plugin/">Maven Compiler Plugin 3.15.0</a>,
+                  <a href="https://github.com/openjfx/javafx-maven-plugin">JavaFX Maven Plugin 0.0.8</a>,
+                  <a href="https://maven.apache.org/plugins/maven-jar-plugin/">Maven JAR Plugin 3.5.0</a>,
+                  and <a href="https://github.com/petr-panteleyev/jpackage-maven-plugin">jpackage Maven Plugin 1.7.4</a>.
+                </td>
               </tr>
               <tr>
                 <td>Packaging</td>
-                <td><code>jlink</code> strips the runtime image, and <code>jpackage</code> creates native installers from that runtime.</td>
+                <td><a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jlink.html"><code>jlink</code></a> strips the runtime image, and <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html"><code>jpackage</code></a> creates native installers from that runtime.</td>
               </tr>
             </tbody>
           </table>
