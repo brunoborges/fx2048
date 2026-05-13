@@ -41,6 +41,7 @@ public class GameManager extends Group {
     private final UndoManager undoManager = new UndoManager();
     private final BooleanProperty undoAvailable = new SimpleBooleanProperty(false);
     private Animation shakingAnimation;
+    private ParallelTransition activeTileMovement;
     private MoveSnapshot undoSnapshot;
     private boolean shakingAnimationPlaying = false;
     private boolean shakingXYState = false;
@@ -140,10 +141,8 @@ public class GameManager extends Group {
      * @param direction is the selected direction to move the tiles
      */
     private void moveTiles(Direction direction) {
-        synchronized (gameGrid) {
-            if (movingTiles) {
-                return;
-            }
+        if (isMovingTiles() && !finishActiveTileMovement()) {
+            return;
         }
 
         board.setPoints(0);
@@ -168,30 +167,51 @@ public class GameManager extends Group {
         }
 
         board.animateScore();
-        if (!parallelTransition.getChildren().isEmpty()) {
-            parallelTransition.setOnFinished(_ -> {
-                board.removeTiles(mergedToBeRemoved);
-                gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
-                setMovingTiles(false);
+        if (moveResult.tilesMoved()) {
+            if (parallelTransition.getChildren().isEmpty()) {
+                finishMoveAfterTileMotion(false);
+            } else {
+                parallelTransition.setOnFinished(_ -> finishMoveAfterTileMotion(true));
 
-                var addedTile = model.addRandomTile();
-                if (addedTile.isPresent()) {
-                    addAndAnimateRandomTile(addedTile.get());
-                } else if (!model.hasMergeMovements()) {
-                    board.setGameOver(true);
-                }
-
-                if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.AFTER_EVERY_MOVE) {
-                    doAutoSaveSession();
-                }
-            });
-
-            setMovingTiles(true);
-            parallelTransition.play();
+                activeTileMovement = parallelTransition;
+                setMovingTiles(true);
+                parallelTransition.play();
+            }
         }
 
         if (!moveResult.tilesMoved()) {
             shakeGamePane();
+        }
+    }
+
+    private boolean finishActiveTileMovement() {
+        var tileMovement = activeTileMovement;
+        if (tileMovement == null) {
+            return false;
+        }
+
+        tileMovement.setOnFinished(null);
+        tileMovement.jumpTo(tileMovement.getTotalDuration());
+        tileMovement.stop();
+        finishMoveAfterTileMotion(false);
+        return true;
+    }
+
+    private void finishMoveAfterTileMotion(boolean animateAddedTile) {
+        activeTileMovement = null;
+        board.removeTiles(mergedToBeRemoved);
+        gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
+        setMovingTiles(false);
+
+        var addedTile = model.addRandomTile();
+        if (addedTile.isPresent()) {
+            addRandomTileToBoard(addedTile.get(), animateAddedTile);
+        } else if (!model.hasMergeMovements()) {
+            board.setGameOver(true);
+        }
+
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.AFTER_EVERY_MOVE) {
+            doAutoSaveSession();
         }
     }
 
@@ -205,14 +225,24 @@ public class GameManager extends Group {
                 gameGrid.put(movement.destination(), targetTile);
                 gameGrid.replace(movement.source(), null);
 
-                parallelTransition.getChildren().add(animateExistingTile(tile, targetTile.getLocation()));
-                parallelTransition.getChildren().add(animateMergedTile(targetTile));
+                if (board.animationsDisabled()) {
+                    board.moveTileImmediately(tile, targetTile.getLocation());
+                    targetTile.setScaleX(1.0);
+                    targetTile.setScaleY(1.0);
+                } else {
+                    parallelTransition.getChildren().add(animateExistingTile(tile, targetTile.getLocation()));
+                    parallelTransition.getChildren().add(animateMergedTile(targetTile));
+                }
                 mergedToBeRemoved.add(tile);
             } else {
-                parallelTransition.getChildren().add(animateExistingTile(tile, movement.destination()));
                 gameGrid.put(movement.destination(), tile);
                 gameGrid.replace(movement.source(), null);
-                tile.setLocation(movement.destination());
+                if (board.animationsDisabled()) {
+                    board.moveTileImmediately(tile, movement.destination());
+                } else {
+                    parallelTransition.getChildren().add(animateExistingTile(tile, movement.destination()));
+                    tile.setLocation(movement.destination());
+                }
             }
         });
     }
@@ -262,13 +292,28 @@ public class GameManager extends Group {
         updateUndoAvailability();
     }
 
+    private boolean isMovingTiles() {
+        synchronized (gameGrid) {
+            return movingTiles;
+        }
+    }
+
     private void updateUndoAvailability() {
         undoAvailable.set(undoSnapshot != null && !movingTiles);
     }
 
-    private void addAndAnimateRandomTile(GameModel.TileState tileState) {
+    private void addRandomTileToBoard(GameModel.TileState tileState, boolean animate) {
         var tile = board.addAnimatedTile(tileState.location(), tileState.value());
         gameGrid.put(tile.getLocation(), tile);
+
+        if (!animate || board.animationsDisabled()) {
+            tile.setScaleX(1.0);
+            tile.setScaleY(1.0);
+            if (model.isFull() && !model.hasMergeMovements()) {
+                board.setGameOver(true);
+            }
+            return;
+        }
 
         animateNewlyAddedTile(tile).play();
     }

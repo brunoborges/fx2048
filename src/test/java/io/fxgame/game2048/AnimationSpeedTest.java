@@ -1,6 +1,8 @@
 package io.fxgame.game2048;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,5 +28,13 @@ class AnimationSpeedTest {
     @Test
     void offUsesInstantDuration() {
         assertEquals(Duration.ZERO, AnimationSpeed.OFF.scale(Duration.millis(100)));
+    }
+
+    @Test
+    void onlyOffDisablesAnimations() {
+        assertFalse(AnimationSpeed.SLOW.isInstant());
+        assertFalse(AnimationSpeed.NORMAL.isInstant());
+        assertFalse(AnimationSpeed.FAST.isInstant());
+        assertTrue(AnimationSpeed.OFF.isInstant());
     }
 }
