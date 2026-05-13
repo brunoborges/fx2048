@@ -552,7 +552,7 @@ public class Board extends Pane {
         }
     }
 
-    public void bestScoresGame() {
+    void bestScoresGame() {
         showBestScoresOverlay();
     }
 

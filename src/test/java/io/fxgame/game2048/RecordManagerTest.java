@@ -73,6 +73,7 @@ class RecordManagerTest {
         try {
             Files.deleteIfExists(Path.of(System.getProperty("user.home"), ".fx2048", filename));
         } catch (IOException ignored) {
+            // Ignore cleanup failures in tests to avoid masking the assertion outcome.
         }
     }
 }
