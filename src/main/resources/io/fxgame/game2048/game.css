@@ -170,6 +170,21 @@
     -fx-font-size: 24px;
     -fx-pref-width: 120px;
 }
+.game-best-scores-panel {
+    -fx-spacing: 16;
+}
+.game-best-scores-title {
+    -fx-font-size: 40px;
+    -fx-text-fill: #776e65;
+}
+.game-best-scores-list {
+    -fx-hgap: 24;
+    -fx-vgap: 8;
+}
+.game-best-scores-label, .game-best-scores-value {
+    -fx-font-size: 24px;
+    -fx-text-fill: #776e65;
+}
 .game-tile-2    { 
     -fx-font-size: 55px;
     -fx-text-fill: #776e65;
@@ -364,6 +379,19 @@ SVG ICONS https://icomoon.io/app/
     -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
 }
 #mUndo:pressed {
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
+}
+#mBest {
+    -fx-shape: "M2 26h28v2h-28zM4 14h4v10h-4zM10 6h4v18h-4zM16 10h4v14h-4zM22 2h4v22h-4z";
+    -fx-background-color: #f9f6f2;
+    -fx-scale-x: 1.0;
+    -fx-scale-y: 1.0;
+}
+#mBest:hover {
+    -fx-effect: dropshadow(gaussian,derive(#776e65,-20%),10,0.5,0,0);
+}
+#mBest:pressed {
     -fx-translate-y: 2px;
     -fx-effect: dropshadow(gaussian,derive(-fx-focus-color,-20%),10,0.5,0,0);
 }

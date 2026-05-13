@@ -494,6 +494,7 @@ public class GameManager extends Group {
                 board::pauseGame,
                 board::showTryAgainOverlay,
                 this::undoMove,
+                board::bestScoresGame,
                 board::settingsGame,
                 board::aboutGame,
                 this::quitGame), board.undoCountProperty(), undoAvailable);
