@@ -9,7 +9,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -81,7 +80,7 @@ public class Board extends Pane {
     public Board(GridOperator grid, IntConsumer gridSizeChangeHandler) {
         this.gridOperator = grid;
         this.gridSizeChangeHandler = gridSizeChangeHandler;
-        gridDimension = CELL_SIZE * grid.getGridSize() + BORDER_WIDTH * 2;
+        gridDimension = layoutWidthForGridSize(grid.getGridSize());
         overlayPanel = new OverlayPanel(gridDimension, TOP_HEIGHT, GAP_HEIGHT);
         sessionManager = new SessionManager(gridOperator);
 
@@ -89,6 +88,14 @@ public class Board extends Pane {
         createGrid();
         createToolBar();
         initGameProperties();
+    }
+
+    static int layoutWidthForGridSize(int gridSize) {
+        return CELL_SIZE * gridSize + BORDER_WIDTH * 2;
+    }
+
+    static int layoutHeightForGridSize(int gridSize) {
+        return TOP_HEIGHT + GAP_HEIGHT + layoutWidthForGridSize(gridSize) + TOOLBAR_HEIGHT * 2;
     }
 
     private void createScore() {
@@ -209,6 +216,7 @@ public class Board extends Pane {
         hPadding.setMaxSize(gridDimension, TOOLBAR_HEIGHT);
 
         hToolbar.setAlignment(Pos.CENTER);
+        hToolbar.setFillHeight(false);
         hToolbar.getStyleClass().add("game-backGrid");
         hToolbar.setMinSize(gridDimension, TOOLBAR_HEIGHT);
         hToolbar.setPrefSize(gridDimension, TOOLBAR_HEIGHT);
@@ -218,9 +226,9 @@ public class Board extends Pane {
         vGame.getChildren().add(hToolbar);
     }
 
-    protected void setToolBar(HBox toolbar) {
+    protected void setToolBar(ToolbarPanel toolbar) {
         toolbar.disableProperty().bind(state.layerOnProperty);
-        toolbar.spacingProperty().bind(Bindings.divide(vGame.widthProperty(), 16));
+        toolbar.bindSpacingTo(hToolbar.widthProperty());
         hToolbar.getChildren().add(toolbar);
     }
 
