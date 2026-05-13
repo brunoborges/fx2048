@@ -20,9 +20,14 @@
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
-        <runtime.max.heap>-Xmx48m</runtime.max.heap>
+        <runtime.initial.heap>-Xms8m</runtime.initial.heap>
+        <runtime.max.heap>-Xmx32m</runtime.max.heap>
         <runtime.thread.stack.size>-Xss512k</runtime.thread.stack.size>
-        <runtime.code.cache.size>-XX:ReservedCodeCacheSize=32m</runtime.code.cache.size>
+        <runtime.min.heap.free.ratio>-XX:MinHeapFreeRatio=10</runtime.min.heap.free.ratio>
+        <runtime.max.heap.free.ratio>-XX:MaxHeapFreeRatio=20</runtime.max.heap.free.ratio>
+        <runtime.code.cache.size>-XX:ReservedCodeCacheSize=12m</runtime.code.cache.size>
+        <runtime.compiler.count>-XX:CICompilerCount=2</runtime.compiler.count>
+        <runtime.tiered.compilation>-XX:TieredStopAtLevel=1</runtime.tiered.compilation>
         <runtime.garbage.collector>-XX:+UseG1GC</runtime.garbage.collector>
         <runtime.periodic.gc.interval>-XX:G1PeriodicGCInterval=10000</runtime.periodic.gc.interval>
         <runtime.periodic.gc.mode>-XX:+G1PeriodicGCInvokesConcurrent</runtime.periodic.gc.mode>
@@ -97,9 +102,14 @@
                     <jlinkImageName>fx2048</jlinkImageName>
                     <jlinkZipName>game2048</jlinkZipName>
                     <options>
+                        <option>${runtime.initial.heap}</option>
                         <option>${runtime.max.heap}</option>
                         <option>${runtime.thread.stack.size}</option>
+                        <option>${runtime.min.heap.free.ratio}</option>
+                        <option>${runtime.max.heap.free.ratio}</option>
                         <option>${runtime.code.cache.size}</option>
+                        <option>${runtime.compiler.count}</option>
+                        <option>${runtime.tiered.compilation}</option>
                         <option>${runtime.garbage.collector}</option>
                         <option>${runtime.periodic.gc.interval}</option>
                         <option>${runtime.periodic.gc.mode}</option>
@@ -136,9 +146,14 @@
                     <runtimeImage>target/fx2048</runtimeImage>
                     <javaOptions>
                         <option>-Dfile.encoding=UTF-8</option>
+                        <option>${runtime.initial.heap}</option>
                         <option>${runtime.max.heap}</option>
                         <option>${runtime.thread.stack.size}</option>
+                        <option>${runtime.min.heap.free.ratio}</option>
+                        <option>${runtime.max.heap.free.ratio}</option>
                         <option>${runtime.code.cache.size}</option>
+                        <option>${runtime.compiler.count}</option>
+                        <option>${runtime.tiered.compilation}</option>
                         <option>${runtime.garbage.collector}</option>
                         <option>${runtime.periodic.gc.interval}</option>
                         <option>${runtime.periodic.gc.mode}</option>

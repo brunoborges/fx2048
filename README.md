@@ -24,7 +24,7 @@ Maven is the build system used by CI; use the included Maven wrapper:
 ./mvnw javafx:run
 ```
 
-The application is launched with a maximum 48 MB heap, G1GC, 10-second periodic concurrent collections, a 512 KB thread stack, and a 32 MB reserved code cache by default.
+The application is launched with an 8 MB initial heap, maximum 32 MB heap, G1GC, 10-second periodic concurrent collections, a 512 KB thread stack, a 12 MB reserved code cache, and C1-only compilation by default.
 
 ### Create a distribution to your operating system (Windows, Linux, or Mac OS)
 
