@@ -1,6 +1,7 @@
 package io.fxgame.game2048;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableIntegerValue;
 import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Insets;
@@ -18,9 +19,9 @@ final class ToolbarPanel extends HBox {
     private static final double PADDING = 10.0;
     private static final double MAX_SPACING = 32.0;
 
-    ToolbarPanel(Actions actions, ObservableIntegerValue undoCount) {
+    ToolbarPanel(Actions actions, ObservableIntegerValue undoCount, ObservableBooleanValue undoAvailable) {
         super();
-        var undoControl = undoControl(actions.undoMove(), undoCount);
+        var undoControl = undoControl(actions.undoMove(), undoCount, undoAvailable);
         getChildren().addAll(
                 button("mSave", "Save Session", actions.saveSession()),
                 button("mRestore", "Restore Session", actions.restoreSession()),
@@ -65,16 +66,19 @@ final class ToolbarPanel extends HBox {
         return button;
     }
 
-    private static StackPane undoControl(Runnable action, ObservableIntegerValue undoCount) {
+    private static StackPane undoControl(Runnable action, ObservableIntegerValue undoCount, ObservableBooleanValue undoAvailable) {
         var undoButton = button("mUndo", "Undo Move", action);
-        undoButton.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+        undoButton.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> isUndoDisabled(undoCount.get(), undoAvailable.get()),
+                undoCount,
+                undoAvailable));
 
         var undoBadge = new Label();
         undoBadge.getStyleClass().addAll("game-label", "game-undo-badge");
         undoBadge.textProperty().bind(Bindings.createStringBinding(
                 () -> Integer.toString(undoCount.get()),
                 undoCount));
-        undoBadge.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+        undoBadge.disableProperty().bind(undoButton.disableProperty());
         undoBadge.setMouseTransparent(true);
 
         var undoControl = new StackPane(undoButton, undoBadge);
@@ -84,6 +88,10 @@ final class ToolbarPanel extends HBox {
         undoControl.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
         StackPane.setAlignment(undoBadge, Pos.TOP_RIGHT);
         return undoControl;
+    }
+
+    static boolean isUndoDisabled(int undoCount, boolean undoAvailable) {
+        return undoCount <= 0 || !undoAvailable;
     }
 
     static double calculateSpacing(double width, int buttonCount) {
