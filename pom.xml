@@ -31,6 +31,7 @@
         <runtime.garbage.collector>-XX:+UseG1GC</runtime.garbage.collector>
         <runtime.periodic.gc.interval>-XX:G1PeriodicGCInterval=10000</runtime.periodic.gc.interval>
         <runtime.periodic.gc.mode>-XX:+G1PeriodicGCInvokesConcurrent</runtime.periodic.gc.mode>
+        <jlink.executable>jlink</jlink.executable>
     </properties>
 
     <dependencies>
@@ -99,8 +100,10 @@
                     <noHeaderFiles>true</noHeaderFiles>
                     <noManPages>true</noManPages>
                     <stripDebug>true</stripDebug>
+                    <stripJavaDebugAttributes>true</stripJavaDebugAttributes>
                     <jlinkImageName>fx2048</jlinkImageName>
                     <jlinkZipName>game2048</jlinkZipName>
+                    <jlinkExecutable>${jlink.executable}</jlinkExecutable>
                     <options>
                         <option>${runtime.initial.heap}</option>
                         <option>${runtime.max.heap}</option>
@@ -231,6 +234,30 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>jlink-wrapper-unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <jlink.executable>${project.basedir}/src/jlink/jlink-wrapper</jlink.executable>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jlink-wrapper-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <jlink.executable>${project.basedir}/src/jlink/jlink-wrapper.cmd</jlink.executable>
+            </properties>
+        </profile>
+
         <!-- Profile for macOS -->
         <profile>
             <id>mac</id>
