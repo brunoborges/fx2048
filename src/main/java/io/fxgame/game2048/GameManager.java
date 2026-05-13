@@ -8,6 +8,8 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Group;
 import javafx.util.Duration;
 
@@ -36,6 +38,8 @@ public class GameManager extends Group {
 
     private final Board board;
     private final GameModel model;
+    private final UndoManager undoManager = new UndoManager();
+    private final BooleanProperty undoAvailable = new SimpleBooleanProperty(false);
     private Animation shakingAnimation;
     private MoveSnapshot undoSnapshot;
     private boolean shakingAnimationPlaying = false;
@@ -68,7 +72,7 @@ public class GameManager extends Group {
 
         board.clearGameProperty().addListener((_, _, newValue) -> {
             if (newValue) {
-                undoSnapshot = null;
+                setUndoSnapshot(null);
                 initializeGameGrid();
             }
         });
@@ -101,8 +105,11 @@ public class GameManager extends Group {
      */
     private void startGame() {
         model.startGame();
+        setUndoSnapshot(null);
+        undoManager.resetForNewGame();
         syncTileMapFromModel();
         redrawTilesInGameGrid();
+        board.setUndoCount(undoManager.remainingUndos());
         board.startGame();
     }
 
@@ -147,8 +154,10 @@ public class GameManager extends Group {
         applyMovements(moveResult, parallelTransition);
 
         if (moveResult.tilesMoved()) {
-            undoSnapshot = previousSnapshot;
+            setUndoSnapshot(previousSnapshot);
             board.incrementMoveCount();
+            undoManager.awardEarnedUndos(moveResult.movements());
+            board.setUndoCount(undoManager.remainingUndos());
         }
 
         if (moveResult.points() > 0) {
@@ -163,9 +172,7 @@ public class GameManager extends Group {
             parallelTransition.setOnFinished(_ -> {
                 board.removeTiles(mergedToBeRemoved);
                 gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
-                synchronized (gameGrid) {
-                    movingTiles = false;
-                }
+                setMovingTiles(false);
 
                 var addedTile = model.addRandomTile();
                 if (addedTile.isPresent()) {
@@ -175,10 +182,7 @@ public class GameManager extends Group {
                 }
             });
 
-            synchronized (gameGrid) {
-                movingTiles = true;
-            }
-
+            setMovingTiles(true);
             parallelTransition.play();
         }
 
@@ -239,7 +243,23 @@ public class GameManager extends Group {
         board.setScore(snapshot.score());
         board.setMoveCount(snapshot.moveCount());
         redrawTilesInGameGrid();
-        undoSnapshot = null;
+        setUndoSnapshot(null);
+    }
+
+    private void setUndoSnapshot(MoveSnapshot snapshot) {
+        undoSnapshot = snapshot;
+        updateUndoAvailability();
+    }
+
+    private void setMovingTiles(boolean moving) {
+        synchronized (gameGrid) {
+            movingTiles = moving;
+        }
+        updateUndoAvailability();
+    }
+
+    private void updateUndoAvailability() {
+        undoAvailable.set(undoSnapshot != null && !movingTiles);
     }
 
     private void addAndAnimateRandomTile(GameModel.TileState tileState) {
@@ -355,7 +375,11 @@ public class GameManager extends Group {
         }
 
         if (!board.isLayerOn().get()) {
+            if (!undoManager.consumeUndo()) {
+                return;
+            }
             restoreMoveSnapshot(undoSnapshot);
+            board.setUndoCount(undoManager.remainingUndos());
         }
     }
 
@@ -409,9 +433,11 @@ public class GameManager extends Group {
         var restoredValues = new HashMap<Location, Integer>();
         if (board.restoreSession(restoredValues)) {
             model.restoreSnapshot(restoredValues);
+            undoManager.resetForRestoredBoard(restoredValues);
             syncTileMapFromModel();
             redrawTilesInGameGrid();
-            undoSnapshot = null;
+            board.setUndoCount(undoManager.remainingUndos());
+            setUndoSnapshot(null);
         }
     }
 
@@ -435,6 +461,6 @@ public class GameManager extends Group {
                 this::undoMove,
                 board::settingsGame,
                 board::aboutGame,
-                this::quitGame));
+                this::quitGame), board.undoCountProperty(), undoAvailable);
     }
 }

@@ -32,6 +32,30 @@
     -fx-font-size: 11px;
     -fx-text-fill: #bbada0;
 }
+.game-undo-control {
+    -fx-padding: 0;
+}
+.game-undo-badge {
+    -fx-font-size: 11px;
+    -fx-text-fill: white;
+    -fx-background-color: #f65e3b;
+    -fx-background-radius: 9;
+    -fx-border-color: #faf8ef;
+    -fx-border-radius: 9;
+    -fx-border-width: 1;
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-alignment: center;
+    -fx-translate-x: 4px;
+    -fx-translate-y: -4px;
+}
+.game-undo-badge:disabled {
+    -fx-background-color: #cdc1b4;
+    -fx-text-fill: #776e65;
+    -fx-opacity: 1;
+}
 .game-backGrid {
     -fx-background-color: #bbada0;
     -fx-border-color: #bbada0; 

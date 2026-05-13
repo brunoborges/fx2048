@@ -10,6 +10,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -52,6 +53,7 @@ public class Board extends Pane {
     private final Label lblScore = new Label("0");
     private final Label lblBest = new Label("0");
     private final Label lblMoves = new Label("0");
+    private final Label lblUndos = new Label("0");
     private final Label lblPoints = new Label();
     private final OverlayPanel overlayPanel;
 
@@ -149,7 +151,17 @@ public class Board extends Pane {
         lblMoves.textProperty().bind(state.gameMoveCountProperty.asString());
         vMoves.getChildren().addAll(lblTitMoves, lblMoves);
 
-        hScores.getChildren().addAll(vScore, vRecord, vMoves);
+        var vUndos = new VBox(-5);
+        vUndos.setAlignment(Pos.CENTER);
+        vUndos.getStyleClass().add("game-vbox");
+
+        var lblTitUndos = new Label("UNDOS");
+        lblTitUndos.getStyleClass().addAll("game-label", "game-titScore");
+        lblUndos.getStyleClass().addAll("game-label", "game-score");
+        lblUndos.textProperty().bind(state.gameUndoCountProperty.asString());
+        vUndos.getChildren().addAll(lblTitUndos, lblUndos);
+
+        hScores.getChildren().addAll(vScore, vRecord, vMoves, vUndos);
 
         var vFill = new VBox();
         VBox.setVgrow(vFill, Priority.ALWAYS);
@@ -488,6 +500,10 @@ public class Board extends Pane {
         state.gameMoveCountProperty.set(moveCount);
     }
 
+    public void setUndoCount(int undoCount) {
+        state.gameUndoCountProperty.set(undoCount);
+    }
+
     public void incrementMoveCount() {
         state.gameMoveCountProperty.set(state.gameMoveCountProperty.get() + 1);
     }
@@ -580,6 +596,10 @@ public class Board extends Pane {
 
     protected BooleanProperty restoreGameProperty() {
         return state.restoreGame;
+    }
+
+    protected IntegerProperty undoCountProperty() {
+        return state.gameUndoCountProperty;
     }
 
     public void saveSession() {

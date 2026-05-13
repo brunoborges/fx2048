@@ -13,6 +13,7 @@ class GameState {
     final IntegerProperty gameBestProperty = new SimpleIntegerProperty(0);
     final IntegerProperty gameMovePoints = new SimpleIntegerProperty(0);
     final IntegerProperty gameMoveCountProperty = new SimpleIntegerProperty(0);
+    final IntegerProperty gameUndoCountProperty = new SimpleIntegerProperty(0);
     final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     final BooleanProperty gameAboutProperty = new SimpleBooleanProperty(false);
@@ -46,6 +47,7 @@ class GameState {
 
         gameScoreProperty.set(0);
         gameMoveCountProperty.set(0);
+        gameUndoCountProperty.set(0);
 
         clearGame.set(true);
     }
