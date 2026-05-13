@@ -49,8 +49,6 @@ set "EXIT_CODE=%ERRORLEVEL%"
 if not "%EXIT_CODE%"=="0" exit /b %EXIT_CODE%
 
 if defined OUTPUT_DIR (
-    del /f /q "%OUTPUT_DIR%\bin\java.exe" 2>nul
-    del /f /q "%OUTPUT_DIR%\bin\java" 2>nul
     del /f /q "%OUTPUT_DIR%\bin\keytool.exe" 2>nul
     del /f /q "%OUTPUT_DIR%\bin\keytool" 2>nul
 )

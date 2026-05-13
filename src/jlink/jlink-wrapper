@@ -43,5 +43,5 @@ done
 "$jlink_bin" "${args[@]}"
 
 if [[ -n "$output_dir" ]]; then
-  rm -f "$output_dir/bin/java" "$output_dir/bin/keytool"
+  rm -f "$output_dir/bin/keytool"
 fi
