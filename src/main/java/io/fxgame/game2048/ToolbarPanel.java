@@ -6,9 +6,11 @@ import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 final class ToolbarPanel extends HBox {
 
@@ -18,14 +20,13 @@ final class ToolbarPanel extends HBox {
 
     ToolbarPanel(Actions actions, ObservableIntegerValue undoCount) {
         super();
-        var undoButton = button("mUndo", "Undo Move", actions.undoMove());
-        undoButton.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+        var undoControl = undoControl(actions.undoMove(), undoCount);
         getChildren().addAll(
                 button("mSave", "Save Session", actions.saveSession()),
                 button("mRestore", "Restore Session", actions.restoreSession()),
                 button("mPause", "Pause Game", actions.pauseGame()),
                 button("mReplay", "Try Again", actions.tryAgain()),
-                undoButton,
+                undoControl,
                 button("mSettings", "Settings", actions.settings()),
                 button("mInfo", "About the Game", actions.about()),
                 button("mQuit", "Quit Game", actions.quit()));
@@ -62,6 +63,27 @@ final class ToolbarPanel extends HBox {
         button.setOnAction(_ -> action.run());
         button.setTooltip(new Tooltip(tooltip));
         return button;
+    }
+
+    private static StackPane undoControl(Runnable action, ObservableIntegerValue undoCount) {
+        var undoButton = button("mUndo", "Undo Move", action);
+        undoButton.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+
+        var undoBadge = new Label();
+        undoBadge.getStyleClass().addAll("game-label", "game-undo-badge");
+        undoBadge.textProperty().bind(Bindings.createStringBinding(
+                () -> Integer.toString(undoCount.get()),
+                undoCount));
+        undoBadge.disableProperty().bind(Bindings.lessThanOrEqual(undoCount, 0));
+        undoBadge.setMouseTransparent(true);
+
+        var undoControl = new StackPane(undoButton, undoBadge);
+        undoControl.getStyleClass().add("game-undo-control");
+        undoControl.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        undoControl.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+        undoControl.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        StackPane.setAlignment(undoBadge, Pos.TOP_RIGHT);
+        return undoControl;
     }
 
     static double calculateSpacing(double width, int buttonCount) {
