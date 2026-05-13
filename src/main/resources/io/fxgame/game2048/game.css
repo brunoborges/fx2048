@@ -159,8 +159,8 @@
     -fx-border-color: -fx-focus-color;
     -fx-border-width: 0.5px;
 }
-.game-settings-row {
-    -fx-padding: 20 0 10 0;
+.game-settings-panel {
+    -fx-spacing: 10;
 }
 .game-settings-label {
     -fx-font-size: 28px;
