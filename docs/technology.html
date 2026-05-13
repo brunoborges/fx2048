@@ -527,7 +527,11 @@
               </tr>
               <tr>
                 <td>Garbage collector</td>
-                <td><code>-XX:+UseZGC</code></td>
+                <td><code>-XX:+UseG1GC</code> with <code>-XX:G1PeriodicGCInterval=10000</code> and <code>-XX:+G1PeriodicGCInvokesConcurrent</code></td>
+              </tr>
+              <tr>
+                <td>Native footprint limits</td>
+                <td><code>-Xss512k</code> thread stacks and <code>-XX:ReservedCodeCacheSize=32m</code> for the JIT code cache.</td>
               </tr>
               <tr>
                 <td>Status bar</td>
@@ -551,7 +555,7 @@
           <div class="memory-points">
             <article class="card">
               <h3>fx2048 caps the Java heap at 48 MB</h3>
-              <p>The packaged app runs with <code>-Xmx48m</code> and ZGC, ships only the Java runtime modules it needs, and exposes live memory information in the status bar.</p>
+              <p>The packaged app runs with <code>-Xmx48m</code>, G1GC, 10-second periodic concurrent collections, smaller thread stacks, and a bounded JIT code cache. It also ships only the Java runtime modules it needs and exposes live memory information in the status bar.</p>
             </article>
             <article class="card">
               <h3>The browser version shows a different baseline</h3>
