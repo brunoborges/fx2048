@@ -282,6 +282,7 @@ jobs:
 
           runtime_max_heap="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=runtime.max.heap -q -DforceStdout)"
           runtime_garbage_collector="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=runtime.garbage.collector -q -DforceStdout)"
+          runtime_native_access="$(./mvnw --batch-mode --no-transfer-progress help:evaluate -Dexpression=runtime.native.access -q -DforceStdout)"
           app_image_dir="target/app-image"
           app_image="${app_image_dir}/fx2048.app"
 
@@ -300,6 +301,7 @@ jobs:
             --java-options -Dfile.encoding=UTF-8 \
             --java-options "${runtime_max_heap}" \
             --java-options "${runtime_garbage_collector}" \
+            --java-options "${runtime_native_access}" \
             --mac-package-identifier fx2048 \
             --mac-package-name fx2048 \
             --icon src/main/resources/io/fxgame/game2048/fx2048-logo.icns \

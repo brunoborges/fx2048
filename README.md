@@ -52,6 +52,12 @@ JPro support is available through the Maven `jpro` profile for:
 
 Windows is intentionally not supported in this JPro setup.
 
+JPro runs the JavaFX application on the server and streams the UI to a browser.
+This path does not use the desktop `AppLauncher`, `jlink`, or `jpackage` launchers.
+Instead, the `jpro` profile points JPro directly at `io.fxgame.game2048.Game2048`,
+the class that extends `javafx.application.Application`, and combines it with a
+platform profile that selects the JPro-compatible JavaFX native artifacts.
+
 Start JPro in development mode:
 
 ```bash
@@ -73,6 +79,13 @@ Start JPro in background/server mode:
 Then open:
 
 `http://localhost:8080/index.html`
+
+The `jpro:restart` goal writes the server PID to `RUNNING_PID`. Stop it with:
+
+```bash
+kill $(cat RUNNING_PID)
+rm -f RUNNING_PID
+```
 
 ### Create a GitHub release
 
