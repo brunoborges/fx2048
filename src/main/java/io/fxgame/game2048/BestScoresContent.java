@@ -24,6 +24,7 @@ final class BestScoresContent extends VBox {
         title.getStyleClass().setAll("game-label", "game-best-scores-title");
 
         var scoresList = new GridPane();
+        scoresList.setAlignment(Pos.CENTER);
         scoresList.getStyleClass().add("game-best-scores-list");
         scoresList.getColumnConstraints().setAll(labelColumn(), valueColumn());
 
