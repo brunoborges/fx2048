@@ -1,5 +1,14 @@
 # 2048FX
 
+[![Build](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml)
+[![GitHub Pages](https://github.com/brunoborges/fx2048/actions/workflows/pages.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/pages.yml)
+[![Release](https://github.com/brunoborges/fx2048/actions/workflows/release.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/brunoborges/fx2048)](https://github.com/brunoborges/fx2048/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/brunoborges/fx2048/total)](https://github.com/brunoborges/fx2048/releases)
+[![License: GPL-3.0](https://img.shields.io/github/license/brunoborges/fx2048)](LICENSE)
+[![Java 25](https://img.shields.io/badge/Java-25-orange)](https://jdk.java.net/)
+[![JavaFX 26.0.1](https://img.shields.io/badge/JavaFX-26.0.1-blue)](https://openjfx.io/)
+
 The game 2048 built using JavaFX 26.0.1 and Java 25. This is a Java port based on the
 JavaScript version: https://github.com/gabrielecirulli/2048.
 
@@ -15,8 +24,6 @@ Maven is the build system used by CI; use the included Maven wrapper:
 ```
 
 ## Releases
-
-[![JavaFX Build](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml)
 
 Visit the [fx2048 website](https://brunoborges.github.io/fx2048/) or download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). The release workflow builds macOS arm64 DMG, Windows x64 MSI, and Linux amd64/arm64 DEB packages, each with the Java runtime needed to run the game.
 
