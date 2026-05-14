@@ -421,6 +421,13 @@ public class Board extends Pane {
         showOverlay(bContinue);
     }
 
+    private void showBestScoresOverlay() {
+        gameTimer.pause();
+        overlayPanel.showContent("game-overlay-pause", bContinue, null,
+                new BestScoresContent(gridDimension, RecordManager.restoreBestScores()));
+        showOverlay(bContinue);
+    }
+
     public void animateScore() {
         if (state.gameMovePoints.get() == 0) {
             return;
@@ -557,6 +564,10 @@ public class Board extends Pane {
         if (!state.gameAboutProperty.get()) {
             state.gameAboutProperty.set(true);
         }
+    }
+
+    void bestScoresGame() {
+        showBestScoresOverlay();
     }
 
     public void settingsGame() {

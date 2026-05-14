@@ -28,6 +28,7 @@ final class ToolbarPanel extends HBox {
                 button("mPause", "Pause Game", actions.pauseGame()),
                 button("mReplay", "Try Again", actions.tryAgain()),
                 undoControl,
+                button("mBest", "Best Scores", actions.bestScores()),
                 button("mSettings", "Settings", actions.settings()),
                 button("mInfo", "About the Game", actions.about()),
                 button("mQuit", "Quit Game", actions.quit()));
@@ -51,6 +52,7 @@ final class ToolbarPanel extends HBox {
             Runnable pauseGame,
             Runnable tryAgain,
             Runnable undoMove,
+            Runnable bestScores,
             Runnable settings,
             Runnable about,
             Runnable quit) {}

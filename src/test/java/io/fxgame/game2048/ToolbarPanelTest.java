@@ -10,17 +10,17 @@ class ToolbarPanelTest {
 
     @Test
     void capsSpacingOnWideToolbars() {
-        assertEquals(32.0, ToolbarPanel.calculateSpacing(784, 8));
+        assertEquals(32.0, ToolbarPanel.calculateSpacing(784, 9));
     }
 
     @Test
     void shrinksSpacingToFitNarrowToolbars() {
-        assertEquals(26.857, ToolbarPanel.calculateSpacing(528, 8), 0.001);
+        assertEquals(18.5, ToolbarPanel.calculateSpacing(528, 9), 0.001);
     }
 
     @Test
     void neverUsesNegativeSpacing() {
-        assertEquals(0.0, ToolbarPanel.calculateSpacing(300, 8));
+        assertEquals(0.0, ToolbarPanel.calculateSpacing(300, 9));
     }
 
     @Test
