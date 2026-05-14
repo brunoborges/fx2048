@@ -144,6 +144,7 @@ jobs:
     name: Build ${{ matrix.label }} package
     needs: release-context
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     env:
       RELEASE_TAG: ${{ needs.release-context.outputs.release_tag }}
     strategy:
@@ -202,6 +203,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes fakeroot
+
+      - name: Disable Windows Defender realtime scanning
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Set-MpPreference -DisableRealtimeMonitoring $true
 
       - name: Install WiX Toolset
         if: runner.os == 'Windows'

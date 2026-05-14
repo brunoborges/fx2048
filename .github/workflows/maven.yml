@@ -38,6 +38,7 @@ jobs:
 
   build-windows:
     runs-on: windows-2022
+    timeout-minutes: 30
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v5
@@ -48,6 +49,25 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         architecture: ${{ env.JAVA_ARCHITECTURE }}
         cache: maven
+    - name: Disable Windows Defender realtime scanning
+      shell: pwsh
+      run: Set-MpPreference -DisableRealtimeMonitoring $true
+    - name: Install WiX Toolset
+      shell: pwsh
+      run: |
+        $wixRoots = @(
+          "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin",
+          "${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin"
+        )
+        $wixRoot = $wixRoots | Where-Object { Test-Path (Join-Path $_ 'candle.exe') } | Select-Object -First 1
+        if (-not $wixRoot) {
+          choco install wixtoolset --no-progress --yes
+          $wixRoot = $wixRoots | Where-Object { Test-Path (Join-Path $_ 'candle.exe') } | Select-Object -First 1
+        }
+        if (-not $wixRoot) {
+          throw 'WiX Toolset was not found after installation.'
+        }
+        $wixRoot | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Build with Maven
       run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package javafx:jlink jpackage:jpackage
     - name: Upload package
