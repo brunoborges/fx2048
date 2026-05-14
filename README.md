@@ -66,6 +66,10 @@ Submit an issue and share your thoughts.
 
 If you want to run with Java 8, you can download the tag [java-8](https://github.com/brunoborges/fx2048/releases/tag/java-8). New features in the master branch will not be back-ported.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=brunoborges/fx2048&type=Date)](https://star-history.com/#brunoborges/fx2048&Date)
+
 ## License
 
 The project is licensed under GPL 3. See [LICENSE](https://raw.githubusercontent.com/brunoborges/fx2048/main/LICENSE) file for the full license.
