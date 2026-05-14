@@ -381,6 +381,27 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>jpro-macos-aarch64</id>
+            <properties>
+                <javafx.platform>mac-aarch64</javafx.platform>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jpro-linux-amd64</id>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jpro-linux-aarch64</id>
+            <properties>
+                <javafx.platform>linux-aarch64</javafx.platform>
+            </properties>
+        </profile>
     </profiles>
 
 </project>

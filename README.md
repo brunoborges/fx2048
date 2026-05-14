@@ -44,18 +44,30 @@ To create a native OS package, run:
 
 ### Run in a browser with JPro
 
-JPro support is available through the Maven `jpro` profile.
+JPro support is available through the Maven `jpro` profile for:
+
+- macOS arm64 (`jpro-macos-aarch64`)
+- Linux amd64 (`jpro-linux-amd64`)
+- Linux arm64 (`jpro-linux-aarch64`)
+
+Windows is intentionally not supported in this JPro setup.
 
 Start JPro in development mode:
 
 ```bash
-./mvnw -Pjpro jpro:run
+./mvnw -Pjpro,jpro-macos-aarch64 jpro:run
+# or:
+# ./mvnw -Pjpro,jpro-linux-amd64 jpro:run
+# ./mvnw -Pjpro,jpro-linux-aarch64 jpro:run
 ```
 
 Start JPro in background/server mode:
 
 ```bash
-./mvnw -Pjpro jpro:restart
+./mvnw -Pjpro,jpro-macos-aarch64 jpro:restart
+# or:
+# ./mvnw -Pjpro,jpro-linux-amd64 jpro:restart
+# ./mvnw -Pjpro,jpro-linux-aarch64 jpro:restart
 ```
 
 Then open:
