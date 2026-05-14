@@ -3,9 +3,8 @@
 [![Build](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/maven.yml)
 [![GitHub Pages](https://github.com/brunoborges/fx2048/actions/workflows/pages.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/pages.yml)
 [![Release](https://github.com/brunoborges/fx2048/actions/workflows/release.yml/badge.svg)](https://github.com/brunoborges/fx2048/actions/workflows/release.yml)
-[![Latest release](https://img.shields.io/github/v/release/brunoborges/fx2048)](https://github.com/brunoborges/fx2048/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/brunoborges/fx2048/total)](https://github.com/brunoborges/fx2048/releases)
-[![License: GPL-3.0](https://img.shields.io/github/license/brunoborges/fx2048)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/brunoborges/fx2048?label=Release)](https://github.com/brunoborges/fx2048/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/brunoborges/fx2048/total?label=Downloads)](https://github.com/brunoborges/fx2048/releases)
 [![Java 25](https://img.shields.io/badge/Java-25-orange)](https://jdk.java.net/)
 [![JavaFX 26.0.1](https://img.shields.io/badge/JavaFX-26.0.1-blue)](https://openjfx.io/)
 
