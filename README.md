@@ -1,9 +1,18 @@
 # 2048FX
 
-The game 2048 built using JavaFX 25 and Java 25. This is a Java port based on the
+The game 2048 built using JavaFX 26.0.1 and Java 25. This is a Java port based on the
 JavaScript version: https://github.com/gabrielecirulli/2048.
 
 Check down below for a screenshot.
+
+## Quick start
+
+You will need [OpenJDK 25](https://jdk.java.net/) installed to build and run the project.
+Maven is the build system used by CI; use the included Maven wrapper:
+
+```bash
+./mvnw javafx:run
+```
 
 ## Releases
 
@@ -17,8 +26,7 @@ Visit the [fx2048 website](https://brunoborges.github.io/fx2048/) or download re
 
 ## Building and running
 
-You will need [OpenJDK 25](https://jdk.java.net/) installed to build and run the project.
-Maven is the build system used by CI; use the included Maven wrapper:
+Run the app:
 
 ```bash
 ./mvnw javafx:run
@@ -103,6 +111,34 @@ macOS release packages are signed and notarized. Configure these GitHub Actions 
 | `APPLE_ID` | Apple ID used for notarization |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
+
+## Architecture
+
+2048FX is a modular JavaFX desktop app. The JPMS module is `fxgame`, with `io.fxgame.game2048.AppLauncher` as the desktop launcher.
+
+- `Game2048` creates the JavaFX `Stage`, installs the stylesheet, sizes the window, and saves the best score when the app stops.
+- `GamePane` is the root pane. It creates the `GameManager`, handles resizing, keyboard shortcuts, arrow-key movement, fullscreen, and swipe input.
+- `GameManager` owns the rules, board state, moves, merges, random tile creation, win/game-over checks, undo flow, and animation sequencing.
+- `Board` builds the visible UI, including score, best score, timer, toolbar, overlays, settings, and tile rendering.
+- `SessionManager`, `RecordManager`, and `UserSettings` persist sessions, records, and preferences under `${user.home}/.fx2048`.
+
+The default board is 6x6. The settings panel supports custom grid sizes from 4x4 to 16x16, auto-save, and animation speed.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Build fails because of the Java version | Use JDK 25 and make sure `JAVA_HOME` points to it. |
+| `./mvnw` is not executable on macOS or Linux | Run `chmod +x mvnw`, then retry the Maven command. |
+| JavaFX native libraries do not match your OS or CPU | Use the Maven wrapper and avoid overriding `javafx.platform`; OS-specific Maven profiles select the right JavaFX classifier. |
+| Native packaging fails | Ensure the platform packaging tools are available for your OS, then run `./mvnw clean package javafx:jlink jpackage:jpackage`. |
+| The JPro browser profile does not run on Windows | Use macOS arm64, Linux amd64, or Linux arm64; Windows is intentionally not supported for this JPro setup. |
+
+## Attribution
+
+2048FX is maintained by [Bruno Borges](https://github.com/brunoborges). [Jose Pereda](https://github.com/JPeredaDnr) contributed styling and features to the project.
+
+The game is a JavaFX port based on [Gabriele Cirulli's 2048](https://github.com/gabrielecirulli/2048). The bundled Clear Sans font was downloaded from Intel's Clear Sans project and may be used and redistributed under the Apache License 2.0.
 
 ## Feedback / Contributing / Comments
 Submit an issue and share your thoughts.
