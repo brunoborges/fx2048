@@ -34,7 +34,7 @@ jobs:
         path: target/dist/*.dmg
 
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
     - name: Checkout the source code
       uses: actions/checkout@v5
