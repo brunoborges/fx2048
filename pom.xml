@@ -17,6 +17,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <javafx.version>26.0.1</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <jpro.version>2026.1.1</jpro.version>
         <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
@@ -340,6 +341,41 @@
                         <configuration>
                             <type>DEB</type>
                             <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.png</icon>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>jpro</id>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jpro-sandec</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <repositories>
+                <repository>
+                    <id>jpro-sandec</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>one.jpro</groupId>
+                    <artifactId>jpro-webapi</artifactId>
+                    <version>${jpro.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>one.jpro</groupId>
+                        <artifactId>jpro-maven-plugin</artifactId>
+                        <version>${jpro.version}</version>
+                        <configuration>
+                            <mainClassName>${main.class}</mainClassName>
                         </configuration>
                     </plugin>
                 </plugins>

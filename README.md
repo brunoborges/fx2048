@@ -42,6 +42,26 @@ To create a native OS package, run:
 ./mvnw clean package javafx:jlink jpackage:jpackage
 ```
 
+### Run in a browser with JPro
+
+JPro support is available through the Maven `jpro` profile.
+
+Start JPro in development mode:
+
+```bash
+./mvnw -Pjpro jpro:run
+```
+
+Start JPro in background/server mode:
+
+```bash
+./mvnw -Pjpro jpro:restart
+```
+
+Then open:
+
+`http://localhost:8080/index.html`
+
 ### Create a GitHub release
 
 Run the [Release workflow](https://github.com/brunoborges/fx2048/actions/workflows/release.yml) manually from `main` to publish a new version. If `pom.xml` is at `1.0.2-SNAPSHOT`, the workflow prepares and tags `v1.0.2`, publishes the platform packages, and bumps `main` to `1.0.3-SNAPSHOT`.
