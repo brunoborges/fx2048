@@ -156,7 +156,7 @@ jobs:
             java_architecture: arm64
             package_glob: target/dist/*.dmg
             package_suffix: macos-arm64.dmg
-          - os: windows-2022
+          - os: windows-latest
             label: Windows x64
             java_architecture: x64
             package_glob: target/dist/*.msi
