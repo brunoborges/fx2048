@@ -109,7 +109,7 @@ public enum UserSettings {
             return AnimationSpeed.valueOf(animationSpeed.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             Logger.getLogger(UserSettings.class.getName()).log(Level.WARNING,
-                    "Invalid animation speed setting. Using default animation speed.", e);
+                    "Invalid animation speed setting ''{0}''. Using default animation speed.", animationSpeed);
             return AnimationSpeed.DEFAULT;
         }
     }
