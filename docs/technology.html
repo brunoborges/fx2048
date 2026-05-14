@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="How fx2048 is built: Java, JavaFX, Maven, jlink, jpackage, runtime settings, package sizes, and source code stats.">
+  <meta name="description" content="How fx2048 is built: Java, JavaFX, Maven, jlink, jpackage, JPro browser deployment, runtime settings, package sizes, and source code stats.">
   <link rel="canonical" href="https://brunoborges.github.io/fx2048/technology.html">
   <meta property="og:site_name" content="fx2048">
   <meta property="og:type" content="article">
   <meta property="og:title" content="fx2048 Technology - JavaFX runtime, packaging, and memory">
-  <meta property="og:description" content="How fx2048 is built with JavaFX, Maven, jlink, jpackage, a tuned JVM profile, native installers, and runtime memory comparisons.">
+  <meta property="og:description" content="How fx2048 is built with JavaFX, Maven, jlink, jpackage, JPro browser deployment, a tuned JVM profile, native installers, and runtime memory comparisons.">
   <meta property="og:url" content="https://brunoborges.github.io/fx2048/technology.html">
   <meta property="og:image" content="https://brunoborges.github.io/fx2048/assets/screenshot.png">
   <meta property="og:image:width" content="1478">
@@ -16,7 +16,7 @@
   <meta property="og:image:alt" content="fx2048 desktop game screenshot showing a 2048 board.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="fx2048 Technology - JavaFX runtime, packaging, and memory">
-  <meta name="twitter:description" content="How fx2048 is built with JavaFX, Maven, jlink, jpackage, a tuned JVM profile, native installers, and runtime memory comparisons.">
+  <meta name="twitter:description" content="How fx2048 is built with JavaFX, Maven, jlink, jpackage, JPro browser deployment, a tuned JVM profile, native installers, and runtime memory comparisons.">
   <meta name="twitter:image" content="https://brunoborges.github.io/fx2048/assets/screenshot.png">
   <meta name="twitter:image:alt" content="fx2048 desktop game screenshot showing a 2048 board.">
   <link rel="icon" href="assets/fx2048.png">
@@ -467,7 +467,7 @@
         <span class="eyebrow">Under the hood</span>
         <h1>How fx2048 is built and packaged.</h1>
         <p class="lede">
-          fx2048 is a small modular Java desktop app with a JavaFX UI, a custom runtime image, native installers, and a deliberately tight runtime footprint. Its recent modernization was planned, implemented, debugged, and documented with GitHub Copilot.
+          fx2048 is a small modular Java app with a JavaFX UI, a custom desktop runtime image, native installers, optional JPro browser deployment, and a deliberately tight runtime footprint. Its recent modernization was planned, implemented, debugged, and documented with GitHub Copilot.
         </p>
       </div>
 
@@ -524,7 +524,7 @@
       <section class="container" aria-labelledby="stack-heading">
         <div class="section-heading">
           <h2 id="stack-heading">Technology stack</h2>
-          <p>The app is intentionally simple: Java modules, JavaFX controls and animation APIs, Maven automation, and platform-native packages.</p>
+          <p>The app is intentionally simple: Java modules, JavaFX controls and animation APIs, Maven automation, platform-native packages, and an optional JPro browser runtime.</p>
         </div>
         <div class="grid">
           <article class="card">
@@ -542,6 +542,10 @@
           <article class="card">
             <h3>Build and packaging</h3>
             <p><a href="https://maven.apache.org/">Maven</a> builds the app, <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jlink.html"><code>jlink</code></a> creates a custom runtime, and <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html"><code>jpackage</code></a> produces DMG, MSI, and DEB installers.</p>
+          </article>
+          <article class="card">
+            <h3>Browser deployment</h3>
+            <p><a href="https://www.jpro.one/">JPro</a> can run the JavaFX application on a server and stream the UI to a browser, using a separate Maven profile from the desktop packaging path.</p>
           </article>
         </div>
       </section>
@@ -578,15 +582,45 @@
                   <a href="https://maven.apache.org/plugins/maven-compiler-plugin/">Maven Compiler Plugin 3.15.0</a>,
                   <a href="https://github.com/openjfx/javafx-maven-plugin">JavaFX Maven Plugin 0.0.8</a>,
                   <a href="https://maven.apache.org/plugins/maven-jar-plugin/">Maven JAR Plugin 3.5.0</a>,
-                  and <a href="https://github.com/petr-panteleyev/jpackage-maven-plugin">jpackage Maven Plugin 1.7.4</a>.
+                  <a href="https://github.com/petr-panteleyev/jpackage-maven-plugin">jpackage Maven Plugin 1.7.4</a>,
+                  and <a href="https://www.jpro.one/">JPro Maven Plugin 2026.1.1</a>.
                 </td>
               </tr>
               <tr>
                 <td>Packaging</td>
                 <td><a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jlink.html"><code>jlink</code></a> strips the runtime image, and <a href="https://docs.oracle.com/en/java/javase/25/docs/specs/man/jpackage.html"><code>jpackage</code></a> creates native installers from that runtime.</td>
               </tr>
+              <tr>
+                <td>Browser runtime</td>
+                <td>JPro serves the JavaFX application over HTTP from the Maven <code>jpro</code> profile, with platform profiles selecting JPro-compatible JavaFX native artifacts.</td>
+              </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="container" aria-labelledby="jpro-heading">
+        <div class="section-heading">
+          <h2 id="jpro-heading">JPro browser deployment model</h2>
+          <p>JPro is a separate runtime path for trying the JavaFX game in a browser without rewriting the UI in HTML and JavaScript.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Server-side JavaFX</h3>
+            <p>The JavaFX application runs in a JVM on the server. JPro exposes it at <code>http://localhost:8080/index.html</code> during local development and streams the UI to the browser.</p>
+          </article>
+          <article class="card">
+            <h3>Different entry point</h3>
+            <p>The desktop launcher uses <code>io.fxgame.game2048.AppLauncher</code>, but JPro is configured with <code>io.fxgame.game2048.Game2048</code> because JPro needs the class that directly extends <code>javafx.application.Application</code>.</p>
+          </article>
+          <article class="card">
+            <h3>Maven profiles</h3>
+            <p>Run JPro with the shared <code>jpro</code> profile plus one platform profile: <code>jpro-macos-aarch64</code>, <code>jpro-linux-amd64</code>, or <code>jpro-linux-aarch64</code>. Windows is not part of this JPro setup.</p>
+          </article>
+          <article class="card">
+            <h3>Lifecycle</h3>
+            <p><code>jpro:run</code> starts an attached development server. <code>jpro:restart</code> starts a background server and writes its process id to <code>RUNNING_PID</code>.</p>
+          </article>
         </div>
       </section>
 

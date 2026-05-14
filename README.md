@@ -42,6 +42,51 @@ To create a native OS package, run:
 ./mvnw clean package javafx:jlink jpackage:jpackage
 ```
 
+### Run in a browser with JPro
+
+JPro support is available through the Maven `jpro` profile for:
+
+- macOS arm64 (`jpro-macos-aarch64`)
+- Linux amd64 (`jpro-linux-amd64`)
+- Linux arm64 (`jpro-linux-aarch64`)
+
+Windows is intentionally not supported in this JPro setup.
+
+JPro runs the JavaFX application on the server and streams the UI to a browser.
+This path does not use the desktop `AppLauncher`, `jlink`, or `jpackage` launchers.
+Instead, the `jpro` profile points JPro directly at `io.fxgame.game2048.Game2048`,
+the class that extends `javafx.application.Application`, and combines it with a
+platform profile that selects the JPro-compatible JavaFX native artifacts.
+
+Start JPro in development mode:
+
+```bash
+./mvnw -Pjpro,jpro-macos-aarch64 jpro:run
+# or:
+# ./mvnw -Pjpro,jpro-linux-amd64 jpro:run
+# ./mvnw -Pjpro,jpro-linux-aarch64 jpro:run
+```
+
+Start JPro in background/server mode:
+
+```bash
+./mvnw -Pjpro,jpro-macos-aarch64 jpro:restart
+# or:
+# ./mvnw -Pjpro,jpro-linux-amd64 jpro:restart
+# ./mvnw -Pjpro,jpro-linux-aarch64 jpro:restart
+```
+
+Then open:
+
+`http://localhost:8080/index.html`
+
+The `jpro:restart` goal writes the server PID to `RUNNING_PID`. Stop it with:
+
+```bash
+kill $(cat RUNNING_PID)
+rm -f RUNNING_PID
+```
+
 ### Create a GitHub release
 
 Run the [Release workflow](https://github.com/brunoborges/fx2048/actions/workflows/release.yml) manually from `main` to publish a new version. If `pom.xml` is at `1.0.2-SNAPSHOT`, the workflow prepares and tags `v1.0.2`, publishes the platform packages, and bumps `main` to `1.0.3-SNAPSHOT`.

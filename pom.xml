@@ -17,9 +17,11 @@
         <maven.compiler.release>25</maven.compiler.release>
         <javafx.version>26.0.1</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <jpro.version>2026.1.1</jpro.version>
         <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
+        <jpro.main.class>io.fxgame.game2048.Game2048</jpro.main.class>
         <runtime.initial.heap>-Xms8m</runtime.initial.heap>
         <runtime.max.heap>-Xmx32m</runtime.max.heap>
         <runtime.thread.stack.size>-Xss512k</runtime.thread.stack.size>
@@ -31,6 +33,7 @@
         <runtime.garbage.collector>-XX:+UseG1GC</runtime.garbage.collector>
         <runtime.periodic.gc.interval>-XX:G1PeriodicGCInterval=10000</runtime.periodic.gc.interval>
         <runtime.periodic.gc.mode>-XX:+G1PeriodicGCInvokesConcurrent</runtime.periodic.gc.mode>
+        <runtime.native.access>--enable-native-access=javafx.graphics</runtime.native.access>
         <javafx.platform>win</javafx.platform>
     </properties>
 
@@ -134,6 +137,7 @@
                         <option>${runtime.garbage.collector}</option>
                         <option>${runtime.periodic.gc.interval}</option>
                         <option>${runtime.periodic.gc.mode}</option>
+                        <option>${runtime.native.access}</option>
                     </options>
                 </configuration>
             </plugin>
@@ -178,6 +182,7 @@
                         <option>${runtime.garbage.collector}</option>
                         <option>${runtime.periodic.gc.interval}</option>
                         <option>${runtime.periodic.gc.mode}</option>
+                        <option>${runtime.native.access}</option>
                     </javaOptions>
                     <linuxShortcut>true</linuxShortcut>
                     <linuxMenuGroup>Games</linuxMenuGroup>
@@ -208,6 +213,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <argLine>${runtime.native.access}</argLine>
+                </configuration>
             </plugin>
 
             <!-- Maven Enforcer Plugin -->
@@ -278,6 +286,19 @@
         </profile>
 
         <profile>
+            <id>mac-aarch64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>mac-aarch64</javafx.platform>
+            </properties>
+        </profile>
+
+        <profile>
             <id>mac-signing</id>
             <build>
                 <plugins>
@@ -344,6 +365,62 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>jpro</id>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jpro-sandec</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <repositories>
+                <repository>
+                    <id>jpro-sandec</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>one.jpro</groupId>
+                    <artifactId>jpro-webapi</artifactId>
+                    <version>${jpro.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>one.jpro</groupId>
+                        <artifactId>jpro-maven-plugin</artifactId>
+                        <version>${jpro.version}</version>
+                        <configuration>
+                            <mainClassName>${jpro.main.class}</mainClassName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>jpro-macos-aarch64</id>
+            <properties>
+                <javafx.platform>mac-aarch64</javafx.platform>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jpro-linux-amd64</id>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jpro-linux-aarch64</id>
+            <properties>
+                <javafx.platform>linux-aarch64</javafx.platform>
+            </properties>
         </profile>
     </profiles>
 

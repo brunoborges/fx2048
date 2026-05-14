@@ -25,3 +25,5 @@ fx2048.iml
 .DS_Store
 .idea/workspace.xml
 target
+logs/
+RUNNING_PID
