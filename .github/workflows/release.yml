@@ -156,21 +156,25 @@ jobs:
             java_architecture: arm64
             package_glob: target/dist/*.dmg
             package_suffix: macos-arm64.dmg
+            publish_jar: false
           - os: windows-latest
             label: Windows x64
             java_architecture: x64
             package_glob: target/dist/*.msi
             package_suffix: windows-x64.msi
+            publish_jar: false
           - os: ubuntu-latest
             label: Linux amd64
             java_architecture: x64
             package_glob: target/dist/*.deb
             package_suffix: linux-amd64.deb
+            publish_jar: true
           - os: ubuntu-24.04-arm
             label: Linux arm64
             java_architecture: arm64
             package_glob: target/dist/*.deb
             package_suffix: linux-arm64.deb
+            publish_jar: false
 
     steps:
       - name: Checkout the source code
@@ -391,6 +395,18 @@ jobs:
             exit 1
           fi
           cp "${packages[0]}" "release-assets/fx2048-${RELEASE_TAG}-${{ matrix.package_suffix }}"
+
+      - name: Stage runnable JAR asset
+        if: matrix.publish_jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          jar_path="target/fx2048-${PROJECT_VERSION}.jar"
+          if [ ! -f "${jar_path}" ]; then
+            printf 'Expected runnable JAR at "%s".\n' "${jar_path}"
+            exit 1
+          fi
+          cp "${jar_path}" "release-assets/fx2048-${RELEASE_TAG}.jar"
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v7

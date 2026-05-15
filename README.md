@@ -24,7 +24,7 @@ Maven is the build system used by CI; use the included Maven wrapper:
 
 ## Releases
 
-Visit the [fx2048 website](https://brunoborges.github.io/fx2048/) or download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). The release workflow builds macOS arm64 DMG, Windows x64 MSI, and Linux amd64/arm64 DEB packages, each with the Java runtime needed to run the game.
+Visit the [fx2048 website](https://brunoborges.github.io/fx2048/) or download ready-to-run packages for Windows, macOS, and Linux from [GitHub Releases](https://github.com/brunoborges/fx2048/releases). The release workflow builds macOS arm64 DMG, Windows x64 MSI, Linux amd64/arm64 DEB packages, and also publishes a runnable JAR artifact.
 
 ## Screenshot
 
