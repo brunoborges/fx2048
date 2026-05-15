@@ -1,0 +1,553 @@
+package io.github.brunoborges.fx2048.ui;
+
+import io.github.brunoborges.fx2048.app.*;
+import io.github.brunoborges.fx2048.game.*;
+import io.github.brunoborges.fx2048.persistence.*;
+import io.github.brunoborges.fx2048.settings.*;
+import io.github.brunoborges.fx2048.ui.*;
+
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.Group;
+import javafx.util.Duration;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.IntConsumer;
+
+/**
+ * @author Bruno Borges
+ * @author Jose Pereda
+ */
+public class GameManager extends Group {
+
+    public static final int FINAL_VALUE_TO_WIN = GameModel.FINAL_VALUE_TO_WIN;
+
+    private static final Duration BASE_ANIMATION_EXISTING_TILE = Duration.millis(65);
+    private static final Duration BASE_ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
+    private static final Duration BASE_ANIMATION_MERGED_TILE = Duration.millis(80);
+
+    private volatile boolean movingTiles = false;
+    private final Map<Location, Tile> gameGrid = new HashMap<>();
+    private final Set<Tile> mergedToBeRemoved = new HashSet<>();
+
+    private final Board board;
+    private final GameModel model;
+    private final UndoManager undoManager = new UndoManager();
+    private final BooleanProperty undoAvailable = new SimpleBooleanProperty(false);
+    private Animation shakingAnimation;
+    private ParallelTransition activeTileMovement;
+    private MoveSnapshot undoSnapshot;
+    private boolean shakingAnimationPlaying = false;
+    private boolean shakingXYState = false;
+
+    private record MoveSnapshot(Map<Location, Integer> tiles, int score, int moveCount) {}
+
+    public GameManager() {
+        this(UserSettings.LOCAL.getGridSize());
+    }
+
+    public GameManager(int gridSize) {
+        this(gridSize, _ -> {
+        });
+    }
+
+    /**
+     * GameManager is a Group containing a Board that holds a grid and the score.
+     * It delegates the game rules to GameModel and keeps JavaFX animation concerns
+     * here.
+     *
+     * @param gridSize defines the size of the grid, default 6x6
+     */
+    public GameManager(int gridSize, IntConsumer gridSizeChangeHandler) {
+        var gridOperator = new GridOperator(gridSize);
+        model = new GameModel(gridOperator);
+        board = new Board(gridOperator, gridSizeChangeHandler);
+        board.setToolBar(createToolbarPanel());
+        getChildren().add(board);
+
+        board.clearGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                setUndoSnapshot(null);
+                initializeGameGrid();
+            }
+        });
+        board.resetGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                startGame();
+            }
+        });
+        board.restoreGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                doRestoreSession();
+            }
+        });
+        board.saveGameProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                doSaveSession();
+            }
+        });
+
+        startGame();
+    }
+
+    private void initializeGameGrid() {
+        model.initialize();
+        syncTileMapFromModel();
+    }
+
+    /**
+     * Starts the game by adding 1 or 2 tiles at random locations.
+     */
+    private void startGame() {
+        model.startGame();
+        setUndoSnapshot(null);
+        undoManager.resetForNewGame();
+        syncTileMapFromModel();
+        redrawTilesInGameGrid();
+        board.setUndoCount(undoManager.remainingUndos());
+        board.startGame();
+    }
+
+    /**
+     * Redraws all tiles in the <code>gameGrid</code> object.
+     */
+    private void redrawTilesInGameGrid() {
+        board.clearTiles();
+        gameGrid.values().stream().filter(Objects::nonNull).forEach(board::addTile);
+    }
+
+    private void syncTileMapFromModel() {
+        gameGrid.clear();
+        model.snapshot().forEach((location, value) -> gameGrid.put(location, value == 0 ? null : createTile(location, value)));
+    }
+
+    private Tile createTile(Location location, int value) {
+        var tile = Tile.newTile(value);
+        tile.setLocation(location);
+        return tile;
+    }
+
+    /**
+     * Moves the tiles according to given direction. At any move, takes care of merge
+     * tiles, add a new one and perform the required animations. It updates the score
+     * and checks if the user won the game or if the game is over.
+     *
+     * @param direction is the selected direction to move the tiles
+     */
+    private void moveTiles(Direction direction) {
+        if (isMovingTiles() && !finishActiveTileMovement()) {
+            return;
+        }
+
+        board.setPoints(0);
+        mergedToBeRemoved.clear();
+        var previousSnapshot = createMoveSnapshot();
+        var moveResult = model.move(direction);
+        var parallelTransition = new ParallelTransition();
+        applyMovements(moveResult, parallelTransition);
+
+        if (moveResult.tilesMoved()) {
+            setUndoSnapshot(previousSnapshot);
+            board.incrementMoveCount();
+            undoManager.awardEarnedUndos(moveResult.movements());
+            board.setUndoCount(undoManager.remainingUndos());
+        }
+
+        if (moveResult.points() > 0) {
+            board.addPoints(moveResult.points());
+        }
+        if (moveResult.won()) {
+            board.setGameWin(true);
+        }
+
+        board.animateScore();
+        if (moveResult.tilesMoved()) {
+            if (parallelTransition.getChildren().isEmpty()) {
+                finishMoveAfterTileMotion(false);
+            } else {
+                parallelTransition.setOnFinished(_ -> finishMoveAfterTileMotion(true));
+
+                activeTileMovement = parallelTransition;
+                setMovingTiles(true);
+                parallelTransition.play();
+            }
+        }
+
+        if (!moveResult.tilesMoved()) {
+            shakeGamePane();
+        }
+    }
+
+    private boolean finishActiveTileMovement() {
+        var tileMovement = activeTileMovement;
+        if (tileMovement == null) {
+            return false;
+        }
+
+        tileMovement.setOnFinished(null);
+        tileMovement.jumpTo(tileMovement.getTotalDuration());
+        tileMovement.stop();
+        finishMoveAfterTileMotion(false);
+        return true;
+    }
+
+    private void finishMoveAfterTileMotion(boolean animateAddedTile) {
+        activeTileMovement = null;
+        board.removeTiles(mergedToBeRemoved);
+        gameGrid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
+        setMovingTiles(false);
+
+        var addedTile = model.addRandomTile();
+        if (addedTile.isPresent()) {
+            addRandomTileToBoard(addedTile.get(), animateAddedTile);
+        } else if (!model.hasMergeMovements()) {
+            board.setGameOver(true);
+        }
+
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.AFTER_EVERY_MOVE) {
+            doAutoSaveSession();
+        }
+    }
+
+    private void applyMovements(GameModel.MoveResult moveResult, ParallelTransition parallelTransition) {
+        moveResult.movements().forEach(movement -> {
+            var tile = requireTile(movement.source());
+            if (movement.merge()) {
+                var targetTile = requireTile(movement.destination());
+                targetTile.merge(tile);
+                targetTile.toFront();
+                gameGrid.put(movement.destination(), targetTile);
+                gameGrid.replace(movement.source(), null);
+
+                if (board.animationsDisabled()) {
+                    board.moveTileImmediately(tile, targetTile.getLocation());
+                    targetTile.setScaleX(1.0);
+                    targetTile.setScaleY(1.0);
+                } else {
+                    parallelTransition.getChildren().add(animateExistingTile(tile, targetTile.getLocation()));
+                    parallelTransition.getChildren().add(animateMergedTile(targetTile));
+                }
+                mergedToBeRemoved.add(tile);
+            } else {
+                gameGrid.put(movement.destination(), tile);
+                gameGrid.replace(movement.source(), null);
+                if (board.animationsDisabled()) {
+                    board.moveTileImmediately(tile, movement.destination());
+                } else {
+                    parallelTransition.getChildren().add(animateExistingTile(tile, movement.destination()));
+                    tile.setLocation(movement.destination());
+                }
+            }
+        });
+    }
+
+    private Tile requireTile(Location location) {
+        var tile = gameGrid.get(location);
+        if (tile == null) {
+            throw new IllegalStateException("Expected tile at " + location);
+        }
+        return tile;
+    }
+
+    private void shakeGamePane() {
+        if (shakingAnimation == null) {
+            shakingAnimation = createShakeGamePaneAnimation();
+        }
+
+        if (!shakingAnimationPlaying) {
+            shakingAnimation.play();
+            shakingAnimationPlaying = true;
+        }
+    }
+
+    private MoveSnapshot createMoveSnapshot() {
+        return new MoveSnapshot(model.snapshot(), board.getScore(), board.getMoveCount());
+    }
+
+    private void restoreMoveSnapshot(MoveSnapshot snapshot) {
+        model.restoreSnapshot(snapshot.tiles());
+        syncTileMapFromModel();
+        board.setPoints(0);
+        board.setScore(snapshot.score());
+        board.setMoveCount(snapshot.moveCount());
+        redrawTilesInGameGrid();
+        setUndoSnapshot(null);
+    }
+
+    private void setUndoSnapshot(MoveSnapshot snapshot) {
+        undoSnapshot = snapshot;
+        updateUndoAvailability();
+    }
+
+    private void setMovingTiles(boolean moving) {
+        synchronized (gameGrid) {
+            movingTiles = moving;
+        }
+        updateUndoAvailability();
+    }
+
+    private boolean isMovingTiles() {
+        synchronized (gameGrid) {
+            return movingTiles;
+        }
+    }
+
+    private void updateUndoAvailability() {
+        undoAvailable.set(undoSnapshot != null && !movingTiles);
+    }
+
+    private void addRandomTileToBoard(GameModel.TileState tileState, boolean animate) {
+        var tile = board.addAnimatedTile(tileState.location(), tileState.value());
+        gameGrid.put(tile.getLocation(), tile);
+
+        if (!animate || board.animationsDisabled()) {
+            tile.setScaleX(1.0);
+            tile.setScaleY(1.0);
+            if (model.isFull() && !model.hasMergeMovements()) {
+                board.setGameOver(true);
+            }
+            return;
+        }
+
+        animateNewlyAddedTile(tile).play();
+    }
+
+    /**
+     * Animation that creates a fade in effect when a tile is added to the game by
+     * increasing the tile scale from 0 to 100%.
+     *
+     * @param tile to be animated
+     * @return a scale transition
+     */
+    private ScaleTransition animateNewlyAddedTile(Tile tile) {
+        final var scaleTransition = new ScaleTransition(
+                board.scaleAnimationDuration(BASE_ANIMATION_NEWLY_ADDED_TILE), tile);
+        scaleTransition.setToX(1.0);
+        scaleTransition.setToY(1.0);
+        scaleTransition.setInterpolator(Interpolator.EASE_OUT);
+        scaleTransition.setOnFinished(_ -> {
+            if (model.isFull() && !model.hasMergeMovements()) {
+                board.setGameOver(true);
+            }
+        });
+        return scaleTransition;
+    }
+
+    private Animation createShakeGamePaneAnimation() {
+        var shakingAnimation = new Timeline(new KeyFrame(Duration.seconds(0.05), _ -> {
+            var parent = getParent();
+
+            if (shakingXYState) {
+                parent.setLayoutX(parent.getLayoutX() + 5);
+                parent.setLayoutY(parent.getLayoutY() + 5);
+            } else {
+                parent.setLayoutX(parent.getLayoutX() - 5);
+                parent.setLayoutY(parent.getLayoutY() - 5);
+            }
+
+            shakingXYState = !shakingXYState;
+        }));
+
+        shakingAnimation.setCycleCount(6);
+        shakingAnimation.setAutoReverse(false);
+        shakingAnimation.setOnFinished(_ -> {
+            shakingXYState = false;
+            shakingAnimationPlaying = false;
+        });
+
+        return shakingAnimation;
+    }
+
+    /**
+     * Animation that moves the tile from its previous location to a new location.
+     *
+     * @param tile        to be animated
+     * @param newLocation new location of the tile
+     * @return a timeline
+     */
+    private Timeline animateExistingTile(Tile tile, Location newLocation) {
+        var timeline = new Timeline();
+        var kvX = new KeyValue(tile.layoutXProperty(),
+                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+        var kvY = new KeyValue(tile.layoutYProperty(),
+                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+
+        var animationDuration = board.scaleAnimationDuration(BASE_ANIMATION_EXISTING_TILE);
+        var kfX = new KeyFrame(animationDuration, kvX);
+        var kfY = new KeyFrame(animationDuration, kvY);
+
+        timeline.getKeyFrames().add(kfX);
+        timeline.getKeyFrames().add(kfY);
+
+        return timeline;
+    }
+
+    /**
+     * Animation that creates a pop effect when two tiles merge by increasing the
+     * tile scale to 120% at the middle, and then going back to 100%.
+     *
+     * @param tile to be animated
+     * @return a sequential transition
+     */
+    private SequentialTransition animateMergedTile(Tile tile) {
+        var animationDuration = board.scaleAnimationDuration(BASE_ANIMATION_MERGED_TILE);
+        final var scale0 = new ScaleTransition(animationDuration, tile);
+        scale0.setToX(1.2);
+        scale0.setToY(1.2);
+        scale0.setInterpolator(Interpolator.EASE_IN);
+
+        final var scale1 = new ScaleTransition(animationDuration, tile);
+        scale1.setToX(1.0);
+        scale1.setToY(1.0);
+        scale1.setInterpolator(Interpolator.EASE_OUT);
+
+        return new SequentialTransition(scale0, scale1);
+    }
+
+    /**
+     * Move the tiles according user input if overlay is not on.
+     */
+    public void move(Direction direction) {
+        if (!board.isLayerOn().get()) {
+            moveTiles(direction);
+        }
+    }
+
+    public void undoMove() {
+        synchronized (gameGrid) {
+            if (movingTiles || undoSnapshot == null) {
+                return;
+            }
+        }
+
+        if (!board.isLayerOn().get()) {
+            if (!undoManager.consumeUndo()) {
+                return;
+            }
+            restoreMoveSnapshot(undoSnapshot);
+            board.setUndoCount(undoManager.remainingUndos());
+        }
+    }
+
+    /**
+     * Set gameManager scale to adjust overall game size.
+     */
+    public void setScale(double scale) {
+        this.setScaleX(scale);
+        this.setScaleY(scale);
+    }
+
+    /**
+     * Pauses the game time, covers the grid.
+     */
+    public void pauseGame() {
+        board.pauseGame();
+    }
+
+    /**
+     * Quit the game with confirmation.
+     */
+    public void quitGame() {
+        board.quitGame();
+    }
+
+    /**
+     * Ask to save the game from a properties file with confirmation.
+     */
+    public void saveSession() {
+        board.saveSession();
+    }
+
+    /**
+     * Save the game to a properties file, without confirmation.
+     */
+    private void doSaveSession() {
+        board.saveSession(model.snapshot());
+    }
+
+    /**
+     * Ask to restore the game from a properties file with confirmation.
+     */
+    public void restoreSession() {
+        board.restoreSession();
+    }
+
+    /**
+     * Restore the game from a properties file, without confirmation.
+     */
+    private void doRestoreSession() {
+        var restoredValues = new HashMap<Location, Integer>();
+        if (board.restoreSession(restoredValues)) {
+            model.restoreSnapshot(restoredValues);
+            undoManager.resetForRestoredBoard(restoredValues);
+            syncTileMapFromModel();
+            redrawTilesInGameGrid();
+            board.setUndoCount(undoManager.remainingUndos());
+            setUndoSnapshot(null);
+        }
+    }
+
+    /**
+     * Save actual record to a properties file.
+     */
+    public void saveRecord() {
+        board.saveRecord();
+    }
+
+    /**
+     * Auto-save the session silently, without confirmation overlays.
+     */
+    private void doAutoSaveSession() {
+        board.silentSaveSession(model.snapshot());
+    }
+
+    /**
+     * Auto-restore the session silently on startup if auto-save is enabled and a saved session exists.
+     */
+    public void tryAutoRestoreSession() {
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.OFF) {
+            return;
+        }
+        var restoredValues = new HashMap<Location, Integer>();
+        if (board.silentRestoreSession(restoredValues)) {
+            model.restoreSnapshot(restoredValues);
+            undoManager.resetForRestoredBoard(restoredValues);
+            syncTileMapFromModel();
+            redrawTilesInGameGrid();
+            board.setUndoCount(undoManager.remainingUndos());
+            setUndoSnapshot(null);
+        }
+    }
+
+    public void dispose() {
+        if (UserSettings.LOCAL.getAutoSave() == AutoSaveMode.ON_EXIT) {
+            doAutoSaveSession();
+        }
+        board.dispose();
+    }
+
+    private ToolbarPanel createToolbarPanel() {
+        return new ToolbarPanel(new ToolbarPanel.Actions(
+                this::saveSession,
+                this::restoreSession,
+                board::pauseGame,
+                board::showTryAgainOverlay,
+                this::undoMove,
+                board::bestScoresGame,
+                board::settingsGame,
+                board::aboutGame,
+                this::quitGame), board.undoCountProperty(), undoAvailable);
+    }
+}

@@ -1,7 +1,7 @@
 **/*.class
 *.properties
 !.mvn/wrapper/maven-wrapper.properties
-!src/main/resources/io/fxgame/game2048/app.properties
+!src/main/resources/io/github/brunoborges/fx2048/app.properties
 
 # Package Files #
 **/*.jar

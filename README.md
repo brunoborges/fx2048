@@ -68,7 +68,7 @@ Windows is intentionally not supported in this JPro setup.
 
 JPro runs the JavaFX application on the server and streams the UI to a browser.
 This path does not use the desktop `AppLauncher`, `jlink`, or `jpackage` launchers.
-Instead, the `jpro` profile points JPro directly at `io.fxgame.game2048.Game2048`,
+Instead, the `jpro` profile points JPro directly at `io.github.brunoborges.fx2048.app.Game2048`,
 the class that extends `javafx.application.Application`, and combines it with a
 platform profile that selects the JPro-compatible JavaFX native artifacts.
 
@@ -120,7 +120,7 @@ macOS release packages are signed and notarized. Configure these GitHub Actions 
 
 ## Architecture
 
-2048FX is a modular JavaFX desktop app. The JPMS module is `fxgame`, with `io.fxgame.game2048.AppLauncher` as the desktop launcher.
+2048FX is a modular JavaFX desktop app. The JPMS module is `fxgame`, with `io.github.brunoborges.fx2048.app.AppLauncher` as the desktop launcher.
 
 - `Game2048` creates the JavaFX `Stage`, installs the stylesheet, sizes the window, and saves the best score when the app stops.
 - `GamePane` is the root pane. It creates the `GameManager`, handles resizing, keyboard shortcuts, arrow-key movement, fullscreen, and swipe input.
