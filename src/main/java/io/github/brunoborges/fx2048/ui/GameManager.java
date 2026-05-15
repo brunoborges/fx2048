@@ -1,10 +1,5 @@
 package io.github.brunoborges.fx2048.ui;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
@@ -25,6 +20,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntConsumer;
+import io.github.brunoborges.fx2048.game.Direction;
+import io.github.brunoborges.fx2048.game.GameModel;
+import io.github.brunoborges.fx2048.game.GridOperator;
+import io.github.brunoborges.fx2048.game.Location;
+import io.github.brunoborges.fx2048.game.Tile;
+import io.github.brunoborges.fx2048.game.UndoManager;
+import io.github.brunoborges.fx2048.persistence.UserSettings;
+import io.github.brunoborges.fx2048.settings.AutoSaveMode;
 
 /**
  * @author Bruno Borges

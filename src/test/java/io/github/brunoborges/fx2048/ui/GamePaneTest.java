@@ -1,14 +1,10 @@
 package io.github.brunoborges.fx2048.ui;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import io.github.brunoborges.fx2048.game.GridOperator;
 
 class GamePaneTest {
 

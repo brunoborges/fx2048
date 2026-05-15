@@ -1,10 +1,5 @@
 package io.github.brunoborges.fx2048.settings;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import java.util.Optional;
 import java.util.function.IntConsumer;
@@ -12,6 +7,9 @@ import java.util.stream.IntStream;
 
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
+import io.github.brunoborges.fx2048.game.GridOperator;
+import io.github.brunoborges.fx2048.persistence.UserSettings;
+import io.github.brunoborges.fx2048.ui.SettingsPanel;
 
 public final class GridSizeSetting implements SettingsPanel.Item {
 

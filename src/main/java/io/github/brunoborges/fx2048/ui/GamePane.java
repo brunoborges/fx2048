@@ -1,10 +1,5 @@
 package io.github.brunoborges.fx2048.ui;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -18,6 +13,9 @@ import javafx.scene.text.Font;
 import java.util.Objects;
 
 import static io.github.brunoborges.fx2048.game.Direction.*;
+import io.github.brunoborges.fx2048.app.Game2048;
+import io.github.brunoborges.fx2048.game.Direction;
+import io.github.brunoborges.fx2048.persistence.UserSettings;
 
 /**
  * @author Bruno Borges

@@ -1,10 +1,5 @@
 package io.github.brunoborges.fx2048.ui;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import java.util.List;
 
@@ -15,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import io.github.brunoborges.fx2048.persistence.RecordManager;
 
 final class BestScoresContent extends VBox {
 

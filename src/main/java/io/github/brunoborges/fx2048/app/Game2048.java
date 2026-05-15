@@ -1,10 +1,5 @@
 package io.github.brunoborges.fx2048.app;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
@@ -15,6 +10,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.util.Objects;
+import io.github.brunoborges.fx2048.persistence.UserSettings;
+import io.github.brunoborges.fx2048.ui.GamePane;
 
 /**
  * @author Bruno Borges

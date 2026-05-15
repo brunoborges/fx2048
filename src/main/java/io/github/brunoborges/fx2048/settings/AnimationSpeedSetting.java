@@ -1,15 +1,12 @@
 package io.github.brunoborges.fx2048.settings;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import java.util.function.Consumer;
 
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
+import io.github.brunoborges.fx2048.persistence.UserSettings;
+import io.github.brunoborges.fx2048.ui.SettingsPanel;
 
 public final class AnimationSpeedSetting implements SettingsPanel.Item {
 

@@ -1,16 +1,12 @@
 package io.github.brunoborges.fx2048.ui;
 
-import io.github.brunoborges.fx2048.app.*;
-import io.github.brunoborges.fx2048.game.*;
-import io.github.brunoborges.fx2048.persistence.*;
-import io.github.brunoborges.fx2048.settings.*;
-import io.github.brunoborges.fx2048.ui.*;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
+import io.github.brunoborges.fx2048.app.Game2048;
 
 final class AboutContent extends TextFlow {
 
