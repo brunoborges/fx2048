@@ -122,14 +122,14 @@ jpackage \
   --app-version "${PROJECT_VERSION}" \
   --vendor "Example Vendor" \
   --resource-dir src/jpackage \
-  --module fxgame/io.fxgame.game2048.AppLauncher \
+  --module fxgame/io.github.brunoborges.fx2048.app.app.AppLauncher \
   --runtime-image target/fx2048 \
   --java-options -Dfile.encoding=UTF-8 \
   --java-options -Xmx48m \
   --java-options -XX:+UseZGC \
   --mac-package-identifier fx2048 \
   --mac-package-name fx2048 \
-  --icon src/main/resources/io/fxgame/game2048/fx2048-logo.icns \
+  --icon src/main/resources/io/github/brunoborges/fx2048/fx2048-logo.icns \
   --mac-sign \
   --mac-signing-keychain "${MACOS_KEYCHAIN_PATH}" \
   --mac-signing-key-user-name "${MACOS_SIGNING_KEY_USER_NAME}" \

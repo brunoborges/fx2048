@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.fxgame</groupId>
+    <groupId>io.github.brunoborges</groupId>
     <artifactId>fx2048</artifactId>
     <version>1.0.15-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -20,8 +20,8 @@
         <jpro.version>2026.1.1</jpro.version>
         <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
-        <main.class>io.fxgame.game2048.AppLauncher</main.class>
-        <jpro.main.class>io.fxgame.game2048.Game2048</jpro.main.class>
+        <main.class>io.github.brunoborges.fx2048.app.AppLauncher</main.class>
+        <jpro.main.class>io.github.brunoborges.fx2048.app.Game2048</jpro.main.class>
         <runtime.initial.heap>-Xms8m</runtime.initial.heap>
         <runtime.max.heap>-Xmx32m</runtime.max.heap>
         <runtime.thread.stack.size>-Xss512k</runtime.thread.stack.size>
@@ -87,14 +87,14 @@
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
-                    <exclude>io/fxgame/game2048/app.properties</exclude>
+                    <exclude>io/github/brunoborges/fx2048/app.properties</exclude>
                 </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>io/fxgame/game2048/app.properties</include>
+                    <include>io/github/brunoborges/fx2048/app.properties</include>
                 </includes>
             </resource>
         </resources>
@@ -278,7 +278,7 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
                             <type>DMG</type>
-                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.icns</icon>
+                            <icon>src/main/resources/io/github/brunoborges/fx2048/fx2048-logo.icns</icon>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -334,7 +334,7 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
                             <type>MSI</type>
-                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.ico</icon>
+                            <icon>src/main/resources/io/github/brunoborges/fx2048/fx2048-logo.ico</icon>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -360,7 +360,7 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <configuration>
                             <type>DEB</type>
-                            <icon>src/main/resources/io/fxgame/game2048/fx2048-logo.png</icon>
+                            <icon>src/main/resources/io/github/brunoborges/fx2048/fx2048-logo.png</icon>
                         </configuration>
                     </plugin>
                 </plugins>
