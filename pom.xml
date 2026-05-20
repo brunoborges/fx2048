@@ -18,7 +18,7 @@
         <javafx.version>26.0.1</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
         <jpro.version>2026.1.1</jpro.version>
-        <junit.jupiter.version>6.0.3</junit.jupiter.version>
+        <junit.jupiter.version>6.1.0</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <main.class>io.fxgame.game2048.AppLauncher</main.class>
         <jpro.main.class>io.fxgame.game2048.Game2048</jpro.main.class>
