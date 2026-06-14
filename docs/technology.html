@@ -529,7 +529,7 @@
         <div class="grid">
           <article class="card">
             <h3>Application runtime</h3>
-            <p><a href="https://openjdk.org/projects/jdk/25/">Java 25</a>, <a href="https://openjfx.io/">JavaFX 25.0.3</a>, and the JPMS module <code>fxgame</code>. The launcher enters <code>io.fxgame.game2048.AppLauncher</code>.</p>
+            <p><a href="https://openjdk.org/projects/jdk/25/">Java 25</a>, <a href="https://openjfx.io/">JavaFX 25.0.3</a>, and the JPMS module <code>fxgame</code>. The launcher enters <code>io.github.brunoborges.fx2048.app.AppLauncher</code>.</p>
           </article>
           <article class="card">
             <h3>UI and animation</h3>
@@ -611,7 +611,7 @@
           </article>
           <article class="card">
             <h3>Different entry point</h3>
-            <p>The desktop launcher uses <code>io.fxgame.game2048.AppLauncher</code>, but JPro is configured with <code>io.fxgame.game2048.Game2048</code> because JPro needs the class that directly extends <code>javafx.application.Application</code>.</p>
+            <p>The desktop launcher uses <code>io.github.brunoborges.fx2048.app.AppLauncher</code>, but JPro is configured with <code>io.github.brunoborges.fx2048.app.Game2048</code> because JPro needs the class that directly extends <code>javafx.application.Application</code>.</p>
           </article>
           <article class="card">
             <h3>Maven profiles</h3>

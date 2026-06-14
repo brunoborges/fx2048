@@ -8,7 +8,7 @@
             "type": "java",
             "name": "Java (Launch) - Game2048",
             "request": "launch",
-            "mainClass": "fxgame/io.fxgame.game2048.AppLauncher",
+            "mainClass": "fxgame/io.github.brunoborges.fx2048.app.app.AppLauncher",
             "projectName": "fxgame"
         }
     ]

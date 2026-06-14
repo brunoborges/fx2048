@@ -67,9 +67,9 @@ fx2048/
 │   ├── main/
 │   │   ├── java/             # Java source files
 │   │   │   ├── module-info.java
-│   │   │   └── io/fxgame/game2048/
+│   │   │   └── io/github/brunoborges/fx2048/
 │   │   └── resources/        # Application resources
-│   │       └── io/fxgame/game2048/
+│   │       └── io/github/brunoborges/fx2048/
 │   └── test/                  # Test files
 └── target/                    # Build output (generated)
 ```
