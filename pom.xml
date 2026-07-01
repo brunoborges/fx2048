@@ -6,7 +6,7 @@
 
     <groupId>io.github.brunoborges</groupId>
     <artifactId>fx2048</artifactId>
-    <version>1.0.15-SNAPSHOT</version>
+    <version>1.0.15</version>
     <packaging>jar</packaging>
 
     <name>fx2048</name>
