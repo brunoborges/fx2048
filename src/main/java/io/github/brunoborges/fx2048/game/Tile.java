@@ -2,6 +2,7 @@ package io.github.brunoborges.fx2048.game;
 
 
 import javafx.geometry.Pos;
+import javafx.scene.CacheHint;
 import javafx.scene.control.Label;
 import java.util.Optional;
 import io.github.brunoborges.fx2048.ui.Board;
@@ -34,6 +35,13 @@ public class Tile extends Label {
         this.merged = false;
         setText(value.toString());
         getStyleClass().addAll("game-label", "game-tile-" + value);
+
+        // Cache the rendered tile as a bitmap so JavaFX reuses it during
+        // translate/scale animations instead of re-rasterizing the rounded-rect
+        // background and drop-shadow effect every frame (Marlin hotspot). The
+        // cache is invalidated automatically when the tile's value/style change.
+        setCache(true);
+        setCacheHint(CacheHint.SPEED);
     }
 
     public void merge(Tile another) {
